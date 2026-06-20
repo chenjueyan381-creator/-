@@ -122,31 +122,42 @@
   const CHARACTERS = [
     {
       key: "l", name: "L", from: "DEATH NOTE · 死亡笔记", img: "images/l.jpg",
-      glyph: "L", quote: "「正义会胜利……？那么，胜利的人就是正义。」",
+      glyph: "L", mode: "cover", pos: "center 26%",
+      quote: "「正义会胜利……？那么，胜利的人就是正义。」",
     },
     {
       key: "touya", name: "塔矢亮", from: "HIKARU NO GO · 棋魂", img: "images/touya.jpg",
-      glyph: "棋", quote: "「我一直在追逐着那一手——神之一手。」",
+      glyph: "棋", mode: "cover", pos: "center 22%",
+      quote: "「我一直在追逐着那一手——神之一手。」",
     },
     {
-      key: "shizuya", name: "竹早静弥", from: "TSURUNE · 弦音", img: "images/shizuya.jpg",
-      glyph: "弦", quote: "「把心放平，弦音自会清澈。」",
+      key: "shizuya", name: "竹早静弥", from: "TSURUNE · 弦音", img: "images/shizuya.png",
+      glyph: "弦", mode: "cut", pos: "center top",
+      quote: "「把心放平，弦音自会清澈。」",
     },
     {
       key: "watanuki", name: "四月一日君寻", from: "×××HOLiC", img: "images/watanuki.jpg",
-      glyph: "祓", quote: "「这世上没有偶然，有的只是必然。」",
+      glyph: "祓", mode: "contain", pos: "center",
+      quote: "「这世上没有偶然，有的只是必然。」",
     },
     {
       key: "yuuko", name: "壹原侑子", from: "×××HOLiC", img: "images/yuuko.jpg",
-      glyph: "願", quote: "「等价交换——你愿以什么，换你所求？」",
+      glyph: "願", mode: "cover", pos: "center 14%",
+      quote: "「等价交换——你愿以什么，换你所求？」",
     },
   ];
   function renderCharacters() {
     const grid = $("#card-grid");
     grid.innerHTML = CHARACTERS.map((c) => `
-      <article class="card card--${c.key}">
-        <div class="card__img" style="background-image:url('${c.img}')">
-          <div class="card__fallback">${c.glyph}</div>
+      <article class="card card--${c.key}" data-mode="${c.mode}">
+        <div class="card__frame">
+          <div class="card__media">
+            <img class="card__img" src="${c.img}" alt="${esc(c.name)}"
+                 loading="lazy" style="object-position:${c.pos}" />
+            <div class="card__fallback">${c.glyph}</div>
+            <span class="card__corner tl"></span><span class="card__corner tr"></span>
+            <span class="card__corner bl"></span><span class="card__corner br"></span>
+          </div>
         </div>
         <div class="card__body">
           <div class="card__name">${esc(c.name)}</div>
@@ -154,12 +165,9 @@
           <div class="card__quote">${esc(c.quote)}</div>
         </div>
       </article>`).join("");
-    // 图片加载失败时移除背景，露出符文占位
-    $$(".card__img", grid).forEach((el, idx) => {
-      const url = CHARACTERS[idx].img;
-      const probe = new Image();
-      probe.onerror = () => { el.style.backgroundImage = "none"; };
-      probe.src = url;
+    // 图片加载失败时隐藏图片，露出符文占位
+    $$(".card__img", grid).forEach((img) => {
+      img.addEventListener("error", () => { img.style.display = "none"; });
     });
   }
 

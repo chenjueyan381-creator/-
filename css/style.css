@@ -134,47 +134,76 @@ body{
 .section-title::before{left:0}.section-title::after{right:0}
 .section-sub{color:var(--ink-dim);margin-top:8px;font-size:.85rem;letter-spacing:.15em}
 
-/* ---------------- 角色卡片 ---------------- */
-.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:20px}
+/* ---------------- 角色卡片（精致画廊） ---------------- */
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(248px,1fr));gap:26px}
 .card{
-  position:relative;border-radius:16px;overflow:hidden;
-  border:1px solid var(--line);background:var(--panel);
-  transition:transform .35s,box-shadow .35s;min-height:340px;
+  --theme:rgba(255,255,255,.4);
+  position:relative;border-radius:18px;overflow:hidden;
+  border:1px solid var(--line);
+  background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.015));
+  transition:transform .4s cubic-bezier(.2,.7,.2,1),box-shadow .4s;
   display:flex;flex-direction:column;
 }
-.card:hover{transform:translateY(-6px)}
-.card__img{
-  position:relative;height:240px;overflow:hidden;background-size:cover;background-position:center top;
+.card:hover{transform:translateY(-8px)}
+/* 外发光 */
+.card::after{
+  content:"";position:absolute;inset:0;border-radius:18px;pointer-events:none;
+  box-shadow:0 0 0 1px var(--theme) inset;opacity:.25;transition:opacity .4s;
 }
-.card__img::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 40%,rgba(0,0,0,.85))}
+.card:hover::after{opacity:.7}
+
+.card__frame{padding:12px 12px 0}
+.card__media{
+  position:relative;border-radius:12px;overflow:hidden;aspect-ratio:3/4;
+  background:radial-gradient(ellipse at 50% 25%,rgba(255,255,255,.05),transparent 60%),#0c0c0e;
+  border:1px solid rgba(255,255,255,.06);
+}
+.card__img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.card[data-mode="contain"] .card__img{object-fit:contain;background:#080808}
+.card[data-mode="cut"] .card__media{
+  background:radial-gradient(ellipse at 50% 30%,color-mix(in srgb,var(--theme) 22%,transparent),transparent 65%),#0a0a0c;
+}
+.card[data-mode="cut"] .card__img{object-fit:contain;padding:10px 10px 0;filter:drop-shadow(0 10px 18px rgba(0,0,0,.6))}
+/* 顶部柔光 + 底部压暗，让画面更有层次 */
+.card__media::before{content:"";position:absolute;inset:0;z-index:1;
+  background:linear-gradient(180deg,rgba(0,0,0,.18),transparent 28%,transparent 72%,rgba(0,0,0,.42))}
 .card__fallback{
   position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-  font-family:var(--serif);font-size:3rem;color:rgba(255,255,255,.25);
+  font-family:var(--serif);font-size:3.4rem;color:rgba(255,255,255,.18);z-index:0;
 }
-.card__body{padding:16px 18px 20px;flex:1;display:flex;flex-direction:column;gap:6px}
-.card__name{font-family:var(--serif);font-size:1.25rem;letter-spacing:.05em}
-.card__from{font-size:.78rem;color:var(--ink-dim);letter-spacing:.1em}
-.card__quote{font-size:.85rem;line-height:1.6;color:#cfc8d6;margin-top:6px;font-style:italic}
+/* 四角描金装饰 */
+.card__corner{position:absolute;width:16px;height:16px;z-index:2;opacity:.55;transition:opacity .4s}
+.card:hover .card__corner{opacity:1}
+.card__corner.tl{top:7px;left:7px;border-top:1.5px solid var(--theme);border-left:1.5px solid var(--theme)}
+.card__corner.tr{top:7px;right:7px;border-top:1.5px solid var(--theme);border-right:1.5px solid var(--theme)}
+.card__corner.bl{bottom:7px;left:7px;border-bottom:1.5px solid var(--theme);border-left:1.5px solid var(--theme)}
+.card__corner.br{bottom:7px;right:7px;border-bottom:1.5px solid var(--theme);border-right:1.5px solid var(--theme)}
 
-/* 各角色配色（边框光 + 标题色） */
-.card--l{box-shadow:0 0 0 1px rgba(255,255,255,.12),0 10px 30px rgba(255,255,255,.04)}
-.card--l:hover{box-shadow:0 0 0 1px rgba(255,255,255,.3),0 18px 40px rgba(255,255,255,.08)}
+.card__body{padding:16px 18px 20px;display:flex;flex-direction:column;gap:5px}
+.card__name{font-family:var(--serif);font-size:1.3rem;letter-spacing:.05em}
+.card__from{font-size:.74rem;color:var(--ink-dim);letter-spacing:.12em}
+.card__quote{font-size:.84rem;line-height:1.7;color:#c8c2d0;margin-top:8px;
+  padding-left:12px;border-left:2px solid var(--theme);font-style:italic;opacity:.9}
+
+/* 各角色配色（统一用 --theme 驱动边框/描角/标题） */
+.card--l{--theme:rgba(255,255,255,.6)}
+.card--l:hover{box-shadow:0 18px 44px rgba(255,255,255,.08)}
 .card--l .card__name{color:#fff;text-shadow:0 0 14px rgba(255,255,255,.4)}
 
-.card--touya{box-shadow:0 0 0 1px rgba(60,180,170,.18),0 10px 30px rgba(40,140,150,.08)}
-.card--touya:hover{box-shadow:0 0 0 1px rgba(70,200,190,.45),0 18px 40px rgba(40,160,170,.18)}
+.card--touya{--theme:rgba(90,210,200,.7)}
+.card--touya:hover{box-shadow:0 18px 44px rgba(40,160,170,.18)}
 .card--touya .card__name{color:#7fe3d8;text-shadow:0 0 14px rgba(60,200,190,.4)}
 
-.card--shizuya{box-shadow:0 0 0 1px rgba(180,200,170,.18),0 10px 30px rgba(150,180,140,.06)}
-.card--shizuya:hover{box-shadow:0 0 0 1px rgba(200,220,190,.4),0 18px 40px rgba(170,200,160,.14)}
-.card--shizuya .card__name{color:#c9ddb6;text-shadow:0 0 14px rgba(180,210,150,.35)}
+.card--shizuya{--theme:rgba(150,200,170,.7)}
+.card--shizuya:hover{box-shadow:0 18px 44px rgba(120,180,150,.16)}
+.card--shizuya .card__name{color:#bfe0c6;text-shadow:0 0 14px rgba(150,210,170,.4)}
 
-.card--watanuki{box-shadow:0 0 0 1px rgba(140,90,200,.22),0 10px 30px rgba(110,60,180,.1)}
-.card--watanuki:hover{box-shadow:0 0 0 1px rgba(160,110,220,.5),0 18px 40px rgba(120,70,190,.22)}
+.card--watanuki{--theme:rgba(160,110,220,.75)}
+.card--watanuki:hover{box-shadow:0 18px 44px rgba(120,70,190,.24)}
 .card--watanuki .card__name{color:#c4a6f0;text-shadow:0 0 16px rgba(150,90,220,.5)}
 
-.card--yuuko{box-shadow:0 0 0 1px rgba(201,162,75,.25),0 10px 30px rgba(180,140,60,.1)}
-.card--yuuko:hover{box-shadow:0 0 0 1px rgba(220,180,90,.55),0 18px 44px rgba(200,160,70,.25)}
+.card--yuuko{--theme:rgba(220,180,90,.8)}
+.card--yuuko:hover{box-shadow:0 18px 46px rgba(200,160,70,.26)}
 .card--yuuko .card__name{color:#e6c878;text-shadow:0 0 16px rgba(210,170,80,.55)}
 
 /* ---------------- 秘密日记 ---------------- */
