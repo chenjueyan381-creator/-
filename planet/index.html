@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+<meta name="theme-color" content="#aee3ff" />
+<title>小王子的星球</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&family=Noto+Serif+SC:wght@500;700&display=swap" rel="stylesheet" />
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  :root{
+    --sky1:#aee3ff;--sky2:#cdeffd;--warm1:#ffe7c2;--warm2:#ffc69a;
+    --ink:#5b4636;
+    --font:"Baloo 2","Noto Serif SC",system-ui,sans-serif;
+  }
+  html,body{height:100%}
+  body{
+    font-family:var(--font);color:var(--ink);overflow:hidden;
+    background:linear-gradient(180deg,var(--sky1) 0%,var(--sky2) 38%,var(--warm1) 74%,var(--warm2) 100%);
+    position:relative;height:100dvh;
+  }
+
+  /* ---------- 太阳 ---------- */
+  .sun{position:absolute;top:-90px;right:-90px;width:300px;height:300px;pointer-events:none}
+  .sun__core{position:absolute;inset:90px;border-radius:50%;
+    background:radial-gradient(circle,#fff7d6,#ffe066 60%,#ffd23f);
+    box-shadow:0 0 80px 30px rgba(255,221,90,.55)}
+  .sun__rays{position:absolute;inset:0;animation:spin 60s linear infinite}
+  .sun__rays span{position:absolute;left:50%;top:50%;width:6px;height:64px;margin:-32px 0 0 -3px;
+    background:linear-gradient(#ffe88a,rgba(255,232,138,0));border-radius:6px;transform-origin:50% 150px;opacity:.8}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* ---------- 云 ---------- */
+  .cloud{position:absolute;background:#fff;border-radius:50px;opacity:.9;
+    filter:drop-shadow(0 8px 14px rgba(120,160,200,.18))}
+  .cloud::before,.cloud::after{content:"";position:absolute;background:#fff;border-radius:50%}
+  .cloud{width:120px;height:38px}
+  .cloud::before{width:54px;height:54px;top:-22px;left:18px}
+  .cloud::after{width:38px;height:38px;top:-14px;left:62px}
+  .cloud.c1{top:14%;left:-160px;transform:scale(1.1);animation:drift 38s linear infinite}
+  .cloud.c2{top:30%;left:-220px;transform:scale(.8);opacity:.75;animation:drift 52s linear infinite 6s}
+  .cloud.c3{top:8%;left:-260px;transform:scale(1.4);opacity:.85;animation:drift 64s linear infinite 3s}
+  @keyframes drift{to{left:120%}}
+
+  /* ---------- 远处小鸟 ---------- */
+  .birds{position:absolute;top:18%;left:-40px;animation:drift 40s linear infinite 2s;opacity:.5}
+  .birds svg{display:block}
+
+  /* ---------- 顶部文案 / 返回 ---------- */
+  .back{position:absolute;top:16px;left:16px;z-index:6;text-decoration:none;
+    background:rgba(255,255,255,.6);color:#6b5440;padding:8px 14px;border-radius:999px;
+    font-weight:600;font-size:.9rem;box-shadow:0 4px 12px rgba(150,170,200,.25);backdrop-filter:blur(4px)}
+  .title{position:absolute;top:18px;left:0;right:0;text-align:center;z-index:5;pointer-events:none}
+  .title h1{font-size:clamp(1.3rem,5vw,2rem);color:#6b5440;letter-spacing:.06em;
+    text-shadow:0 2px 0 rgba(255,255,255,.6)}
+  .title p{font-size:.85rem;color:#8a715a;margin-top:4px;letter-spacing:.1em}
+
+  /* ---------- 可拖动星球 ---------- */
+  .planet{position:absolute;left:50%;top:54%;width:min(78vw,360px);
+    transform:translate(-50%,-50%);cursor:grab;touch-action:none;user-select:none;z-index:4}
+  .planet:active,.planet.is-drag{cursor:grabbing}
+  .planet__float{animation:bob 5.5s ease-in-out infinite;transform-origin:center}
+  .planet.is-drag .planet__float{animation:none}
+  @keyframes bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-14px) rotate(1.5deg)}}
+  .planet svg{display:block;width:100%;height:auto;filter:drop-shadow(0 18px 30px rgba(120,90,60,.28))}
+
+  .hint{position:absolute;left:0;right:0;bottom:7%;text-align:center;z-index:5;pointer-events:none;
+    color:#7c6450;font-weight:600;letter-spacing:.12em;font-size:.95rem;
+    animation:pulse 2.4s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:.45}50%{opacity:1}}
+
+  /* SVG 子动画 */
+  .spin-orbit{transform-origin:150px 175px;animation:spin 22s linear infinite}
+  .rose{transform-box:fill-box;transform-origin:bottom center;animation:sway 4s ease-in-out infinite}
+  .scarf{transform-box:fill-box;transform-origin:left center;animation:scarf 3s ease-in-out infinite}
+  @keyframes sway{0%,100%{transform:rotate(-7deg)}50%{transform:rotate(7deg)}}
+  @keyframes scarf{0%,100%{transform:rotate(-6deg) scaleX(1)}50%{transform:rotate(8deg) scaleX(1.08)}}
+  .smoke{animation:smoke 3.4s ease-in-out infinite}
+  @keyframes smoke{0%{opacity:0;transform:translateY(6px)}40%{opacity:.85}100%{opacity:0;transform:translateY(-10px)}}
+  .bf{transform-box:fill-box;transform-origin:center;animation:flutter 5s ease-in-out infinite}
+  .bf.b2{animation-duration:6.5s;animation-delay:1s}
+  @keyframes flutter{0%{transform:translate(0,0) rotate(0)}25%{transform:translate(10px,-12px) rotate(8deg)}
+    50%{transform:translate(0,-20px) rotate(-6deg)}75%{transform:translate(-10px,-10px) rotate(6deg)}100%{transform:translate(0,0)}}
+
+  /* 点击迸出的小花瓣 */
+  .petal{position:absolute;z-index:7;pointer-events:none;font-size:1.1rem;
+    animation:up 1.1s ease-out forwards}
+  @keyframes up{0%{opacity:1;transform:translate(0,0) scale(.6) rotate(0)}
+    100%{opacity:0;transform:translate(var(--dx),-70px) scale(1.1) rotate(var(--rot))}}
+
+  @media(prefers-reduced-motion:reduce){
+    .sun__rays,.cloud,.birds,.planet__float,.spin-orbit,.rose,.scarf,.smoke,.bf{animation:none}
+  }
+</style>
+</head>
+<body>
+
+  <!-- 太阳 -->
+  <div class="sun" aria-hidden="true">
+    <div class="sun__rays" id="rays"></div>
+    <div class="sun__core"></div>
+  </div>
+
+  <!-- 云 -->
+  <div class="cloud c1"></div>
+  <div class="cloud c2"></div>
+  <div class="cloud c3"></div>
+
+  <!-- 远处鸟群 -->
+  <div class="birds" aria-hidden="true">
+    <svg width="120" height="40" viewBox="0 0 120 40" fill="none" stroke="#8aa6c0" stroke-width="2" stroke-linecap="round">
+      <path d="M6 14 q6 -7 12 0 q6 -7 12 0"/>
+      <path d="M44 24 q5 -6 10 0 q5 -6 10 0"/>
+      <path d="M84 12 q6 -7 12 0 q6 -7 12 0"/>
+    </svg>
+  </div>
+
+  <a class="back" href="../">← 回小世界</a>
+  <div class="title">
+    <h1>小王子的星球</h1>
+    <p>B-612 · 拖着它去散步吧</p>
+  </div>
+
+  <!-- 可拖动星球 -->
+  <div class="planet" id="planet" role="button" aria-label="拖动小星球" tabindex="0">
+    <div class="planet__float">
+      <svg viewBox="0 0 300 300" aria-hidden="true">
+        <defs>
+          <radialGradient id="halo" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#fff7d6" stop-opacity=".9"/>
+            <stop offset="55%" stop-color="#ffe39a" stop-opacity=".35"/>
+            <stop offset="100%" stop-color="#ffd86b" stop-opacity="0"/>
+          </radialGradient>
+          <radialGradient id="globe" cx="36%" cy="30%" r="78%">
+            <stop offset="0%" stop-color="#c7f3ad"/>
+            <stop offset="42%" stop-color="#7fd08c"/>
+            <stop offset="78%" stop-color="#46a877"/>
+            <stop offset="100%" stop-color="#2f8569"/>
+          </radialGradient>
+          <clipPath id="pclip"><circle cx="150" cy="175" r="90"/></clipPath>
+        </defs>
+
+        <!-- 暖光晕 -->
+        <circle cx="150" cy="170" r="148" fill="url(#halo)"/>
+
+        <!-- 轨道 + 小月亮 -->
+        <g class="spin-orbit">
+          <ellipse cx="150" cy="175" rx="140" ry="52" fill="none" stroke="#ffd86b" stroke-opacity=".55" stroke-width="2" stroke-dasharray="3 9"/>
+          <circle cx="290" cy="175" r="9" fill="#ffd86b"/>
+          <circle cx="290" cy="175" r="9" fill="none" stroke="#fff" stroke-opacity=".5"/>
+        </g>
+
+        <!-- 星球本体 -->
+        <circle cx="150" cy="175" r="90" fill="url(#globe)"/>
+
+        <!-- 表面（裁切在星球内） -->
+        <g clip-path="url(#pclip)">
+          <!-- 草地起伏 -->
+          <path d="M50 210 Q90 184 130 204 T210 200 T270 214 L270 280 L40 280 Z" fill="#3f9d77" opacity=".55"/>
+          <ellipse cx="110" cy="226" rx="20" ry="7" fill="#2f8a64" opacity=".5"/>
+          <ellipse cx="186" cy="232" rx="24" ry="8" fill="#2f8a64" opacity=".45"/>
+          <!-- 高光 -->
+          <ellipse cx="116" cy="132" rx="34" ry="20" fill="#fff" opacity=".18"/>
+          <!-- 小火山 + 烟 -->
+          <path d="M86 214 L104 176 L122 214 Z" fill="#e98a5b"/>
+          <path d="M104 176 L96 196 L112 196 Z" fill="#ffcf6b" opacity=".8"/>
+          <path d="M97 174 q-6 -10 2 -18 q8 -7 2 -16" class="smoke" fill="none" stroke="#fff" stroke-opacity=".85" stroke-width="3.4" stroke-linecap="round"/>
+          <!-- 小baobab幼苗 -->
+          <g stroke="#5b8f4f" stroke-width="3" stroke-linecap="round">
+            <path d="M196 224 q0 -10 0 -16 M196 214 q-5 -3 -8 -7 M196 216 q5 -3 8 -7"/>
+          </g>
+        </g>
+
+        <!-- 玫瑰（小王子的花） -->
+        <g transform="translate(196 118)">
+          <line x1="0" y1="0" x2="0" y2="-30" stroke="#3f9d77" stroke-width="3" stroke-linecap="round"/>
+          <path d="M0 -12 q-12 -3 -14 -12 q12 1 14 12" fill="#5ab47f"/>
+          <path d="M0 -18 q12 -3 14 -12 q-12 1 -14 12" fill="#5ab47f"/>
+          <g class="rose" style="transform:translateY(-34px)">
+            <circle cx="0" cy="0" r="10" fill="#ff7a9c"/>
+            <circle cx="-4" cy="-1" r="5" fill="#ff5c84"/>
+            <circle cx="4" cy="1" r="4.6" fill="#ff97b3"/>
+            <circle cx="0" cy="0" r="2.6" fill="#ffd1dd"/>
+          </g>
+        </g>
+
+        <!-- 小狐狸 -->
+        <g transform="translate(212 150) rotate(18)">
+          <path d="M-12 10 q-14 -2 -18 -12 q9 2 16 7Z" fill="#ec7a3c"/>
+          <ellipse cx="0" cy="8" rx="15" ry="9" fill="#ec7a3c"/>
+          <ellipse cx="0" cy="11" rx="11" ry="5" fill="#ffe3cf"/>
+          <circle cx="11" cy="-2" r="7" fill="#ec7a3c"/>
+          <path d="M6 -8 l-3 -9 l8 5Z" fill="#ec7a3c"/>
+          <path d="M15 -9 l4 -8 l-7 5Z" fill="#ec7a3c"/>
+          <ellipse cx="13" cy="2" rx="4" ry="3" fill="#ffe3cf"/>
+          <circle cx="10" cy="-2" r="1.4" fill="#3a2a1a"/>
+          <circle cx="16" cy="-1" r="1.2" fill="#3a2a1a"/>
+          <circle cx="15" cy="3" r="1.1" fill="#3a2a1a"/>
+        </g>
+
+        <!-- 小王子（站在星球顶） -->
+        <g transform="translate(150 90)">
+          <path class="scarf" d="M-3 -28 q22 -5 36 5 q-17 3 -34 -1" fill="#ffd23f"/>
+          <rect x="-8" y="-13" width="6" height="15" rx="3" fill="#2f6f8f"/>
+          <rect x="2" y="-13" width="6" height="15" rx="3" fill="#2f6f8f"/>
+          <path d="M-13 -32 Q0 -39 13 -32 L9 -8 Q0 -4 -9 -8 Z" fill="#3a86a8"/>
+          <path d="M-12 -30 q-9 7 -8 18" stroke="#3a86a8" stroke-width="6" fill="none" stroke-linecap="round"/>
+          <path d="M12 -30 q9 7 8 18" stroke="#3a86a8" stroke-width="6" fill="none" stroke-linecap="round"/>
+          <circle cx="0" cy="-44" r="10" fill="#ffe0bd"/>
+          <path d="M-10 -47 Q-11 -59 0 -60 Q11 -59 10 -47 Q4 -54 0 -53 Q-4 -54 -10 -47Z" fill="#f7c948"/>
+          <path d="M-10 -47 q-4 -2 -3 3 M10 -47 q4 -2 3 3 M0 -60 q0 -5 0 -7" stroke="#f7c948" stroke-width="3.4" stroke-linecap="round" fill="none"/>
+        </g>
+
+        <!-- 蝴蝶 -->
+        <g class="bf" transform="translate(70 110)">
+          <path d="M0 0 q-9 -8 -2 -13 q5 4 2 13" fill="#ff9ec4"/>
+          <path d="M0 0 q9 -8 2 -13 q-5 4 -2 13" fill="#ffb3d1"/>
+          <line x1="0" y1="-1" x2="0" y2="-12" stroke="#7a5b46" stroke-width="1.5"/>
+        </g>
+        <g class="bf b2" transform="translate(238 92)">
+          <path d="M0 0 q-8 -7 -2 -11 q4 3 2 11" fill="#9ad0ff"/>
+          <path d="M0 0 q8 -7 2 -11 q-4 3 -2 11" fill="#bfe2ff"/>
+          <line x1="0" y1="-1" x2="0" y2="-10" stroke="#7a5b46" stroke-width="1.4"/>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <div class="hint" id="hint">✦ 按住，拖着小星球到处走 ✦</div>
+
+<script>
+(function(){
+  "use strict";
+  // 太阳光线
+  const rays=document.getElementById("rays");
+  for(let i=0;i<12;i++){const s=document.createElement("span");s.style.transform="rotate("+(i*30)+"deg)";rays.appendChild(s);}
+
+  const pl=document.getElementById("planet");
+  const hint=document.getElementById("hint");
+  const KEY="prince_planet_pos";
+
+  function size(){return {w:pl.offsetWidth,h:pl.offsetHeight};}
+  function clamp(x,y){
+    const {w,h}=size();
+    return [Math.max(6,Math.min(x,innerWidth-w-6)),
+            Math.max(6,Math.min(y,innerHeight-h-6))];
+  }
+  function place(x,y){
+    const [cx,cy]=clamp(x,y);
+    pl.style.left=cx+"px"; pl.style.top=cy+"px"; pl.style.transform="none";
+  }
+
+  // 恢复位置
+  try{
+    const p=JSON.parse(localStorage.getItem(KEY));
+    if(p&&typeof p.x==="number") place(p.x,p.y);
+  }catch(e){}
+
+  let dragging=false,moved=false,sx=0,sy=0,ox=0,oy=0;
+  pl.addEventListener("pointerdown",e=>{
+    dragging=true;moved=false;
+    try{pl.setPointerCapture(e.pointerId);}catch(_){}
+    const r=pl.getBoundingClientRect();
+    ox=e.clientX-r.left;oy=e.clientY-r.top;sx=e.clientX;sy=e.clientY;
+    pl.classList.add("is-drag");
+    if(hint) hint.style.display="none";
+  });
+  pl.addEventListener("pointermove",e=>{
+    if(!dragging)return;
+    if(Math.abs(e.clientX-sx)>3||Math.abs(e.clientY-sy)>3) moved=true;
+    place(e.clientX-ox,e.clientY-oy);
+  });
+  function end(){
+    if(!dragging)return;
+    dragging=false;pl.classList.remove("is-drag");
+    const r=pl.getBoundingClientRect();
+    try{localStorage.setItem(KEY,JSON.stringify({x:r.left,y:r.top}));}catch(e){}
+    if(!moved) petals();
+  }
+  pl.addEventListener("pointerup",end);
+  pl.addEventListener("pointercancel",end);
+  addEventListener("resize",()=>{const r=pl.getBoundingClientRect();place(r.left,r.top);});
+
+  function petals(){
+    const r=pl.getBoundingClientRect();
+    const cx=r.left+r.width/2, cy=r.top+r.height*0.42;
+    const icons=["🌹","🌼","✨","💛","🌸","⭐"];
+    for(let i=0;i<7;i++){
+      const s=document.createElement("span");
+      s.className="petal";s.textContent=icons[Math.floor(Math.random()*icons.length)];
+      s.style.left=cx+"px";s.style.top=cy+"px";
+      s.style.setProperty("--dx",(Math.random()*120-60)+"px");
+      s.style.setProperty("--rot",(Math.random()*180-90)+"deg");
+      document.body.appendChild(s);
+      setTimeout(()=>s.remove(),1100);
+    }
+  }
+  // 键盘可用：回车/空格也能迸花
+  pl.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();petals();}});
+})();
+</script>
+</body>
+</html>
