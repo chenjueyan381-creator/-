@@ -15,7 +15,6 @@
   body{font-family:var(--font);color:var(--ink);overflow:hidden;height:100dvh;position:relative;
     background:linear-gradient(180deg,#cfe9ff 0%,#ffe9c2 44%,#ffc89a 72%,#f6a884 100%)}
 
-  /* 太阳 */
   .sun{position:absolute;top:-120px;right:-120px;width:360px;height:360px;pointer-events:none;z-index:1}
   .sun__core{position:absolute;inset:120px;border-radius:50%;
     background:radial-gradient(circle,#fff8de,#ffe27a 58%,#ffcf5a);box-shadow:0 0 120px 48px rgba(255,213,110,.55)}
@@ -24,29 +23,22 @@
     background:linear-gradient(#ffe79a,rgba(255,231,154,0));border-radius:7px;transform-origin:50% 180px;opacity:.8}
   @keyframes spin{to{transform:rotate(360deg)}}
 
-  /* 月牙 */
-  .moon{position:absolute;top:13%;left:9%;width:46px;height:46px;border-radius:50%;
-    background:#fff4cf;box-shadow:inset -14px 4px 0 0 rgba(255,210,140,.0);z-index:1;
+  .moon{position:absolute;top:13%;left:9%;width:46px;height:46px;border-radius:50%;background:#fff4cf;z-index:1;
     filter:drop-shadow(0 0 16px rgba(255,240,190,.7))}
-  .moon::after{content:"";position:absolute;top:-4px;left:10px;width:42px;height:42px;border-radius:50%;
-    background:linear-gradient(180deg,#cfe9ff,#ffe9c2)}
+  .moon::after{content:"";position:absolute;top:-4px;left:11px;width:42px;height:42px;border-radius:50%;background:linear-gradient(180deg,#cfe9ff,#ffe9c2)}
 
-  /* 云 */
   .cloud{position:absolute;background:#fff;border-radius:50px;opacity:.92;z-index:1;
     filter:drop-shadow(0 8px 14px rgba(150,170,200,.18));width:120px;height:38px}
   .cloud::before,.cloud::after{content:"";position:absolute;background:#fff;border-radius:50%}
-  .cloud::before{width:54px;height:54px;top:-22px;left:18px}
-  .cloud::after{width:38px;height:38px;top:-14px;left:62px}
+  .cloud::before{width:54px;height:54px;top:-22px;left:18px}.cloud::after{width:38px;height:38px;top:-14px;left:62px}
   .cloud.c1{top:15%;left:-160px;transform:scale(1.1);animation:drift 42s linear infinite}
   .cloud.c2{top:30%;left:-220px;transform:scale(.8);opacity:.78;animation:drift 58s linear infinite 6s}
   .cloud.c3{top:9%;left:-260px;transform:scale(1.45);opacity:.85;animation:drift 72s linear infinite 3s}
   @keyframes drift{to{left:120%}}
   .birds{position:absolute;top:22%;left:-40px;z-index:1;opacity:.45;animation:drift 46s linear infinite 2s}
 
-  /* 远山 */
   .hills{position:absolute;left:0;right:0;bottom:0;width:100%;z-index:1;pointer-events:none}
 
-  /* 萤火 / 星点 */
   .firefly{position:absolute;width:6px;height:6px;border-radius:50%;background:#fff3b0;z-index:2;
     box-shadow:0 0 10px 3px rgba(255,228,130,.8);animation:float 7s ease-in-out infinite}
   @keyframes float{0%,100%{transform:translate(0,0);opacity:.3}50%{transform:translate(14px,-22px);opacity:1}}
@@ -54,57 +46,43 @@
     box-shadow:0 0 6px 2px rgba(255,255,255,.8);animation:tw 2.6s ease-in-out infinite}
   @keyframes tw{0%,100%{opacity:.25}50%{opacity:1}}
   .shoot{position:absolute;top:16%;left:60%;width:120px;height:2px;z-index:2;border-radius:2px;
-    background:linear-gradient(90deg,rgba(255,255,255,0),#fff);transform:rotate(20deg);opacity:0;
-    animation:shoot 9s ease-in infinite 4s}
-  @keyframes shoot{0%{opacity:0;transform:translate(40px,-20px) rotate(20deg) scaleX(.2)}
-    6%{opacity:1}14%{opacity:0;transform:translate(-220px,80px) rotate(20deg) scaleX(1)}100%{opacity:0}}
+    background:linear-gradient(90deg,rgba(255,255,255,0),#fff);transform:rotate(20deg);opacity:0;animation:shoot 9s ease-in infinite 4s}
+  @keyframes shoot{0%{opacity:0;transform:translate(40px,-20px) rotate(20deg) scaleX(.2)}6%{opacity:1}14%{opacity:0;transform:translate(-220px,80px) rotate(20deg) scaleX(1)}100%{opacity:0}}
 
-  /* 顶部 */
-  .back{position:absolute;top:16px;left:16px;z-index:7;text-decoration:none;
-    background:rgba(255,255,255,.65);color:#6b5440;padding:9px 16px;border-radius:999px;
-    font-weight:600;font-size:.95rem;box-shadow:0 4px 12px rgba(150,170,200,.25);backdrop-filter:blur(4px)}
+  .back{position:absolute;top:16px;left:16px;z-index:7;text-decoration:none;background:rgba(255,255,255,.65);
+    color:#6b5440;padding:9px 16px;border-radius:999px;font-weight:600;font-size:.95rem;box-shadow:0 4px 12px rgba(150,170,200,.25);backdrop-filter:blur(4px)}
   .title{position:absolute;top:20px;left:0;right:0;text-align:center;z-index:6;pointer-events:none}
   .title h1{font-size:clamp(1.5rem,6.4vw,2.6rem);color:#6b5440;letter-spacing:.06em;text-shadow:0 2px 0 rgba(255,255,255,.6)}
   .title p{font-size:clamp(.8rem,3.4vw,1rem);color:#8a715a;margin-top:5px;letter-spacing:.12em}
 
-  /* 星球通用（可拖动） */
   .planet{position:absolute;cursor:grab;touch-action:none;user-select:none;z-index:4}
   .planet:active,.planet.is-drag{cursor:grabbing}
   .planet__float{animation:bob 5.5s ease-in-out infinite}
   .planet.is-drag .planet__float{animation:none}
   @keyframes bob{0%,100%{transform:translateY(0) rotate(-1.4deg)}50%{transform:translateY(-13px) rotate(1.4deg)}}
-  .planet svg{display:block;width:100%;height:auto;overflow:visible;filter:drop-shadow(0 18px 30px rgba(150,90,50,.3))}
+  .planet svg{display:block;width:100%;height:auto;overflow:visible;filter:drop-shadow(0 16px 26px rgba(150,90,50,.28))}
 
-  /* 主星球 */
   #main{left:50%;top:48%;transform:translate(-50%,-50%);width:min(88vw,460px)}
-  /* 小星球 */
   .mini{transform:none}
-  .mini svg{filter:drop-shadow(0 12px 18px rgba(150,90,50,.26))}
 
   .onplanet{transform-box:fill-box;transform-origin:bottom center;animation:catbob 3s ease-in-out infinite}
   @keyframes catbob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
-  .me-label{font-family:var(--font);font-weight:700;fill:#7a5f9a}
+  .me-label{font-family:var(--font);font-weight:700;fill:#8a5fae}
 
-  /* 拍立得 */
   .keepsake{position:absolute;left:16px;bottom:80px;width:128px;z-index:5;background:#fff;
     padding:8px 8px 28px;border-radius:5px;transform:rotate(-5deg);box-shadow:0 12px 26px rgba(120,90,60,.32)}
   .keepsake img{width:100%;display:block;border-radius:3px}
   .keepsake figcaption{position:absolute;bottom:7px;left:0;right:0;text-align:center;font-size:.82rem;color:#9a7f63;font-family:var(--serif)}
-
   .quote{position:absolute;left:0;right:0;bottom:28px;text-align:center;z-index:5;pointer-events:none;
-    font-family:var(--serif);color:#7a5f44;font-size:clamp(.85rem,3.4vw,1.05rem);letter-spacing:.04em;
-    text-shadow:0 1px 0 rgba(255,255,255,.5);padding:0 16px}
+    font-family:var(--serif);color:#7a5f44;font-size:clamp(.85rem,3.4vw,1.05rem);letter-spacing:.04em;text-shadow:0 1px 0 rgba(255,255,255,.5);padding:0 16px}
   .hint{position:absolute;right:16px;bottom:14px;z-index:7;pointer-events:none;background:rgba(255,255,255,.55);
-    color:#7c6450;font-weight:600;font-size:.82rem;padding:6px 12px;border-radius:999px;letter-spacing:.08em;
-    animation:pulse 2.4s ease-in-out infinite}
+    color:#7c6450;font-weight:600;font-size:.8rem;padding:6px 12px;border-radius:999px;letter-spacing:.06em;animation:pulse 2.4s ease-in-out infinite}
   @keyframes pulse{0%,100%{opacity:.5}50%{opacity:1}}
 
-  .vignette{position:fixed;inset:0;pointer-events:none;z-index:8;
-    background:radial-gradient(ellipse at 50% 42%,transparent 58%,rgba(140,80,45,.2) 100%)}
+  .vignette{position:fixed;inset:0;pointer-events:none;z-index:8;background:radial-gradient(ellipse at 50% 42%,transparent 58%,rgba(140,80,45,.2) 100%)}
   .grain{position:fixed;inset:0;pointer-events:none;z-index:8;opacity:.05;mix-blend-mode:overlay;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 
-  /* 主星球内部子动画 */
   .spin-orbit{transform-origin:150px 175px;animation:spin 24s linear infinite}
   .rose{transform-box:fill-box;transform-origin:bottom center;animation:sway 4s ease-in-out infinite}
   @keyframes sway{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}
@@ -114,12 +92,10 @@
   @keyframes hop{0%,100%{transform:translateY(0) rotate(-2deg)}30%{transform:translateY(-9px) rotate(2deg)}60%{transform:translateY(0) rotate(-1deg)}}
   .bf{transform-box:fill-box;transform-origin:center;animation:flutter 5.5s ease-in-out infinite}
   .bf.b2{animation-duration:7s;animation-delay:1s}
-  @keyframes flutter{0%{transform:translate(0,0) rotate(0)}25%{transform:translate(9px,-12px) rotate(8deg)}
-    50%{transform:translate(0,-20px) rotate(-6deg)}75%{transform:translate(-9px,-10px) rotate(6deg)}100%{transform:translate(0,0)}}
+  @keyframes flutter{0%{transform:translate(0,0) rotate(0)}25%{transform:translate(9px,-12px) rotate(8deg)}50%{transform:translate(0,-20px) rotate(-6deg)}75%{transform:translate(-9px,-10px) rotate(6deg)}100%{transform:translate(0,0)}}
 
   .petal{position:absolute;z-index:9;pointer-events:none;font-size:1.15rem;animation:up 1.2s ease-out forwards}
-  @keyframes up{0%{opacity:1;transform:translate(0,0) scale(.6) rotate(0)}
-    100%{opacity:0;transform:translate(var(--dx),-78px) scale(1.15) rotate(var(--rot))}}
+  @keyframes up{0%{opacity:1;transform:translate(0,0) scale(.6) rotate(0)}100%{opacity:0;transform:translate(var(--dx),-78px) scale(1.15) rotate(var(--rot))}}
 
   @media(max-width:480px){.keepsake{width:104px;bottom:96px;left:10px}.quote{bottom:54px}}
   @media(prefers-reduced-motion:reduce){
@@ -152,28 +128,26 @@
     <div class="planet__float">
       <svg viewBox="0 0 300 300" aria-hidden="true">
         <defs>
-          <radialGradient id="halo" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stop-color="#fff7d6" stop-opacity=".95"/><stop offset="55%" stop-color="#ffe39a" stop-opacity=".38"/><stop offset="100%" stop-color="#ffd86b" stop-opacity="0"/>
-          </radialGradient>
-          <radialGradient id="globe" cx="36%" cy="28%" r="80%">
-            <stop offset="0%" stop-color="#d7f4b8"/><stop offset="40%" stop-color="#8fd494"/><stop offset="76%" stop-color="#4ea878"/><stop offset="100%" stop-color="#2f7d5f"/>
-          </radialGradient>
-          <radialGradient id="shade" cx="50%" cy="50%" r="50%"><stop offset="62%" stop-color="#000" stop-opacity="0"/><stop offset="100%" stop-color="#1b4d33" stop-opacity=".4"/></radialGradient>
+          <radialGradient id="halo" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#fff7d6" stop-opacity=".95"/><stop offset="55%" stop-color="#ffe39a" stop-opacity=".38"/><stop offset="100%" stop-color="#ffd86b" stop-opacity="0"/></radialGradient>
+          <radialGradient id="atmMain" cx="50%" cy="50%" r="50%"><stop offset="60%" stop-color="#8fe6b0" stop-opacity="0"/><stop offset="78%" stop-color="#9bf0bd" stop-opacity=".4"/><stop offset="100%" stop-color="#9bf0bd" stop-opacity="0"/></radialGradient>
+          <radialGradient id="globe" cx="34%" cy="26%" r="82%"><stop offset="0%" stop-color="#e0f7c2"/><stop offset="40%" stop-color="#8fd494"/><stop offset="76%" stop-color="#4ea878"/><stop offset="100%" stop-color="#2f7d5f"/></radialGradient>
+          <radialGradient id="shade" cx="68%" cy="74%" r="72%"><stop offset="52%" stop-color="#123" stop-opacity="0"/><stop offset="100%" stop-color="#16321f" stop-opacity=".42"/></radialGradient>
           <linearGradient id="roseG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ffb3c7"/><stop offset="55%" stop-color="#ff6f97"/><stop offset="100%" stop-color="#e23e6b"/></linearGradient>
           <clipPath id="pclip"><circle cx="150" cy="175" r="90"/></clipPath>
         </defs>
         <circle cx="150" cy="168" r="150" fill="url(#halo)"/>
+        <circle cx="150" cy="175" r="112" fill="url(#atmMain)"/>
         <g class="spin-orbit"><ellipse cx="150" cy="175" rx="142" ry="52" fill="none" stroke="#ffd86b" stroke-opacity=".55" stroke-width="2" stroke-dasharray="3 9"/><circle cx="292" cy="175" r="9" fill="#ffd86b"/></g>
         <circle cx="150" cy="175" r="90" fill="url(#globe)"/>
         <g clip-path="url(#pclip)">
           <path d="M50 212 Q92 186 132 206 T214 202 T272 216 L272 280 L40 280 Z" fill="#3f9d77" opacity=".5"/>
           <ellipse cx="118" cy="230" rx="22" ry="7" fill="#2f8a64" opacity=".5"/><ellipse cx="196" cy="236" rx="26" ry="8" fill="#2f8a64" opacity=".45"/>
-          <ellipse cx="116" cy="128" rx="36" ry="22" fill="#fff" opacity=".16"/>
           <path d="M214 206 L228 176 L242 206 Z" fill="#e98a5b"/><path d="M228 176 L222 192 L234 192 Z" fill="#ffcf6b" opacity=".85"/>
           <path d="M223 174 q-5 -9 2 -16 q7 -6 2 -14" class="smoke" fill="none" stroke="#fff" stroke-opacity=".85" stroke-width="3" stroke-linecap="round"/>
           <circle cx="150" cy="175" r="90" fill="url(#shade)"/>
         </g>
-        <!-- 玻璃罩玫瑰 -->
+        <ellipse cx="118" cy="126" rx="34" ry="20" fill="#fff" opacity=".22"/>
+        <ellipse cx="100" cy="138" rx="6" ry="10" fill="#fff" opacity=".4"/>
         <g transform="translate(96 100)">
           <ellipse cx="0" cy="3" rx="18" ry="5" fill="#8a5a32"/><rect x="-17" y="-2" width="34" height="6" rx="3" fill="#6e4423"/>
           <line x1="0" y1="-2" x2="0" y2="-18" stroke="#3f9d77" stroke-width="2.6" stroke-linecap="round"/>
@@ -185,15 +159,14 @@
           <path d="M-18 0 C-18 -42 18 -42 18 0" fill="rgba(220,240,255,.14)" stroke="rgba(255,255,255,.6)" stroke-width="1.6"/>
           <circle cx="0" cy="-43" r="3" fill="rgba(255,255,255,.75)"/><path d="M-10 -8 C-10 -30 -3 -34 0 -35" stroke="#fff" stroke-opacity=".45" stroke-width="2" fill="none"/>
         </g>
-        <!-- 小狐狸 -->
         <g transform="translate(208 150) rotate(16)">
           <path d="M-12 10 q-14 -2 -18 -12 q9 2 16 7Z" fill="#ec7a3c"/><ellipse cx="0" cy="8" rx="15" ry="9" fill="#ec7a3c"/><ellipse cx="0" cy="11" rx="11" ry="5" fill="#ffe3cf"/>
           <circle cx="11" cy="-2" r="7" fill="#ec7a3c"/><path d="M6 -8 l-3 -9 l8 5Z" fill="#ec7a3c"/><path d="M15 -9 l4 -8 l-7 5Z" fill="#ec7a3c"/>
           <ellipse cx="13" cy="2" rx="4" ry="3" fill="#ffe3cf"/><circle cx="10" cy="-2" r="1.4" fill="#3a2a1a"/><circle cx="16" cy="-1" r="1.2" fill="#3a2a1a"/><circle cx="15" cy="3" r="1.1" fill="#3a2a1a"/>
         </g>
-        <ellipse cx="132" cy="98" rx="30" ry="7" fill="#1b4d33" opacity=".18"/>
+        <ellipse cx="132" cy="98" rx="30" ry="7" fill="#16321f" opacity=".18"/>
         <image href="prince.png" x="104" y="2" width="58" height="99" />
-        <ellipse cx="196" cy="99" rx="25" ry="6" fill="#1b4d33" opacity=".2"/>
+        <ellipse cx="196" cy="99" rx="25" ry="6" fill="#16321f" opacity=".2"/>
         <image class="claude-hop" href="claude.png" x="169" y="50" width="54" height="49" style="image-rendering:pixelated"/>
         <path d="M165 66 q3 -5 7 -2 q4 3 -7 9 q-11 -6 -7 -9 q4 -3 7 2Z" fill="#ff6f91" opacity=".9"/>
         <g class="bf" transform="translate(66 118)"><path d="M0 0 q-9 -8 -2 -13 q5 4 2 13" fill="#ff9ec4"/><path d="M0 0 q9 -8 2 -13 q-5 4 -2 13" fill="#ffb3d1"/><line x1="0" y1="-1" x2="0" y2="-12" stroke="#7a5b46" stroke-width="1.5"/></g>
@@ -202,132 +175,124 @@
     </div>
   </div>
 
-  <!-- ===== 小星球们（由 JS 生成内容） ===== -->
-  <div class="planet mini" id="p_sat" data-key="sat" style="left:5%;top:12%;width:150px" role="button" aria-label="土星" tabindex="0">
-    <div class="planet__float"><svg viewBox="0 0 130 110">
-      <defs><radialGradient id="g_sat" cx="38%" cy="30%" r="80%"><stop offset="0%" stop-color="#ffe9b0"/><stop offset="65%" stop-color="#f0bd63"/><stop offset="100%" stop-color="#c98f3c"/></radialGradient></defs>
-      <ellipse cx="65" cy="60" rx="58" ry="19" fill="none" stroke="#e8c06a" stroke-width="7" opacity=".55" transform="rotate(-16 65 60)"/>
-      <circle cx="65" cy="58" r="34" fill="url(#g_sat)"/>
-      <ellipse cx="56" cy="46" rx="11" ry="6" fill="#fff" opacity=".18"/>
-      <g class="onplanet" data-art="cat" data-pal="gray" data-u="2.7" data-cx="65" data-cy="28"></g>
-    </svg></div>
-  </div>
-
-  <div class="planet mini" id="p_cat1" data-key="cat1" style="left:5%;top:50%;width:120px" role="button" aria-label="橘猫星球" tabindex="0">
-    <div class="planet__float"><svg viewBox="0 0 100 110">
-      <defs><radialGradient id="g_cat1" cx="38%" cy="30%" r="80%"><stop offset="0%" stop-color="#d9f3b4"/><stop offset="70%" stop-color="#74c07e"/><stop offset="100%" stop-color="#3f9166"/></radialGradient></defs>
-      <circle cx="50" cy="58" r="40" fill="url(#g_cat1)"/><ellipse cx="38" cy="42" rx="13" ry="7" fill="#fff" opacity=".16"/>
-      <g class="onplanet" data-art="cat" data-pal="orange" data-u="3.1" data-cx="50" data-cy="24"></g>
-    </svg></div>
-  </div>
-
-  <div class="planet mini" id="p_cat2" data-key="cat2" style="left:74%;top:26%;width:118px" role="button" aria-label="黑猫星球" tabindex="0">
-    <div class="planet__float"><svg viewBox="0 0 100 110">
-      <defs><radialGradient id="g_cat2" cx="38%" cy="30%" r="80%"><stop offset="0%" stop-color="#bfe0ff"/><stop offset="70%" stop-color="#7aa8e0"/><stop offset="100%" stop-color="#4d6fb0"/></radialGradient></defs>
-      <circle cx="50" cy="58" r="40" fill="url(#g_cat2)"/><ellipse cx="38" cy="42" rx="13" ry="7" fill="#fff" opacity=".2"/>
-      <g class="onplanet" data-art="cat" data-pal="black" data-u="3.1" data-cx="50" data-cy="24"></g>
-    </svg></div>
-  </div>
-
-  <div class="planet mini" id="p_me" data-key="me" style="left:70%;top:62%;width:132px" role="button" aria-label="我的星球" tabindex="0">
-    <div class="planet__float"><svg viewBox="0 0 110 132">
-      <defs><radialGradient id="g_me" cx="38%" cy="30%" r="80%"><stop offset="0%" stop-color="#f3d8ff"/><stop offset="68%" stop-color="#c79be8"/><stop offset="100%" stop-color="#9a6fcf"/></radialGradient></defs>
-      <circle cx="55" cy="60" r="40" fill="url(#g_me)"/><ellipse cx="42" cy="44" rx="13" ry="7" fill="#fff" opacity=".18"/>
-      <g class="onplanet" data-art="me" data-pal="girl" data-u="3" data-cx="47" data-cy="26"></g>
-      <g class="onplanet" data-art="cat" data-pal="white" data-u="2.1" data-cx="85" data-cy="40"></g>
-      <text class="me-label" x="55" y="120" text-anchor="middle" font-size="14">我 ♡</text>
-    </svg></div>
-  </div>
-
   <figure class="keepsake"><img src="keepsake.jpg" alt="小王子和他的玫瑰" /><figcaption>我和我的玫瑰</figcaption></figure>
   <p class="quote">“重要的东西，用眼睛是看不见的。”</p>
-  <div class="hint" id="hint">✦ 每颗星球都能拖动 · 点一下会开花 ✦</div>
+  <div class="hint" id="hint">✦ 每颗星球都能拖 · 点一下会开花 ✦</div>
   <div class="grain"></div><div class="vignette"></div>
 
 <script>
 (function(){
   "use strict";
-  // 太阳光线
   const rays=document.getElementById("rays");
   for(let i=0;i<12;i++){const s=document.createElement("span");s.style.transform="rotate("+(i*30)+"deg)";rays.appendChild(s);}
-  // 萤火 + 星点
   for(let i=0;i<7;i++){const f=document.createElement("div");f.className="firefly";
     f.style.left=(8+Math.random()*84)+"vw";f.style.top=(40+Math.random()*52)+"vh";
     f.style.animationDelay=(Math.random()*6)+"s";f.style.animationDuration=(6+Math.random()*5)+"s";document.body.appendChild(f);}
   for(let i=0;i<10;i++){const s=document.createElement("div");s.className="star";
-    s.style.left=(4+Math.random()*92)+"vw";s.style.top=(6+Math.random()*34)+"vh";
-    s.style.animationDelay=(Math.random()*3)+"s";document.body.appendChild(s);}
+    s.style.left=(4+Math.random()*92)+"vw";s.style.top=(6+Math.random()*34)+"vh";s.style.animationDelay=(Math.random()*3)+"s";document.body.appendChild(s);}
 
-  /* ---------- 像素画 ---------- */
+  /* ---------- 像素猫（更可爱：大眼+高光+腮红） ---------- */
   const CAT=[
-    "..C.....C..",
-    ".CCC...CCC.",
-    ".CiC...CiC.",
-    ".CCCCCCCCC.",
-    "CCCCCCCCCCC",
-    "CCeCCCCCeCC",
-    "CCCCCnCCCCC",
-    "CCCCCCCCCCC",
-    ".CCCCCCCCC.",
-    ".CCCCCCCCC.",
-    ".CC.CCC.CC."
+    "..C.......C..",
+    ".CCC.....CCC.",
+    ".CiiC...CiiC.",
+    ".CCCCCCCCCCC.",
+    "CCCCCCCCCCCCC",
+    "CCweCCCCCweCC",
+    "CCeeCCCnCeeCC",
+    "CbCCCCCCCCCbC",
+    "CCCCCCCCCCCCC",
+    ".CCCCCCCCCCC.",
+    ".CCCCCCCCCCC.",
+    ".CC.CCCCC.CC."
   ];
-  const ME=[
-    "..HHHHHHH..",
-    ".HHHHHHHHH.",
-    ".HHHHHHHHH.",
-    ".HFFFFFFFH.",
-    ".HFeFFFeFH.",
-    ".HFFFnFFFH.",
-    ".HFFFFFFFH.",
-    "..FFFFFFF..",
-    "..GSSSSSG..",
-    ".SSSSSSSSS.",
-    ".SSSSSSSSS.",
-    ".SSSSSSSSS.",
-    "..S...S....",
-    "..L...L...."
-  ];
-  const ART={cat:CAT, me:ME};
   const PAL={
-    cat:{
-      orange:{C:"#e8945a",i:"#ffc7a3",e:"#3a2a1a",n:"#c45b73"},
-      black:{C:"#43434e",i:"#5c5c68",e:"#ffd24a",n:"#d98fa6"},
-      gray:{C:"#9aa3ad",i:"#cfd6dd",e:"#3a2a1a",n:"#c45b73"},
-      white:{C:"#f1ece1",i:"#ffc7d0",e:"#3a2a1a",n:"#c45b73"}
-    },
-    me:{girl:{H:"#6b4a32",F:"#ffe0bd",e:"#3a2a1a",n:"#d06a86",G:"#ffe0bd",S:"#ff9ec4",L:"#e7b58c"}}
+    orange:{C:"#e8945a",i:"#ffc7a3",e:"#3a2a1a",n:"#c45b73",b:"#ff9e86",w:"#fff"},
+    black:{C:"#43434e",i:"#5c5c68",e:"#ffd24a",n:"#d98fa6",b:"#6a5560",w:"#fff"},
+    gray:{C:"#9aa3ad",i:"#cfd6dd",e:"#3a2a1a",n:"#c45b73",b:"#e89",w:"#fff"},
+    white:{C:"#f1ece1",i:"#ffc7d0",e:"#3a2a1a",n:"#c45b73",b:"#ff9e86",w:"#fff"}
   };
-  function pixelArt(map,pal,u){
-    let s="";
+  function pixelArt(map,pal,u){let s="";
     for(let y=0;y<map.length;y++){const row=map[y];
-      for(let x=0;x<row.length;x++){const c=row[x];if(c==="."||c===" ")continue;
-        const col=pal[c];if(!col)continue;
+      for(let x=0;x<row.length;x++){const c=row[x];if(c==="."||c===" ")continue;const col=pal[c];if(!col)continue;
         s+='<rect x="'+(x*u).toFixed(2)+'" y="'+(y*u).toFixed(2)+'" width="'+(u+0.4).toFixed(2)+'" height="'+(u+0.4).toFixed(2)+'" fill="'+col+'"/>';}}
+    return s;}
+  function catGroup(cat){const pal=PAL[cat.pal],u=cat.u,w=CAT[0].length*u,h=CAT.length*u;
+    return '<ellipse cx="'+cat.cx+'" cy="'+(cat.cy+1)+'" rx="'+(w*0.4).toFixed(1)+'" ry="'+(u*1.1).toFixed(1)+'" fill="#16241d" opacity=".18"/>'+
+      '<g class="onplanet" style="animation-delay:'+(Math.random()*2).toFixed(2)+'s"><g transform="translate('+(cat.cx-w/2).toFixed(1)+' '+(cat.cy-h).toFixed(1)+')">'+pixelArt(CAT,pal,u)+'</g></g>';}
+
+  /* ---------- 软萌 Q版「我」 ---------- */
+  function meChibi(k,fx,fy,sc){
+    const c=
+     '<rect x="-7" y="-11" width="5.5" height="12" rx="2.7" fill="#ffe0bd"/><rect x="1.5" y="-11" width="5.5" height="12" rx="2.7" fill="#ffe0bd"/>'+
+     '<ellipse cx="-4.2" cy="0" rx="4" ry="2.6" fill="#8a5fae"/><ellipse cx="4.2" cy="0" rx="4" ry="2.6" fill="#8a5fae"/>'+
+     '<path d="M-16 -34 Q0 -41 16 -34 L10 -9 Q0 -4 -10 -9 Z" fill="url(#dress_'+k+')"/>'+
+     '<path d="M-15 -33 Q0 -39 15 -33 L13 -28 Q0 -34 -13 -28 Z" fill="#fff" opacity=".25"/>'+
+     '<path d="M-14 -32 q-7 6 -6 15" stroke="#ffe0bd" stroke-width="5" fill="none" stroke-linecap="round"/>'+
+     '<path d="M14 -32 q7 6 6 15" stroke="#ffe0bd" stroke-width="5" fill="none" stroke-linecap="round"/>'+
+     '<circle cx="0" cy="-44" r="17" fill="#6b4a32"/>'+
+     '<circle cx="-16" cy="-39" r="7" fill="#6b4a32"/><circle cx="16" cy="-39" r="7" fill="#6b4a32"/>'+
+     '<circle cx="-18" cy="-30" r="4.6" fill="#6b4a32"/><circle cx="18" cy="-30" r="4.6" fill="#6b4a32"/>'+
+     '<circle cx="0" cy="-43" r="13" fill="#ffe9d2"/>'+
+     '<path d="M-13 -46 Q-13 -59 0 -60 Q13 -59 13 -46 Q9 -53 4.5 -52 Q2 -49 0 -52 Q-2 -49 -4.5 -52 Q-9 -53 -13 -46Z" fill="#6b4a32"/>'+
+     '<ellipse cx="-5" cy="-43" rx="2.7" ry="3.6" fill="#3a2a1a"/><ellipse cx="5" cy="-43" rx="2.7" ry="3.6" fill="#3a2a1a"/>'+
+     '<circle cx="-5.9" cy="-44.6" r="1.1" fill="#fff"/><circle cx="4.1" cy="-44.6" r="1.1" fill="#fff"/>'+
+     '<circle cx="-8.6" cy="-39" r="2.3" fill="#ff9eb0" opacity=".85"/><circle cx="8.6" cy="-39" r="2.3" fill="#ff9eb0" opacity=".85"/>'+
+     '<path d="M-2.6 -38.6 q2.6 2.6 5.2 0" stroke="#c4566e" stroke-width="1.3" fill="none" stroke-linecap="round"/>'+
+     '<g transform="translate(-12.5 -53)"><circle cx="-2.6" cy="0" r="1.7" fill="#ffb3c7"/><circle cx="2.6" cy="0" r="1.7" fill="#ffb3c7"/><circle cx="0" cy="-2.6" r="1.7" fill="#ffb3c7"/><circle cx="0" cy="2.6" r="1.7" fill="#ffb3c7"/><circle r="2" fill="#ff7aa2"/><circle r="0.9" fill="#fff3a0"/></g>';
+    return '<ellipse cx="'+fx+'" cy="'+(fy+1)+'" rx="'+(16*sc).toFixed(1)+'" ry="'+(5*sc).toFixed(1)+'" fill="#3a2350" opacity=".22"/>'+
+      '<g class="onplanet"><g transform="translate('+fx+' '+fy+') scale('+sc+')">'+c+'</g></g>';
+  }
+
+  /* ---------- 精致星球构建 ---------- */
+  function buildPlanet(c){
+    const k=c.key;
+    let defs='<radialGradient id="g_'+k+'" cx="34%" cy="26%" r="84%"><stop offset="0%" stop-color="'+c.col[0]+'"/><stop offset="44%" stop-color="'+c.col[1]+'"/><stop offset="100%" stop-color="'+c.col[2]+'"/></radialGradient>'+
+      '<radialGradient id="atm_'+k+'" cx="50%" cy="50%" r="50%"><stop offset="60%" stop-color="'+c.hue+'" stop-opacity="0"/><stop offset="80%" stop-color="'+c.hue+'" stop-opacity=".5"/><stop offset="100%" stop-color="'+c.hue+'" stop-opacity="0"/></radialGradient>'+
+      '<radialGradient id="sh_'+k+'" cx="70%" cy="74%" r="72%"><stop offset="50%" stop-color="#102018" stop-opacity="0"/><stop offset="100%" stop-color="#101d16" stop-opacity=".45"/></radialGradient>';
+    if(c.me) defs+='<linearGradient id="dress_'+k+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ffd0e6"/><stop offset="100%" stop-color="#ff8fbf"/></linearGradient>';
+    let s='<svg viewBox="0 0 '+c.vbw+' '+c.vbh+'" aria-hidden="true"><defs>'+defs+'</defs>';
+    s+='<circle cx="'+c.cx+'" cy="'+c.cy+'" r="'+(c.r*1.3).toFixed(1)+'" fill="url(#atm_'+k+')"/>';
+    if(c.ring) s+='<ellipse cx="'+c.cx+'" cy="'+(c.cy+2)+'" rx="'+(c.r*1.72).toFixed(1)+'" ry="'+(c.r*0.56).toFixed(1)+'" fill="none" stroke="#e8c06a" stroke-width="7" opacity=".5" transform="rotate(-16 '+c.cx+' '+c.cy+')"/>';
+    s+='<circle cx="'+c.cx+'" cy="'+c.cy+'" r="'+c.r+'" fill="url(#g_'+k+')"/>';
+    s+='<ellipse cx="'+(c.cx-c.r*0.08)+'" cy="'+(c.cy+c.r*0.44)+'" rx="'+(c.r*0.72).toFixed(1)+'" ry="'+(c.r*0.16).toFixed(1)+'" fill="#000" opacity=".06"/>';
+    s+='<ellipse cx="'+(c.cx+c.r*0.12)+'" cy="'+(c.cy+c.r*0.68)+'" rx="'+(c.r*0.5).toFixed(1)+'" ry="'+(c.r*0.12).toFixed(1)+'" fill="#000" opacity=".05"/>';
+    s+='<circle cx="'+c.cx+'" cy="'+c.cy+'" r="'+c.r+'" fill="url(#sh_'+k+')"/>';
+    s+='<ellipse cx="'+(c.cx-c.r*0.36)+'" cy="'+(c.cy-c.r*0.42)+'" rx="'+(c.r*0.34).toFixed(1)+'" ry="'+(c.r*0.2).toFixed(1)+'" fill="#fff" opacity=".42"/>';
+    s+='<ellipse cx="'+(c.cx-c.r*0.52)+'" cy="'+(c.cy-c.r*0.26)+'" rx="'+(c.r*0.08).toFixed(1)+'" ry="'+(c.r*0.14).toFixed(1)+'" fill="#fff" opacity=".55"/>';
+    if(c.ring) s+='<path d="M'+(c.cx-c.r*1.55)+' '+(c.cy+c.r*0.42)+' A '+(c.r*1.72).toFixed(1)+' '+(c.r*0.56).toFixed(1)+' -16 0 0 '+(c.cx+c.r*1.62)+' '+(c.cy-c.r*0.12)+'" fill="none" stroke="#f7d488" stroke-width="4" opacity=".8"/>';
+    if(c.me) s+=meChibi(k,c.cx-2,c.cy-c.r+9,0.62);
+    (c.cats||[]).forEach(cat=>{s+=catGroup(cat);});
+    if(c.label) s+='<text class="me-label" x="'+c.cx+'" y="'+(c.vbh-6)+'" text-anchor="middle" font-size="14">'+c.label+'</text>';
+    s+='</svg>';
     return s;
   }
-  document.querySelectorAll(".onplanet").forEach(g=>{
-    const map=ART[g.dataset.art], pal=PAL[g.dataset.art][g.dataset.pal];
-    const u=parseFloat(g.dataset.u)||3, cx=parseFloat(g.dataset.cx), cy=parseFloat(g.dataset.cy);
-    const w=map[0].length*u, h=map.length*u;
-    g.innerHTML='<g transform="translate('+(cx-w/2).toFixed(1)+' '+(cy-h).toFixed(1)+')">'+pixelArt(map,pal,u)+'</g>';
-    g.style.animationDelay=(Math.random()*2)+"s";
+
+  const MINIS=[
+    {key:"sat",left:"5%",top:"12%",size:152,vbw:140,vbh:120,cx:70,cy:64,r:34,col:["#ffe9b0","#f0bd63","#c98f3c"],hue:"#f0bd63",ring:true,cats:[{pal:"gray",u:2.7,cx:70,cy:33}]},
+    {key:"cat1",left:"5%",top:"50%",size:122,vbw:110,vbh:120,cx:55,cy:62,r:40,col:["#d9f3b4","#74c07e","#3f9166"],hue:"#74c07e",cats:[{pal:"orange",u:3.1,cx:55,cy:25}]},
+    {key:"cat2",left:"73%",top:"25%",size:120,vbw:110,vbh:120,cx:55,cy:62,r:40,col:["#bfe0ff","#7aa8e0","#4d6fb0"],hue:"#7aa8e0",cats:[{pal:"black",u:3.1,cx:55,cy:25}]},
+    {key:"me",left:"69%",top:"60%",size:142,vbw:120,vbh:148,cx:60,cy:64,r:42,col:["#f3d8ff","#c79be8","#9a6fcf"],hue:"#c79be8",me:true,label:"我 ♡",cats:[{pal:"white",u:2.1,cx:94,cy:44}]}
+  ];
+  MINIS.forEach(cfg=>{
+    const d=document.createElement("div");
+    d.className="planet mini";d.id="p_"+cfg.key;d.dataset.key=cfg.key;
+    d.setAttribute("role","button");d.tabIndex=0;d.setAttribute("aria-label","小星球");
+    d.style.left=cfg.left;d.style.top=cfg.top;d.style.width=cfg.size+"px";
+    d.innerHTML='<div class="planet__float">'+buildPlanet(cfg)+'</div>';
+    document.body.appendChild(d);
   });
 
-  /* ---------- 拖动（所有星球） ---------- */
+  /* ---------- 拖动 ---------- */
   let zTop=10;
   document.querySelectorAll(".planet").forEach(setup);
   document.querySelectorAll(".planet__float").forEach(f=>f.style.animationDelay=(Math.random()*3)+"s");
-
   function setup(pl){
-    const KEY="pp_"+(pl.dataset.key||"x");
-    const hint=document.getElementById("hint");
-    function size(){return {w:pl.offsetWidth,h:pl.offsetHeight};}
-    function clamp(x,y){const {w,h}=size();
+    const KEY="pp_"+(pl.dataset.key||"x"), hint=document.getElementById("hint");
+    function clamp(x,y){const w=pl.offsetWidth,h=pl.offsetHeight;
       return [Math.max(4,Math.min(x,innerWidth-w-4)),Math.max(4,Math.min(y,innerHeight-h-4))];}
-    function place(x,y){const [cx,cy]=clamp(x,y);pl.style.left=cx+"px";pl.style.top=cy+"px";pl.style.transform="none";}
+    function place(x,y){const[cx,cy]=clamp(x,y);pl.style.left=cx+"px";pl.style.top=cy+"px";pl.style.transform="none";}
     try{const p=JSON.parse(localStorage.getItem(KEY));if(p&&typeof p.x==="number")place(p.x,p.y);}catch(e){}
-
     let dragging=false,moved=false,sx=0,sy=0,ox=0,oy=0;
     pl.addEventListener("pointerdown",e=>{dragging=true;moved=false;pl.style.zIndex=++zTop;
       try{pl.setPointerCapture(e.pointerId);}catch(_){}
@@ -335,25 +300,22 @@
       pl.classList.add("is-drag");if(hint)hint.style.opacity=".25";});
     pl.addEventListener("pointermove",e=>{if(!dragging)return;
       if(Math.abs(e.clientX-sx)>3||Math.abs(e.clientY-sy)>3)moved=true;place(e.clientX-ox,e.clientY-oy);});
-    function end(){if(!dragging)return;dragging=false;pl.classList.remove("is-drag");
+    function endf(){if(!dragging)return;dragging=false;pl.classList.remove("is-drag");
       const r=pl.getBoundingClientRect();try{localStorage.setItem(KEY,JSON.stringify({x:r.left,y:r.top}));}catch(e){}
       if(!moved)petals(pl);}
-    pl.addEventListener("pointerup",end);pl.addEventListener("pointercancel",end);
+    pl.addEventListener("pointerup",endf);pl.addEventListener("pointercancel",endf);
     pl.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();petals(pl);}});
   }
   addEventListener("resize",()=>{document.querySelectorAll(".planet").forEach(pl=>{
-    const r=pl.getBoundingClientRect();
-    const w=pl.offsetWidth,h=pl.offsetHeight;
-    const x=Math.max(4,Math.min(r.left,innerWidth-w-4)),y=Math.max(4,Math.min(r.top,innerHeight-h-4));
-    pl.style.left=x+"px";pl.style.top=y+"px";pl.style.transform="none";});});
+    const r=pl.getBoundingClientRect(),w=pl.offsetWidth,h=pl.offsetHeight;
+    pl.style.left=Math.max(4,Math.min(r.left,innerWidth-w-4))+"px";
+    pl.style.top=Math.max(4,Math.min(r.top,innerHeight-h-4))+"px";pl.style.transform="none";});});
 
-  function petals(pl){const r=pl.getBoundingClientRect();const cx=r.left+r.width/2,cy=r.top+r.height*0.4;
+  function petals(pl){const r=pl.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height*0.4;
     const icons=["🌹","🌼","✨","🧡","🌸","⭐","🐾"];
     for(let i=0;i<7;i++){const s=document.createElement("span");s.className="petal";
-      s.textContent=icons[Math.floor(Math.random()*icons.length)];
-      s.style.left=cx+"px";s.style.top=cy+"px";
-      s.style.setProperty("--dx",(Math.random()*120-60)+"px");
-      s.style.setProperty("--rot",(Math.random()*180-90)+"deg");
+      s.textContent=icons[Math.floor(Math.random()*icons.length)];s.style.left=cx+"px";s.style.top=cy+"px";
+      s.style.setProperty("--dx",(Math.random()*120-60)+"px");s.style.setProperty("--rot",(Math.random()*180-90)+"deg");
       document.body.appendChild(s);setTimeout(()=>s.remove(),1200);}}
 })();
 </script>
