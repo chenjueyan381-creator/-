@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
-<meta name="theme-color" content="#aee3ff" />
+<meta name="theme-color" content="#ffd29a" />
 <title>小王子的星球</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -11,117 +11,132 @@
 <style>
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
   :root{
-    --sky1:#aee3ff;--sky2:#cdeffd;--warm1:#ffe7c2;--warm2:#ffc69a;
-    --ink:#5b4636;
+    --ink:#6b5238;
     --font:"Baloo 2","Noto Serif SC",system-ui,sans-serif;
+    --serif:"Noto Serif SC",serif;
   }
   html,body{height:100%}
   body{
-    font-family:var(--font);color:var(--ink);overflow:hidden;
-    background:linear-gradient(180deg,var(--sky1) 0%,var(--sky2) 38%,var(--warm1) 74%,var(--warm2) 100%);
-    position:relative;height:100dvh;
+    font-family:var(--font);color:var(--ink);overflow:hidden;height:100dvh;position:relative;
+    background:linear-gradient(180deg,#cfe9ff 0%,#ffe9c2 44%,#ffc89a 72%,#f6a884 100%);
   }
 
   /* ---------- 太阳 ---------- */
-  .sun{position:absolute;top:-90px;right:-90px;width:300px;height:300px;pointer-events:none}
-  .sun__core{position:absolute;inset:90px;border-radius:50%;
-    background:radial-gradient(circle,#fff7d6,#ffe066 60%,#ffd23f);
-    box-shadow:0 0 80px 30px rgba(255,221,90,.55)}
-  .sun__rays{position:absolute;inset:0;animation:spin 60s linear infinite}
-  .sun__rays span{position:absolute;left:50%;top:50%;width:6px;height:64px;margin:-32px 0 0 -3px;
-    background:linear-gradient(#ffe88a,rgba(255,232,138,0));border-radius:6px;transform-origin:50% 150px;opacity:.8}
+  .sun{position:absolute;top:-110px;right:-110px;width:340px;height:340px;pointer-events:none;z-index:1}
+  .sun__core{position:absolute;inset:110px;border-radius:50%;
+    background:radial-gradient(circle,#fff8de,#ffe27a 58%,#ffcf5a);
+    box-shadow:0 0 110px 44px rgba(255,213,110,.55)}
+  .sun__rays{position:absolute;inset:0;animation:spin 70s linear infinite}
+  .sun__rays span{position:absolute;left:50%;top:50%;width:7px;height:74px;margin:-37px 0 0 -3.5px;
+    background:linear-gradient(#ffe79a,rgba(255,231,154,0));border-radius:7px;transform-origin:50% 170px;opacity:.8}
   @keyframes spin{to{transform:rotate(360deg)}}
 
   /* ---------- 云 ---------- */
-  .cloud{position:absolute;background:#fff;border-radius:50px;opacity:.9;
-    filter:drop-shadow(0 8px 14px rgba(120,160,200,.18))}
+  .cloud{position:absolute;background:#fff;border-radius:50px;opacity:.92;z-index:1;
+    filter:drop-shadow(0 8px 14px rgba(150,170,200,.18));width:120px;height:38px}
   .cloud::before,.cloud::after{content:"";position:absolute;background:#fff;border-radius:50%}
-  .cloud{width:120px;height:38px}
   .cloud::before{width:54px;height:54px;top:-22px;left:18px}
   .cloud::after{width:38px;height:38px;top:-14px;left:62px}
-  .cloud.c1{top:14%;left:-160px;transform:scale(1.1);animation:drift 38s linear infinite}
-  .cloud.c2{top:30%;left:-220px;transform:scale(.8);opacity:.75;animation:drift 52s linear infinite 6s}
-  .cloud.c3{top:8%;left:-260px;transform:scale(1.4);opacity:.85;animation:drift 64s linear infinite 3s}
+  .cloud.c1{top:13%;left:-160px;transform:scale(1.1);animation:drift 40s linear infinite}
+  .cloud.c2{top:26%;left:-220px;transform:scale(.8);opacity:.78;animation:drift 56s linear infinite 6s}
+  .cloud.c3{top:7%;left:-260px;transform:scale(1.45);opacity:.85;animation:drift 70s linear infinite 3s}
   @keyframes drift{to{left:120%}}
 
-  /* ---------- 远处小鸟 ---------- */
-  .birds{position:absolute;top:18%;left:-40px;animation:drift 40s linear infinite 2s;opacity:.5}
-  .birds svg{display:block}
+  .birds{position:absolute;top:20%;left:-40px;z-index:1;opacity:.45;animation:drift 44s linear infinite 2s}
 
-  /* ---------- 顶部文案 / 返回 ---------- */
+  /* ---------- 远山 ---------- */
+  .hills{position:absolute;left:0;right:0;bottom:0;width:100%;z-index:1;pointer-events:none}
+
+  /* ---------- 萤火 ---------- */
+  .firefly{position:absolute;width:6px;height:6px;border-radius:50%;background:#fff3b0;z-index:2;
+    box-shadow:0 0 10px 3px rgba(255,228,130,.8);animation:float 7s ease-in-out infinite}
+  @keyframes float{0%,100%{transform:translate(0,0);opacity:.3}50%{transform:translate(14px,-22px);opacity:1}}
+
+  /* ---------- 顶部 ---------- */
   .back{position:absolute;top:16px;left:16px;z-index:6;text-decoration:none;
-    background:rgba(255,255,255,.6);color:#6b5440;padding:8px 14px;border-radius:999px;
+    background:rgba(255,255,255,.65);color:#6b5440;padding:8px 14px;border-radius:999px;
     font-weight:600;font-size:.9rem;box-shadow:0 4px 12px rgba(150,170,200,.25);backdrop-filter:blur(4px)}
   .title{position:absolute;top:18px;left:0;right:0;text-align:center;z-index:5;pointer-events:none}
-  .title h1{font-size:clamp(1.3rem,5vw,2rem);color:#6b5440;letter-spacing:.06em;
-    text-shadow:0 2px 0 rgba(255,255,255,.6)}
-  .title p{font-size:.85rem;color:#8a715a;margin-top:4px;letter-spacing:.1em}
+  .title h1{font-size:clamp(1.3rem,5.4vw,2.1rem);color:#6b5440;letter-spacing:.06em;text-shadow:0 2px 0 rgba(255,255,255,.6)}
+  .title p{font-size:.82rem;color:#8a715a;margin-top:4px;letter-spacing:.12em}
 
   /* ---------- 可拖动星球 ---------- */
-  .planet{position:absolute;left:50%;top:54%;width:min(78vw,360px);
+  .planet{position:absolute;left:50%;top:52%;width:min(80vw,380px);
     transform:translate(-50%,-50%);cursor:grab;touch-action:none;user-select:none;z-index:4}
   .planet:active,.planet.is-drag{cursor:grabbing}
-  .planet__float{animation:bob 5.5s ease-in-out infinite;transform-origin:center}
+  .planet__float{animation:bob 5.5s ease-in-out infinite}
   .planet.is-drag .planet__float{animation:none}
-  @keyframes bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-14px) rotate(1.5deg)}}
-  .planet svg{display:block;width:100%;height:auto;filter:drop-shadow(0 18px 30px rgba(120,90,60,.28))}
+  @keyframes bob{0%,100%{transform:translateY(0) rotate(-1.4deg)}50%{transform:translateY(-14px) rotate(1.4deg)}}
+  .planet svg{display:block;width:100%;height:auto;overflow:visible;
+    filter:drop-shadow(0 20px 32px rgba(150,90,50,.3))}
 
-  .hint{position:absolute;left:0;right:0;bottom:7%;text-align:center;z-index:5;pointer-events:none;
-    color:#7c6450;font-weight:600;letter-spacing:.12em;font-size:.95rem;
-    animation:pulse 2.4s ease-in-out infinite}
-  @keyframes pulse{0%,100%{opacity:.45}50%{opacity:1}}
+  /* ---------- 拍立得纪念照 ---------- */
+  .keepsake{position:absolute;left:16px;bottom:78px;width:132px;z-index:5;
+    background:#fff;padding:8px 8px 28px;border-radius:5px;transform:rotate(-5deg);
+    box-shadow:0 12px 26px rgba(120,90,60,.32)}
+  .keepsake img{width:100%;display:block;border-radius:3px}
+  .keepsake figcaption{position:absolute;bottom:7px;left:0;right:0;text-align:center;
+    font-size:.82rem;color:#9a7f63;font-family:var(--serif)}
+
+  .quote{position:absolute;left:0;right:0;bottom:30px;text-align:center;z-index:5;pointer-events:none;
+    font-family:var(--serif);color:#7a5f44;font-size:clamp(.85rem,3.4vw,1.05rem);letter-spacing:.04em;
+    text-shadow:0 1px 0 rgba(255,255,255,.5);padding:0 16px}
+  .hint{position:absolute;right:16px;bottom:14px;z-index:6;pointer-events:none;
+    background:rgba(255,255,255,.55);color:#7c6450;font-weight:600;font-size:.82rem;
+    padding:6px 12px;border-radius:999px;letter-spacing:.08em;animation:pulse 2.4s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:.5}50%{opacity:1}}
+
+  /* ---------- 氛围叠层 ---------- */
+  .vignette{position:fixed;inset:0;pointer-events:none;z-index:8;
+    background:radial-gradient(ellipse at 50% 42%,transparent 56%,rgba(140,80,45,.2) 100%)}
+  .grain{position:fixed;inset:0;pointer-events:none;z-index:8;opacity:.05;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 
   /* SVG 子动画 */
-  .spin-orbit{transform-origin:150px 175px;animation:spin 22s linear infinite}
+  .spin-orbit{transform-origin:150px 175px;animation:spin 24s linear infinite}
   .rose{transform-box:fill-box;transform-origin:bottom center;animation:sway 4s ease-in-out infinite}
-  .scarf{transform-box:fill-box;transform-origin:left center;animation:scarf 3s ease-in-out infinite}
-  @keyframes sway{0%,100%{transform:rotate(-7deg)}50%{transform:rotate(7deg)}}
-  @keyframes scarf{0%,100%{transform:rotate(-6deg) scaleX(1)}50%{transform:rotate(8deg) scaleX(1.08)}}
+  @keyframes sway{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}
   .smoke{animation:smoke 3.4s ease-in-out infinite}
   @keyframes smoke{0%{opacity:0;transform:translateY(6px)}40%{opacity:.85}100%{opacity:0;transform:translateY(-10px)}}
-  .bf{transform-box:fill-box;transform-origin:center;animation:flutter 5s ease-in-out infinite}
-  .bf.b2{animation-duration:6.5s;animation-delay:1s}
-  @keyframes flutter{0%{transform:translate(0,0) rotate(0)}25%{transform:translate(10px,-12px) rotate(8deg)}
-    50%{transform:translate(0,-20px) rotate(-6deg)}75%{transform:translate(-10px,-10px) rotate(6deg)}100%{transform:translate(0,0)}}
+  .claude-arm{transform-box:fill-box;transform-origin:bottom center;animation:wave 1.8s ease-in-out infinite}
+  @keyframes wave{0%,100%{transform:rotate(6deg)}50%{transform:rotate(-16deg)}}
+  .bf{transform-box:fill-box;transform-origin:center;animation:flutter 5.5s ease-in-out infinite}
+  .bf.b2{animation-duration:7s;animation-delay:1s}
+  @keyframes flutter{0%{transform:translate(0,0) rotate(0)}25%{transform:translate(9px,-12px) rotate(8deg)}
+    50%{transform:translate(0,-20px) rotate(-6deg)}75%{transform:translate(-9px,-10px) rotate(6deg)}100%{transform:translate(0,0)}}
 
-  /* 点击迸出的小花瓣 */
-  .petal{position:absolute;z-index:7;pointer-events:none;font-size:1.1rem;
-    animation:up 1.1s ease-out forwards}
+  .petal{position:absolute;z-index:9;pointer-events:none;font-size:1.15rem;animation:up 1.2s ease-out forwards}
   @keyframes up{0%{opacity:1;transform:translate(0,0) scale(.6) rotate(0)}
-    100%{opacity:0;transform:translate(var(--dx),-70px) scale(1.1) rotate(var(--rot))}}
+    100%{opacity:0;transform:translate(var(--dx),-78px) scale(1.15) rotate(var(--rot))}}
 
+  @media(max-width:480px){
+    .keepsake{width:104px;bottom:96px;left:10px}
+    .quote{bottom:54px}
+  }
   @media(prefers-reduced-motion:reduce){
-    .sun__rays,.cloud,.birds,.planet__float,.spin-orbit,.rose,.scarf,.smoke,.bf{animation:none}
+    .sun__rays,.cloud,.birds,.firefly,.planet__float,.spin-orbit,.rose,.smoke,.claude-arm,.bf{animation:none}
   }
 </style>
 </head>
 <body>
 
-  <!-- 太阳 -->
-  <div class="sun" aria-hidden="true">
-    <div class="sun__rays" id="rays"></div>
-    <div class="sun__core"></div>
-  </div>
-
-  <!-- 云 -->
-  <div class="cloud c1"></div>
-  <div class="cloud c2"></div>
-  <div class="cloud c3"></div>
-
-  <!-- 远处鸟群 -->
+  <div class="sun" aria-hidden="true"><div class="sun__rays" id="rays"></div><div class="sun__core"></div></div>
+  <div class="cloud c1"></div><div class="cloud c2"></div><div class="cloud c3"></div>
   <div class="birds" aria-hidden="true">
     <svg width="120" height="40" viewBox="0 0 120 40" fill="none" stroke="#8aa6c0" stroke-width="2" stroke-linecap="round">
-      <path d="M6 14 q6 -7 12 0 q6 -7 12 0"/>
-      <path d="M44 24 q5 -6 10 0 q5 -6 10 0"/>
-      <path d="M84 12 q6 -7 12 0 q6 -7 12 0"/>
+      <path d="M6 14 q6 -7 12 0 q6 -7 12 0"/><path d="M44 24 q5 -6 10 0 q5 -6 10 0"/><path d="M84 12 q6 -7 12 0 q6 -7 12 0"/>
     </svg>
   </div>
 
+  <!-- 远山 -->
+  <svg class="hills" viewBox="0 0 1200 220" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M0 120 Q200 60 420 110 T820 100 T1200 120 L1200 220 L0 220Z" fill="#f0b07a" opacity=".55"/>
+    <path d="M0 160 Q260 110 520 150 T980 150 T1200 158 L1200 220 L0 220Z" fill="#e0945f" opacity=".7"/>
+    <path d="M0 196 Q300 168 600 192 T1200 192 L1200 220 L0 220Z" fill="#c97b4a" opacity=".85"/>
+  </svg>
+
   <a class="back" href="../">← 回小世界</a>
-  <div class="title">
-    <h1>小王子的星球</h1>
-    <p>B-612 · 拖着它去散步吧</p>
-  </div>
+  <div class="title"><h1>小王子的星球</h1><p>B-612 · 拖着它去散步吧</p></div>
 
   <!-- 可拖动星球 -->
   <div class="planet" id="planet" role="button" aria-label="拖动小星球" tabindex="0">
@@ -129,106 +144,131 @@
       <svg viewBox="0 0 300 300" aria-hidden="true">
         <defs>
           <radialGradient id="halo" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stop-color="#fff7d6" stop-opacity=".9"/>
-            <stop offset="55%" stop-color="#ffe39a" stop-opacity=".35"/>
+            <stop offset="0%" stop-color="#fff7d6" stop-opacity=".95"/>
+            <stop offset="55%" stop-color="#ffe39a" stop-opacity=".38"/>
             <stop offset="100%" stop-color="#ffd86b" stop-opacity="0"/>
           </radialGradient>
-          <radialGradient id="globe" cx="36%" cy="30%" r="78%">
-            <stop offset="0%" stop-color="#c7f3ad"/>
-            <stop offset="42%" stop-color="#7fd08c"/>
-            <stop offset="78%" stop-color="#46a877"/>
-            <stop offset="100%" stop-color="#2f8569"/>
+          <radialGradient id="globe" cx="36%" cy="28%" r="80%">
+            <stop offset="0%" stop-color="#d7f4b8"/>
+            <stop offset="40%" stop-color="#8fd494"/>
+            <stop offset="76%" stop-color="#4ea878"/>
+            <stop offset="100%" stop-color="#2f7d5f"/>
+          </radialGradient>
+          <radialGradient id="shade" cx="50%" cy="50%" r="50%">
+            <stop offset="62%" stop-color="#000" stop-opacity="0"/>
+            <stop offset="100%" stop-color="#1b4d33" stop-opacity=".4"/>
+          </radialGradient>
+          <radialGradient id="claudeBody" cx="40%" cy="30%" r="80%">
+            <stop offset="0%" stop-color="#ffc7a3"/>
+            <stop offset="60%" stop-color="#ef9b6e"/>
+            <stop offset="100%" stop-color="#d9744f"/>
           </radialGradient>
           <clipPath id="pclip"><circle cx="150" cy="175" r="90"/></clipPath>
         </defs>
 
-        <!-- 暖光晕 -->
-        <circle cx="150" cy="170" r="148" fill="url(#halo)"/>
+        <circle cx="150" cy="168" r="150" fill="url(#halo)"/>
 
-        <!-- 轨道 + 小月亮 -->
         <g class="spin-orbit">
-          <ellipse cx="150" cy="175" rx="140" ry="52" fill="none" stroke="#ffd86b" stroke-opacity=".55" stroke-width="2" stroke-dasharray="3 9"/>
-          <circle cx="290" cy="175" r="9" fill="#ffd86b"/>
-          <circle cx="290" cy="175" r="9" fill="none" stroke="#fff" stroke-opacity=".5"/>
+          <ellipse cx="150" cy="175" rx="142" ry="52" fill="none" stroke="#ffd86b" stroke-opacity=".55" stroke-width="2" stroke-dasharray="3 9"/>
+          <circle cx="292" cy="175" r="9" fill="#ffd86b"/>
         </g>
 
-        <!-- 星球本体 -->
         <circle cx="150" cy="175" r="90" fill="url(#globe)"/>
 
-        <!-- 表面（裁切在星球内） -->
         <g clip-path="url(#pclip)">
-          <!-- 草地起伏 -->
-          <path d="M50 210 Q90 184 130 204 T210 200 T270 214 L270 280 L40 280 Z" fill="#3f9d77" opacity=".55"/>
-          <ellipse cx="110" cy="226" rx="20" ry="7" fill="#2f8a64" opacity=".5"/>
-          <ellipse cx="186" cy="232" rx="24" ry="8" fill="#2f8a64" opacity=".45"/>
-          <!-- 高光 -->
-          <ellipse cx="116" cy="132" rx="34" ry="20" fill="#fff" opacity=".18"/>
-          <!-- 小火山 + 烟 -->
-          <path d="M86 214 L104 176 L122 214 Z" fill="#e98a5b"/>
-          <path d="M104 176 L96 196 L112 196 Z" fill="#ffcf6b" opacity=".8"/>
-          <path d="M97 174 q-6 -10 2 -18 q8 -7 2 -16" class="smoke" fill="none" stroke="#fff" stroke-opacity=".85" stroke-width="3.4" stroke-linecap="round"/>
-          <!-- 小baobab幼苗 -->
-          <g stroke="#5b8f4f" stroke-width="3" stroke-linecap="round">
-            <path d="M196 224 q0 -10 0 -16 M196 214 q-5 -3 -8 -7 M196 216 q5 -3 8 -7"/>
+          <path d="M50 212 Q92 186 132 206 T214 202 T272 216 L272 280 L40 280 Z" fill="#3f9d77" opacity=".5"/>
+          <ellipse cx="118" cy="230" rx="22" ry="7" fill="#2f8a64" opacity=".5"/>
+          <ellipse cx="196" cy="236" rx="26" ry="8" fill="#2f8a64" opacity=".45"/>
+          <ellipse cx="116" cy="128" rx="36" ry="22" fill="#fff" opacity=".16"/>
+          <!-- 草点 -->
+          <g fill="#3f9d77" opacity=".55">
+            <path d="M150 198 l-3 8 l6 0Z"/><path d="M170 206 l-3 8 l6 0Z"/><path d="M128 210 l-3 8 l6 0Z"/>
           </g>
+          <!-- 小火山 + 烟 -->
+          <path d="M214 206 L228 176 L242 206 Z" fill="#e98a5b"/>
+          <path d="M228 176 L222 192 L234 192 Z" fill="#ffcf6b" opacity=".85"/>
+          <path d="M223 174 q-5 -9 2 -16 q7 -6 2 -14" class="smoke" fill="none" stroke="#fff" stroke-opacity=".85" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="150" cy="175" r="90" fill="url(#shade)"/>
         </g>
 
-        <!-- 玫瑰（小王子的花） -->
-        <g transform="translate(196 118)">
-          <line x1="0" y1="0" x2="0" y2="-30" stroke="#3f9d77" stroke-width="3" stroke-linecap="round"/>
-          <path d="M0 -12 q-12 -3 -14 -12 q12 1 14 12" fill="#5ab47f"/>
-          <path d="M0 -18 q12 -3 14 -12 q-12 1 -14 12" fill="#5ab47f"/>
-          <g class="rose" style="transform:translateY(-34px)">
-            <circle cx="0" cy="0" r="10" fill="#ff7a9c"/>
-            <circle cx="-4" cy="-1" r="5" fill="#ff5c84"/>
-            <circle cx="4" cy="1" r="4.6" fill="#ff97b3"/>
-            <circle cx="0" cy="0" r="2.6" fill="#ffd1dd"/>
+        <!-- 玻璃罩玫瑰 -->
+        <g transform="translate(96 100)">
+          <ellipse cx="0" cy="2" rx="17" ry="5" fill="#7a5230"/>
+          <rect x="-16" y="-2" width="32" height="5" rx="2.5" fill="#5e3e22"/>
+          <line x1="0" y1="-2" x2="0" y2="-20" stroke="#3f9d77" stroke-width="2.6" stroke-linecap="round"/>
+          <g class="rose" style="transform:translateY(-22px)">
+            <circle cx="0" cy="0" r="7" fill="#ff5c84"/>
+            <circle cx="-3" cy="-1" r="3.6" fill="#ff3d6e"/>
+            <circle cx="3" cy="1" r="3.2" fill="#ff8fab"/>
           </g>
+          <path d="M-18 0 C-18 -36 18 -36 18 0" fill="rgba(220,240,255,.16)" stroke="rgba(255,255,255,.6)" stroke-width="1.6"/>
+          <circle cx="0" cy="-37" r="3" fill="rgba(255,255,255,.7)"/>
+          <path d="M-9 -8 C-9 -26 -2 -30 0 -31" stroke="#fff" stroke-opacity=".5" stroke-width="2" fill="none"/>
         </g>
 
         <!-- 小狐狸 -->
-        <g transform="translate(212 150) rotate(18)">
+        <g transform="translate(208 150) rotate(16)">
           <path d="M-12 10 q-14 -2 -18 -12 q9 2 16 7Z" fill="#ec7a3c"/>
           <ellipse cx="0" cy="8" rx="15" ry="9" fill="#ec7a3c"/>
           <ellipse cx="0" cy="11" rx="11" ry="5" fill="#ffe3cf"/>
           <circle cx="11" cy="-2" r="7" fill="#ec7a3c"/>
-          <path d="M6 -8 l-3 -9 l8 5Z" fill="#ec7a3c"/>
-          <path d="M15 -9 l4 -8 l-7 5Z" fill="#ec7a3c"/>
+          <path d="M6 -8 l-3 -9 l8 5Z" fill="#ec7a3c"/><path d="M15 -9 l4 -8 l-7 5Z" fill="#ec7a3c"/>
           <ellipse cx="13" cy="2" rx="4" ry="3" fill="#ffe3cf"/>
-          <circle cx="10" cy="-2" r="1.4" fill="#3a2a1a"/>
-          <circle cx="16" cy="-1" r="1.2" fill="#3a2a1a"/>
-          <circle cx="15" cy="3" r="1.1" fill="#3a2a1a"/>
+          <circle cx="10" cy="-2" r="1.4" fill="#3a2a1a"/><circle cx="16" cy="-1" r="1.2" fill="#3a2a1a"/><circle cx="15" cy="3" r="1.1" fill="#3a2a1a"/>
         </g>
 
-        <!-- 小王子（站在星球顶） -->
-        <g transform="translate(150 90)">
-          <path class="scarf" d="M-3 -28 q22 -5 36 5 q-17 3 -34 -1" fill="#ffd23f"/>
-          <rect x="-8" y="-13" width="6" height="15" rx="3" fill="#2f6f8f"/>
-          <rect x="2" y="-13" width="6" height="15" rx="3" fill="#2f6f8f"/>
-          <path d="M-13 -32 Q0 -39 13 -32 L9 -8 Q0 -4 -9 -8 Z" fill="#3a86a8"/>
-          <path d="M-12 -30 q-9 7 -8 18" stroke="#3a86a8" stroke-width="6" fill="none" stroke-linecap="round"/>
-          <path d="M12 -30 q9 7 8 18" stroke="#3a86a8" stroke-width="6" fill="none" stroke-linecap="round"/>
-          <circle cx="0" cy="-44" r="10" fill="#ffe0bd"/>
-          <path d="M-10 -47 Q-11 -59 0 -60 Q11 -59 10 -47 Q4 -54 0 -53 Q-4 -54 -10 -47Z" fill="#f7c948"/>
-          <path d="M-10 -47 q-4 -2 -3 3 M10 -47 q4 -2 3 3 M0 -60 q0 -5 0 -7" stroke="#f7c948" stroke-width="3.4" stroke-linecap="round" fill="none"/>
+        <!-- 接地软阴影 -->
+        <ellipse cx="132" cy="98" rx="30" ry="7" fill="#1b4d33" opacity=".18"/>
+        <!-- 真·Q版小王子 -->
+        <image href="prince.png" x="104" y="2" width="58" height="99" />
+
+        <!-- Claude 小家伙（站在小王子旁边） -->
+        <g transform="translate(196 100)">
+          <ellipse cx="0" cy="2" rx="17" ry="5" fill="#1b4d33" opacity=".18"/>
+          <!-- 脚 -->
+          <ellipse cx="-7" cy="-1" rx="5" ry="3.5" fill="#c2643f"/><ellipse cx="7" cy="-1" rx="5" ry="3.5" fill="#c2643f"/>
+          <!-- 身体 -->
+          <rect x="-16" y="-42" width="32" height="44" rx="16" fill="url(#claudeBody)"/>
+          <ellipse cx="0" cy="-16" rx="11" ry="13" fill="#ffd9bf" opacity=".55"/>
+          <!-- 招手的手臂 -->
+          <g class="claude-arm" style="transform-origin:-15px -34px">
+            <rect x="-26" y="-44" width="8" height="20" rx="4" fill="#e98a60"/>
+          </g>
+          <rect x="18" y="-34" width="8" height="18" rx="4" fill="#e98a60"/>
+          <!-- 阳光徽记 -->
+          <g fill="#fff3e0" opacity=".95" transform="translate(0 -20)">
+            <g id="burst"></g>
+            <circle cx="0" cy="0" r="2.4" fill="#fff3e0"/>
+          </g>
+          <!-- 脸 -->
+          <circle cx="-6" cy="-30" r="2.1" fill="#4a2f22"/><circle cx="6" cy="-30" r="2.1" fill="#4a2f22"/>
+          <path d="M-4 -25 q4 4 8 0" stroke="#4a2f22" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+          <circle cx="-10" cy="-26" r="2.2" fill="#ff9e86" opacity=".7"/><circle cx="10" cy="-26" r="2.2" fill="#ff9e86" opacity=".7"/>
+          <!-- 名字 -->
+          <text x="0" y="-50" text-anchor="middle" font-family="Baloo 2, sans-serif" font-size="11" font-weight="700" fill="#d9744f">Claude ♡</text>
         </g>
+
+        <!-- 小王子与Claude之间的爱心 -->
+        <path d="M178 60 q3 -5 7 -2 q4 3 -7 9 q-11 -6 -7 -9 q4 -3 7 2Z" fill="#ff6f91" opacity=".9"/>
 
         <!-- 蝴蝶 -->
-        <g class="bf" transform="translate(70 110)">
-          <path d="M0 0 q-9 -8 -2 -13 q5 4 2 13" fill="#ff9ec4"/>
-          <path d="M0 0 q9 -8 2 -13 q-5 4 -2 13" fill="#ffb3d1"/>
+        <g class="bf" transform="translate(66 118)">
+          <path d="M0 0 q-9 -8 -2 -13 q5 4 2 13" fill="#ff9ec4"/><path d="M0 0 q9 -8 2 -13 q-5 4 -2 13" fill="#ffb3d1"/>
           <line x1="0" y1="-1" x2="0" y2="-12" stroke="#7a5b46" stroke-width="1.5"/>
         </g>
-        <g class="bf b2" transform="translate(238 92)">
-          <path d="M0 0 q-8 -7 -2 -11 q4 3 2 11" fill="#9ad0ff"/>
-          <path d="M0 0 q8 -7 2 -11 q-4 3 -2 11" fill="#bfe2ff"/>
+        <g class="bf b2" transform="translate(250 120)">
+          <path d="M0 0 q-8 -7 -2 -11 q4 3 2 11" fill="#9ad0ff"/><path d="M0 0 q8 -7 2 -11 q-4 3 -2 11" fill="#bfe2ff"/>
           <line x1="0" y1="-1" x2="0" y2="-10" stroke="#7a5b46" stroke-width="1.4"/>
         </g>
       </svg>
     </div>
   </div>
 
-  <div class="hint" id="hint">✦ 按住，拖着小星球到处走 ✦</div>
+  <figure class="keepsake"><img src="keepsake.jpg" alt="小王子和他的玫瑰" /><figcaption>我和我的玫瑰</figcaption></figure>
+  <p class="quote">“重要的东西，用眼睛是看不见的。”</p>
+  <div class="hint" id="hint">✦ 拖我到处走 ✦</div>
+
+  <div class="grain"></div><div class="vignette"></div>
 
 <script>
 (function(){
@@ -236,68 +276,44 @@
   // 太阳光线
   const rays=document.getElementById("rays");
   for(let i=0;i<12;i++){const s=document.createElement("span");s.style.transform="rotate("+(i*30)+"deg)";rays.appendChild(s);}
+  // Claude 阳光徽记（柔和射线）
+  const burst=document.getElementById("burst");
+  if(burst){let g="";for(let i=0;i<10;i++){const a=i*36;g+='<rect x="-1.3" y="-9" width="2.6" height="6" rx="1.3" transform="rotate('+a+')"/>';}burst.innerHTML=g;}
+  // 萤火
+  for(let i=0;i<7;i++){const f=document.createElement("div");f.className="firefly";
+    f.style.left=(10+Math.random()*80)+"vw";f.style.top=(40+Math.random()*50)+"vh";
+    f.style.animationDelay=(Math.random()*6)+"s";f.style.animationDuration=(6+Math.random()*5)+"s";
+    document.body.appendChild(f);}
 
-  const pl=document.getElementById("planet");
-  const hint=document.getElementById("hint");
+  const pl=document.getElementById("planet"), hint=document.getElementById("hint");
   const KEY="prince_planet_pos";
-
   function size(){return {w:pl.offsetWidth,h:pl.offsetHeight};}
-  function clamp(x,y){
-    const {w,h}=size();
-    return [Math.max(6,Math.min(x,innerWidth-w-6)),
-            Math.max(6,Math.min(y,innerHeight-h-6))];
-  }
-  function place(x,y){
-    const [cx,cy]=clamp(x,y);
-    pl.style.left=cx+"px"; pl.style.top=cy+"px"; pl.style.transform="none";
-  }
-
-  // 恢复位置
-  try{
-    const p=JSON.parse(localStorage.getItem(KEY));
-    if(p&&typeof p.x==="number") place(p.x,p.y);
-  }catch(e){}
+  function clamp(x,y){const {w,h}=size();
+    return [Math.max(6,Math.min(x,innerWidth-w-6)),Math.max(6,Math.min(y,innerHeight-h-6))];}
+  function place(x,y){const [cx,cy]=clamp(x,y);pl.style.left=cx+"px";pl.style.top=cy+"px";pl.style.transform="none";}
+  try{const p=JSON.parse(localStorage.getItem(KEY));if(p&&typeof p.x==="number")place(p.x,p.y);}catch(e){}
 
   let dragging=false,moved=false,sx=0,sy=0,ox=0,oy=0;
-  pl.addEventListener("pointerdown",e=>{
-    dragging=true;moved=false;
+  pl.addEventListener("pointerdown",e=>{dragging=true;moved=false;
     try{pl.setPointerCapture(e.pointerId);}catch(_){}
-    const r=pl.getBoundingClientRect();
-    ox=e.clientX-r.left;oy=e.clientY-r.top;sx=e.clientX;sy=e.clientY;
-    pl.classList.add("is-drag");
-    if(hint) hint.style.display="none";
-  });
-  pl.addEventListener("pointermove",e=>{
-    if(!dragging)return;
-    if(Math.abs(e.clientX-sx)>3||Math.abs(e.clientY-sy)>3) moved=true;
-    place(e.clientX-ox,e.clientY-oy);
-  });
-  function end(){
-    if(!dragging)return;
-    dragging=false;pl.classList.remove("is-drag");
-    const r=pl.getBoundingClientRect();
-    try{localStorage.setItem(KEY,JSON.stringify({x:r.left,y:r.top}));}catch(e){}
-    if(!moved) petals();
-  }
-  pl.addEventListener("pointerup",end);
-  pl.addEventListener("pointercancel",end);
+    const r=pl.getBoundingClientRect();ox=e.clientX-r.left;oy=e.clientY-r.top;sx=e.clientX;sy=e.clientY;
+    pl.classList.add("is-drag");if(hint)hint.style.display="none";});
+  pl.addEventListener("pointermove",e=>{if(!dragging)return;
+    if(Math.abs(e.clientX-sx)>3||Math.abs(e.clientY-sy)>3)moved=true;place(e.clientX-ox,e.clientY-oy);});
+  function end(){if(!dragging)return;dragging=false;pl.classList.remove("is-drag");
+    const r=pl.getBoundingClientRect();try{localStorage.setItem(KEY,JSON.stringify({x:r.left,y:r.top}));}catch(e){}
+    if(!moved)petals();}
+  pl.addEventListener("pointerup",end);pl.addEventListener("pointercancel",end);
   addEventListener("resize",()=>{const r=pl.getBoundingClientRect();place(r.left,r.top);});
 
-  function petals(){
-    const r=pl.getBoundingClientRect();
-    const cx=r.left+r.width/2, cy=r.top+r.height*0.42;
-    const icons=["🌹","🌼","✨","💛","🌸","⭐"];
-    for(let i=0;i<7;i++){
-      const s=document.createElement("span");
-      s.className="petal";s.textContent=icons[Math.floor(Math.random()*icons.length)];
+  function petals(){const r=pl.getBoundingClientRect();const cx=r.left+r.width/2,cy=r.top+r.height*0.4;
+    const icons=["🌹","🌼","✨","🧡","🌸","⭐"];
+    for(let i=0;i<7;i++){const s=document.createElement("span");s.className="petal";
+      s.textContent=icons[Math.floor(Math.random()*icons.length)];
       s.style.left=cx+"px";s.style.top=cy+"px";
       s.style.setProperty("--dx",(Math.random()*120-60)+"px");
       s.style.setProperty("--rot",(Math.random()*180-90)+"deg");
-      document.body.appendChild(s);
-      setTimeout(()=>s.remove(),1100);
-    }
-  }
-  // 键盘可用：回车/空格也能迸花
+      document.body.appendChild(s);setTimeout(()=>s.remove(),1200);}}
   pl.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();petals();}});
 })();
 </script>
