@@ -97,6 +97,16 @@
   .petal{position:absolute;z-index:9;pointer-events:none;font-size:1.15rem;animation:up 1.2s ease-out forwards}
   @keyframes up{0%{opacity:1;transform:translate(0,0) scale(.6) rotate(0)}100%{opacity:0;transform:translate(var(--dx),-78px) scale(1.15) rotate(var(--rot))}}
 
+  .wishstar{position:fixed;width:90px;height:3px;z-index:9;pointer-events:none;border-radius:3px;
+    background:linear-gradient(90deg,rgba(255,255,255,0),#fff);animation:ws .9s ease-out forwards}
+  @keyframes ws{0%{opacity:0;transform:translate(20px,-60px) rotate(28deg) scaleX(.3)}
+    20%{opacity:1}100%{opacity:0;transform:translate(-160px,80px) rotate(28deg) scaleX(1)}}
+  .wishtext{position:fixed;z-index:10;pointer-events:none;transform:translate(-50%,0);font-family:var(--font);
+    font-weight:700;color:#7a5f44;font-size:.95rem;background:rgba(255,255,255,.72);padding:6px 13px;border-radius:999px;
+    white-space:nowrap;box-shadow:0 6px 16px rgba(150,120,80,.25);animation:wt 1.8s ease-out forwards}
+  @keyframes wt{0%{opacity:0;transform:translate(-50%,6px) scale(.9)}15%{opacity:1;transform:translate(-50%,-4px) scale(1)}
+    80%{opacity:1}100%{opacity:0;transform:translate(-50%,-30px) scale(1)}}
+
   @media(max-width:480px){.keepsake{width:104px;bottom:96px;left:10px}.quote{bottom:54px}}
   @media(prefers-reduced-motion:reduce){
     .sun__rays,.cloud,.birds,.firefly,.star,.shoot,.planet__float,.spin-orbit,.rose,.smoke,.claude-hop,.bf,.onplanet{animation:none}}
@@ -177,7 +187,7 @@
 
   <figure class="keepsake"><img src="keepsake.jpg" alt="小王子和他的玫瑰" /><figcaption>我和我的玫瑰</figcaption></figure>
   <p class="quote">“重要的东西，用眼睛是看不见的。”</p>
-  <div class="hint" id="hint">✦ 每颗星球都能拖 · 点一下会开花 ✦</div>
+  <div class="hint" id="hint">✦ 甩动星球会相撞 · 点空白处许愿 ✦</div>
   <div class="grain"></div><div class="vignette"></div>
 
 <script>
@@ -272,7 +282,7 @@
     {key:"sat",left:"5%",top:"12%",size:152,vbw:140,vbh:120,cx:70,cy:64,r:34,col:["#ffe9b0","#f0bd63","#c98f3c"],hue:"#f0bd63",ring:true,cats:[{pal:"gray",u:2.7,cx:70,cy:33}]},
     {key:"cat1",left:"5%",top:"50%",size:122,vbw:110,vbh:120,cx:55,cy:62,r:40,col:["#d9f3b4","#74c07e","#3f9166"],hue:"#74c07e",cats:[{pal:"orange",u:3.1,cx:55,cy:25}]},
     {key:"cat2",left:"73%",top:"25%",size:120,vbw:110,vbh:120,cx:55,cy:62,r:40,col:["#bfe0ff","#7aa8e0","#4d6fb0"],hue:"#7aa8e0",cats:[{pal:"black",u:3.1,cx:55,cy:25}]},
-    {key:"me",left:"69%",top:"60%",size:142,vbw:120,vbh:148,cx:60,cy:64,r:42,col:["#f3d8ff","#c79be8","#9a6fcf"],hue:"#c79be8",me:true,label:"我 ♡",cats:[{pal:"white",u:2.1,cx:94,cy:44}]}
+    {key:"me",left:"69%",top:"60%",size:142,vbw:120,vbh:148,cx:60,cy:64,r:42,col:["#f3d8ff","#c79be8","#9a6fcf"],hue:"#c79be8",label:"小珏",cats:[{pal:"white",u:3.0,cx:60,cy:26}]}
   ];
   MINIS.forEach(cfg=>{
     const d=document.createElement("div");
@@ -283,35 +293,92 @@
     document.body.appendChild(d);
   });
 
-  /* ---------- 拖动 ---------- */
-  let zTop=10;
-  document.querySelectorAll(".planet").forEach(setup);
   document.querySelectorAll(".planet__float").forEach(f=>f.style.animationDelay=(Math.random()*3)+"s");
-  function setup(pl){
-    const KEY="pp_"+(pl.dataset.key||"x"), hint=document.getElementById("hint");
-    function clamp(x,y){const w=pl.offsetWidth,h=pl.offsetHeight;
-      return [Math.max(4,Math.min(x,innerWidth-w-4)),Math.max(4,Math.min(y,innerHeight-h-4))];}
-    function place(x,y){const[cx,cy]=clamp(x,y);pl.style.left=cx+"px";pl.style.top=cy+"px";pl.style.transform="none";}
-    try{const p=JSON.parse(localStorage.getItem(KEY));if(p&&typeof p.x==="number")place(p.x,p.y);}catch(e){}
-    let dragging=false,moved=false,sx=0,sy=0,ox=0,oy=0;
-    pl.addEventListener("pointerdown",e=>{dragging=true;moved=false;pl.style.zIndex=++zTop;
-      try{pl.setPointerCapture(e.pointerId);}catch(_){}
-      const r=pl.getBoundingClientRect();ox=e.clientX-r.left;oy=e.clientY-r.top;sx=e.clientX;sy=e.clientY;
-      pl.classList.add("is-drag");if(hint)hint.style.opacity=".25";});
-    pl.addEventListener("pointermove",e=>{if(!dragging)return;
-      if(Math.abs(e.clientX-sx)>3||Math.abs(e.clientY-sy)>3)moved=true;place(e.clientX-ox,e.clientY-oy);});
-    function endf(){if(!dragging)return;dragging=false;pl.classList.remove("is-drag");
-      const r=pl.getBoundingClientRect();try{localStorage.setItem(KEY,JSON.stringify({x:r.left,y:r.top}));}catch(e){}
-      if(!moved)petals(pl);}
-    pl.addEventListener("pointerup",endf);pl.addEventListener("pointercancel",endf);
-    pl.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();petals(pl);}});
-  }
-  addEventListener("resize",()=>{document.querySelectorAll(".planet").forEach(pl=>{
-    const r=pl.getBoundingClientRect(),w=pl.offsetWidth,h=pl.offsetHeight;
-    pl.style.left=Math.max(4,Math.min(r.left,innerWidth-w-4))+"px";
-    pl.style.top=Math.max(4,Math.min(r.top,innerHeight-h-4))+"px";pl.style.transform="none";});});
 
-  function petals(pl){const r=pl.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height*0.4;
+  /* ---------- 物理引擎：惯性 + 撞墙反弹 + 星球互撞 ---------- */
+  const planets=[];
+  document.querySelectorAll(".planet").forEach(el=>{
+    const r=el.getBoundingClientRect(), key="pp_"+(el.dataset.key||"x");
+    let x=r.left,y=r.top;
+    try{const p=JSON.parse(localStorage.getItem(key));if(p&&typeof p.x==="number"){x=p.x;y=p.y;}}catch(e){}
+    el.style.left=x+"px";el.style.top=y+"px";el.style.transform="none";
+    planets.push({el,key,x,y,w:el.offsetWidth,h:el.offsetHeight,vx:0,vy:0,drag:false,tx:x,ty:y,ox:0,oy:0,sx:0,sy:0,moved:false,rest:true});
+  });
+
+  let zTop=10;
+  const hint=document.getElementById("hint");
+  planets.forEach(p=>{
+    p.el.addEventListener("pointerdown",e=>{
+      p.drag=true;p.moved=false;p.rest=false;p.el.style.zIndex=++zTop;
+      try{p.el.setPointerCapture(e.pointerId);}catch(_){}
+      const r=p.el.getBoundingClientRect();
+      p.ox=e.clientX-r.left;p.oy=e.clientY-r.top;p.sx=e.clientX;p.sy=e.clientY;
+      p.tx=p.x;p.ty=p.y;p.el.classList.add("is-drag");
+      if(hint)hint.style.opacity=".18";
+    });
+    p.el.addEventListener("pointermove",e=>{
+      if(!p.drag)return;
+      if(Math.abs(e.clientX-p.sx)>3||Math.abs(e.clientY-p.sy)>3)p.moved=true;
+      p.tx=e.clientX-p.ox;p.ty=e.clientY-p.oy;
+    });
+    const up=()=>{if(!p.drag)return;p.drag=false;p.el.classList.remove("is-drag");if(!p.moved)petals(p.el);};
+    p.el.addEventListener("pointerup",up);
+    p.el.addEventListener("pointercancel",up);
+    p.el.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();petals(p.el);}});
+  });
+
+  const FR=0.965, REST=0.72;
+  function step(){
+    const W=innerWidth,H=innerHeight;
+    for(const p of planets){
+      if(p.drag){p.vx=p.tx-p.x;p.vy=p.ty-p.y;p.x=p.tx;p.y=p.ty;}
+      else if(Math.abs(p.vx)>0.02||Math.abs(p.vy)>0.02){
+        p.x+=p.vx;p.y+=p.vy;p.vx*=FR;p.vy*=FR;p.rest=false;
+        if(p.x<4){p.x=4;p.vx=-p.vx*REST;} if(p.x>W-p.w-4){p.x=W-p.w-4;p.vx=-p.vx*REST;}
+        if(p.y<4){p.y=4;p.vy=-p.vy*REST;} if(p.y>H-p.h-4){p.y=H-p.h-4;p.vy=-p.vy*REST;}
+      }else if(!p.rest){p.vx=0;p.vy=0;p.rest=true;
+        try{localStorage.setItem(p.key,JSON.stringify({x:Math.round(p.x),y:Math.round(p.y)}));}catch(e){}}
+    }
+    for(let i=0;i<planets.length;i++)for(let j=i+1;j<planets.length;j++){
+      const a=planets[i],b=planets[j];
+      const ar=Math.min(a.w,a.h)/2*0.82, br=Math.min(b.w,b.h)/2*0.82;
+      const ax=a.x+a.w/2,ay=a.y+a.h/2,bx=b.x+b.w/2,by=b.y+b.h/2;
+      let dx=bx-ax,dy=by-ay,d=Math.hypot(dx,dy)||0.001,min=ar+br;
+      if(d<min){
+        const nx=dx/d,ny=dy/d,overlap=min-d;
+        const am=a.drag?1e7:a.w*a.h, bm=b.drag?1e7:b.w*b.h, tot=am+bm;
+        if(!a.drag){a.x-=nx*overlap*(bm/tot);a.y-=ny*overlap*(bm/tot);a.rest=false;}
+        if(!b.drag){b.x+=nx*overlap*(am/tot);b.y+=ny*overlap*(am/tot);b.rest=false;}
+        const avn=a.vx*nx+a.vy*ny, bvn=b.vx*nx+b.vy*ny, imp=(bvn-avn);
+        if(!a.drag){a.vx+=nx*imp*(bm/tot)*1.5;a.vy+=ny*imp*(bm/tot)*1.5;}
+        if(!b.drag){b.vx-=nx*imp*(am/tot)*1.5;b.vy-=ny*imp*(am/tot)*1.5;}
+      }
+    }
+    for(const p of planets){p.el.style.left=p.x+"px";p.el.style.top=p.y+"px";}
+    requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+
+  addEventListener("resize",()=>{for(const p of planets){p.w=p.el.offsetWidth;p.h=p.el.offsetHeight;
+    p.x=Math.max(4,Math.min(p.x,innerWidth-p.w-4));p.y=Math.max(4,Math.min(p.y,innerHeight-p.h-4));}});
+
+  /* ---------- 点空白：流星许愿 ---------- */
+  const WISHES=["叮——愿望收到啦 ✨","今天也要开心鸭 🌷","会有好事发生的 🍀","星星记住你了 ⭐","小小的愿望，慢慢实现 🌙","抱抱你 🧡"];
+  addEventListener("pointerdown",e=>{
+    if(e.target.closest(".planet,a,.keepsake"))return;
+    const x=e.clientX,y=e.clientY;
+    const st=document.createElement("div");st.className="wishstar";st.style.left=x+"px";st.style.top=y+"px";
+    document.body.appendChild(st);setTimeout(()=>st.remove(),900);
+    const icons=["✨","⭐","💫","🌟"];
+    for(let i=0;i<8;i++){const s=document.createElement("span");s.className="petal";
+      s.textContent=icons[i%icons.length];s.style.left=x+"px";s.style.top=y+"px";
+      s.style.setProperty("--dx",(Math.random()*150-75)+"px");s.style.setProperty("--rot",(Math.random()*180-90)+"deg");
+      document.body.appendChild(s);setTimeout(()=>s.remove(),1200);}
+    const w=document.createElement("div");w.className="wishtext";w.textContent=WISHES[Math.floor(Math.random()*WISHES.length)];
+    w.style.left=x+"px";w.style.top=(y-12)+"px";document.body.appendChild(w);setTimeout(()=>w.remove(),1800);
+  });
+
+  function petals(el){const r=el.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height*0.4;
     const icons=["🌹","🌼","✨","🧡","🌸","⭐","🐾"];
     for(let i=0;i<7;i++){const s=document.createElement("span");s.className="petal";
       s.textContent=icons[Math.floor(Math.random()*icons.length)];s.style.left=cx+"px";s.style.top=cy+"px";
