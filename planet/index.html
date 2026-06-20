@@ -98,8 +98,10 @@
   @keyframes sway{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}
   .smoke{animation:smoke 3.4s ease-in-out infinite}
   @keyframes smoke{0%{opacity:0;transform:translateY(6px)}40%{opacity:.85}100%{opacity:0;transform:translateY(-10px)}}
-  .claude-arm{transform-box:fill-box;transform-origin:bottom center;animation:wave 1.8s ease-in-out infinite}
-  @keyframes wave{0%,100%{transform:rotate(6deg)}50%{transform:rotate(-16deg)}}
+  .claude-hop{transform-box:fill-box;transform-origin:bottom center;animation:hop 1.6s ease-in-out infinite}
+  @keyframes hop{0%,100%{transform:translateY(0) rotate(-2deg) scaleY(1)}
+    30%{transform:translateY(-9px) rotate(2deg) scaleY(1.04)}
+    60%{transform:translateY(0) rotate(-1deg) scaleY(.97)}}
   .bf{transform-box:fill-box;transform-origin:center;animation:flutter 5.5s ease-in-out infinite}
   .bf.b2{animation-duration:7s;animation-delay:1s}
   @keyframes flutter{0%{transform:translate(0,0) rotate(0)}25%{transform:translate(9px,-12px) rotate(8deg)}
@@ -114,7 +116,7 @@
     .quote{bottom:54px}
   }
   @media(prefers-reduced-motion:reduce){
-    .sun__rays,.cloud,.birds,.firefly,.planet__float,.spin-orbit,.rose,.smoke,.claude-arm,.bf{animation:none}
+    .sun__rays,.cloud,.birds,.firefly,.planet__float,.spin-orbit,.rose,.smoke,.claude-hop,.bf{animation:none}
   }
 </style>
 </head>
@@ -158,11 +160,11 @@
             <stop offset="62%" stop-color="#000" stop-opacity="0"/>
             <stop offset="100%" stop-color="#1b4d33" stop-opacity=".4"/>
           </radialGradient>
-          <radialGradient id="claudeBody" cx="40%" cy="30%" r="80%">
-            <stop offset="0%" stop-color="#ffc7a3"/>
-            <stop offset="60%" stop-color="#ef9b6e"/>
-            <stop offset="100%" stop-color="#d9744f"/>
-          </radialGradient>
+          <linearGradient id="roseG" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#ffb3c7"/>
+            <stop offset="55%" stop-color="#ff6f97"/>
+            <stop offset="100%" stop-color="#e23e6b"/>
+          </linearGradient>
           <clipPath id="pclip"><circle cx="150" cy="175" r="90"/></clipPath>
         </defs>
 
@@ -193,17 +195,28 @@
 
         <!-- 玻璃罩玫瑰 -->
         <g transform="translate(96 100)">
-          <ellipse cx="0" cy="2" rx="17" ry="5" fill="#7a5230"/>
-          <rect x="-16" y="-2" width="32" height="5" rx="2.5" fill="#5e3e22"/>
-          <line x1="0" y1="-2" x2="0" y2="-20" stroke="#3f9d77" stroke-width="2.6" stroke-linecap="round"/>
-          <g class="rose" style="transform:translateY(-22px)">
-            <circle cx="0" cy="0" r="7" fill="#ff5c84"/>
-            <circle cx="-3" cy="-1" r="3.6" fill="#ff3d6e"/>
-            <circle cx="3" cy="1" r="3.2" fill="#ff8fab"/>
+          <ellipse cx="0" cy="3" rx="18" ry="5" fill="#8a5a32"/>
+          <rect x="-17" y="-2" width="34" height="6" rx="3" fill="#6e4423"/>
+          <line x1="0" y1="-2" x2="0" y2="-18" stroke="#3f9d77" stroke-width="2.6" stroke-linecap="round"/>
+          <path d="M0 -9 q-9 -1 -11 -8 q9 0 11 8" fill="#4fb083"/>
+          <path d="M0 -12 q9 -1 11 -8 q-9 0 -11 8" fill="#5ab98c"/>
+          <g style="transform:translateY(-24px)">
+            <g class="rose">
+              <g fill="url(#roseG)">
+                <ellipse cx="0" cy="-7" rx="5.4" ry="7.4"/>
+                <ellipse cx="0" cy="-7" rx="5.4" ry="7.4" transform="rotate(72)"/>
+                <ellipse cx="0" cy="-7" rx="5.4" ry="7.4" transform="rotate(144)"/>
+                <ellipse cx="0" cy="-7" rx="5.4" ry="7.4" transform="rotate(216)"/>
+                <ellipse cx="0" cy="-7" rx="5.4" ry="7.4" transform="rotate(288)"/>
+              </g>
+              <circle r="6" fill="#ff5c84"/>
+              <path d="M0 3 q-4 -3 -1 -6 q4 -2 5 2 q1 5 -4 6 q-6 1 -7 -5 q-1 -8 8 -9" fill="none" stroke="#c5325f" stroke-width="1.3" stroke-linecap="round"/>
+              <circle r="1.8" fill="#ffd6e3"/>
+            </g>
           </g>
-          <path d="M-18 0 C-18 -36 18 -36 18 0" fill="rgba(220,240,255,.16)" stroke="rgba(255,255,255,.6)" stroke-width="1.6"/>
-          <circle cx="0" cy="-37" r="3" fill="rgba(255,255,255,.7)"/>
-          <path d="M-9 -8 C-9 -26 -2 -30 0 -31" stroke="#fff" stroke-opacity=".5" stroke-width="2" fill="none"/>
+          <path d="M-18 0 C-18 -42 18 -42 18 0" fill="rgba(220,240,255,.14)" stroke="rgba(255,255,255,.6)" stroke-width="1.6"/>
+          <circle cx="0" cy="-43" r="3" fill="rgba(255,255,255,.75)"/>
+          <path d="M-10 -8 C-10 -30 -3 -34 0 -35" stroke="#fff" stroke-opacity=".45" stroke-width="2" fill="none"/>
         </g>
 
         <!-- 小狐狸 -->
@@ -222,34 +235,12 @@
         <!-- 真·Q版小王子 -->
         <image href="prince.png" x="104" y="2" width="58" height="99" />
 
-        <!-- Claude 小家伙（站在小王子旁边） -->
-        <g transform="translate(196 100)">
-          <ellipse cx="0" cy="2" rx="17" ry="5" fill="#1b4d33" opacity=".18"/>
-          <!-- 脚 -->
-          <ellipse cx="-7" cy="-1" rx="5" ry="3.5" fill="#c2643f"/><ellipse cx="7" cy="-1" rx="5" ry="3.5" fill="#c2643f"/>
-          <!-- 身体 -->
-          <rect x="-16" y="-42" width="32" height="44" rx="16" fill="url(#claudeBody)"/>
-          <ellipse cx="0" cy="-16" rx="11" ry="13" fill="#ffd9bf" opacity=".55"/>
-          <!-- 招手的手臂 -->
-          <g class="claude-arm" style="transform-origin:-15px -34px">
-            <rect x="-26" y="-44" width="8" height="20" rx="4" fill="#e98a60"/>
-          </g>
-          <rect x="18" y="-34" width="8" height="18" rx="4" fill="#e98a60"/>
-          <!-- 阳光徽记 -->
-          <g fill="#fff3e0" opacity=".95" transform="translate(0 -20)">
-            <g id="burst"></g>
-            <circle cx="0" cy="0" r="2.4" fill="#fff3e0"/>
-          </g>
-          <!-- 脸 -->
-          <circle cx="-6" cy="-30" r="2.1" fill="#4a2f22"/><circle cx="6" cy="-30" r="2.1" fill="#4a2f22"/>
-          <path d="M-4 -25 q4 4 8 0" stroke="#4a2f22" stroke-width="1.6" fill="none" stroke-linecap="round"/>
-          <circle cx="-10" cy="-26" r="2.2" fill="#ff9e86" opacity=".7"/><circle cx="10" cy="-26" r="2.2" fill="#ff9e86" opacity=".7"/>
-          <!-- 名字 -->
-          <text x="0" y="-50" text-anchor="middle" font-family="Baloo 2, sans-serif" font-size="11" font-weight="700" fill="#d9744f">Claude ♡</text>
-        </g>
+        <!-- Claude 像素小怪（就是你给的那只，会蹦跶） -->
+        <ellipse cx="196" cy="99" rx="25" ry="6" fill="#1b4d33" opacity=".2"/>
+        <image class="claude-hop" href="claude.png" x="169" y="50" width="54" height="49" style="image-rendering:pixelated"/>
 
         <!-- 小王子与Claude之间的爱心 -->
-        <path d="M178 60 q3 -5 7 -2 q4 3 -7 9 q-11 -6 -7 -9 q4 -3 7 2Z" fill="#ff6f91" opacity=".9"/>
+        <path d="M165 66 q3 -5 7 -2 q4 3 -7 9 q-11 -6 -7 -9 q4 -3 7 2Z" fill="#ff6f91" opacity=".9"/>
 
         <!-- 蝴蝶 -->
         <g class="bf" transform="translate(66 118)">
@@ -276,9 +267,6 @@
   // 太阳光线
   const rays=document.getElementById("rays");
   for(let i=0;i<12;i++){const s=document.createElement("span");s.style.transform="rotate("+(i*30)+"deg)";rays.appendChild(s);}
-  // Claude 阳光徽记（柔和射线）
-  const burst=document.getElementById("burst");
-  if(burst){let g="";for(let i=0;i<10;i++){const a=i*36;g+='<rect x="-1.3" y="-9" width="2.6" height="6" rx="1.3" transform="rotate('+a+')"/>';}burst.innerHTML=g;}
   // 萤火
   for(let i=0;i<7;i++){const f=document.createElement("div");f.className="firefly";
     f.style.left=(10+Math.random()*80)+"vw";f.style.top=(40+Math.random()*50)+"vh";
