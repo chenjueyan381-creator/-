@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+<meta name="theme-color" content="#1a1530" />
+<title>时间胶囊</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&family=Noto+Serif+SC:wght@500;700&display=swap" rel="stylesheet" />
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  :root{--font:"Baloo 2","Noto Serif SC",system-ui,sans-serif;--serif:"Noto Serif SC",serif}
+  body{font-family:var(--font);color:#ece6ff;min-height:100dvh;position:relative;
+    background:linear-gradient(180deg,#161232 0%,#2c2150 42%,#523a6b 76%,#9a5f70 100%) fixed}
+  #stars{position:fixed;inset:0;z-index:0;pointer-events:none}
+  .wrap{position:relative;z-index:1;max-width:680px;margin:0 auto;padding:70px 18px 60px}
+
+  .back{position:fixed;top:16px;left:16px;z-index:6;text-decoration:none;background:rgba(255,255,255,.16);
+    color:#ece6ff;padding:9px 16px;border-radius:999px;font-weight:600;font-size:.95rem;backdrop-filter:blur(4px)}
+  .title{text-align:center;margin-bottom:8px}
+  .title h1{font-family:var(--serif);font-size:clamp(1.6rem,6.4vw,2.4rem);letter-spacing:.1em;
+    background:linear-gradient(180deg,#fff,#e6c6ff);-webkit-background-clip:text;background-clip:text;color:transparent;
+    text-shadow:0 0 26px rgba(180,130,255,.4)}
+  .title p{color:#c3b6e6;font-size:.85rem;margin-top:6px;letter-spacing:.1em}
+
+  .composer{background:rgba(255,255,255,.08);border:1px solid rgba(190,170,255,.2);border-radius:18px;padding:16px;margin:22px 0 26px;backdrop-filter:blur(6px)}
+  .composer textarea{width:100%;height:90px;background:rgba(255,255,255,.08);border:1.5px solid rgba(190,170,255,.25);
+    border-radius:12px;padding:11px 13px;color:#fff;font-family:var(--font);font-size:1rem;resize:none;outline:none}
+  .composer textarea::placeholder{color:#ada2d4}
+  .composer textarea:focus{border-color:#b79bff}
+  .row{display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap}
+  .row label{color:#c3b6e6;font-size:.9rem}
+  .row input[type=date]{background:rgba(255,255,255,.1);border:1.5px solid rgba(190,170,255,.25);color:#fff;
+    padding:9px 12px;border-radius:10px;color-scheme:dark;outline:none;font-family:var(--font)}
+  .row button{margin-left:auto;border:none;cursor:pointer;font-family:var(--font);font-weight:700;color:#2a1f44;
+    background:linear-gradient(135deg,#ffe79a,#ffb3d1);padding:11px 20px;border-radius:999px;font-size:.95rem}
+
+  .list{display:flex;flex-direction:column;gap:14px}
+  .empty{text-align:center;color:#b3a8d8;font-style:italic;margin-top:20px;font-family:var(--serif)}
+  .cap{position:relative;border-radius:16px;padding:16px 18px;border:1px solid rgba(190,170,255,.22);overflow:hidden}
+  .cap.locked{background:linear-gradient(135deg,rgba(70,55,110,.55),rgba(40,30,70,.55))}
+  .cap.open{background:linear-gradient(135deg,rgba(255,215,150,.18),rgba(255,160,200,.16));border-color:rgba(255,210,150,.45)}
+  .cap__icon{font-size:1.6rem}
+  .cap__h{display:flex;align-items:center;gap:10px}
+  .cap__meta{font-size:.82rem;color:#c8bce8;letter-spacing:.04em}
+  .cap.open .cap__meta{color:#6a4a52}
+  .cap__count{margin-top:8px;font-weight:700;color:#ffd9a8}
+  .cap__btn{margin-top:12px;border:none;cursor:pointer;font-family:var(--font);font-weight:700;color:#2a1f44;
+    background:linear-gradient(135deg,#ffe79a,#ffc46b);padding:9px 16px;border-radius:999px;font-size:.9rem}
+  .cap__text{display:none;margin-top:12px;line-height:1.9;white-space:pre-wrap;color:#3a2740;font-family:var(--serif);
+    background:rgba(255,255,255,.6);border-radius:12px;padding:12px 14px}
+  .cap.revealed .cap__text{display:block;animation:reveal .6s ease}
+  .cap.revealed .cap__btn{display:none}
+  @keyframes reveal{0%{opacity:0;transform:translateY(8px)}100%{opacity:1;transform:none}}
+  .cap__del{position:absolute;top:10px;right:12px;background:none;border:none;color:#b3a8d8;cursor:pointer;font-size:.9rem}
+  .cap__del:hover{color:#ff9eb0}
+  .cap.open .cap__del{color:#a98}
+
+  .petal{position:fixed;z-index:9;pointer-events:none;font-size:1.15rem;animation:up 1.2s ease-out forwards}
+  @keyframes up{0%{opacity:1;transform:translate(0,0) scale(.6)}100%{opacity:0;transform:translate(var(--dx),-80px) scale(1.15) rotate(var(--rot))}}
+</style>
+</head>
+<body>
+  <canvas id="stars" aria-hidden="true"></canvas>
+  <a class="back" href="../">← 回星球</a>
+  <div class="wrap">
+    <div class="title"><h1>时间胶囊 ⏳</h1><p>写给未来的自己 · 到那天才会开启</p></div>
+    <div class="composer">
+      <textarea id="ct" maxlength="600" placeholder="亲爱的未来的我……（想对那时的自己说点什么？）"></textarea>
+      <div class="row">
+        <label>解锁日期</label>
+        <input type="date" id="cd" />
+        <button id="cadd">封存这颗胶囊 🔒</button>
+      </div>
+    </div>
+    <div class="list" id="list"></div>
+  </div>
+<script>
+(function(){
+  "use strict";
+  // 背景星点
+  const cv=document.getElementById("stars"),ctx=cv.getContext("2d");let bs=[];
+  function rs(){cv.width=innerWidth;cv.height=innerHeight;const n=Math.min(160,(cv.width*cv.height/9000)|0);
+    bs=Array.from({length:n},()=>({x:Math.random()*cv.width,y:Math.random()*cv.height,r:Math.random()*1.2+.2,a:Math.random(),s:Math.random()*.02+.004}));}
+  rs();addEventListener("resize",rs);
+  (function loop(){ctx.clearRect(0,0,cv.width,cv.height);for(const s of bs){s.a+=s.s;const t=(Math.sin(s.a)+1)/2;
+    ctx.globalAlpha=.2+t*.7;ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,7);ctx.fill();}ctx.globalAlpha=1;requestAnimationFrame(loop);})();
+
+  const K="planet_capsules";
+  const load=()=>{try{return JSON.parse(localStorage.getItem(K))||[];}catch(e){return[];}};
+  const save=a=>{try{localStorage.setItem(K,JSON.stringify(a));}catch(e){}};
+  const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const list=document.getElementById("list");
+  const ct=document.getElementById("ct"),cd=document.getElementById("cd"),cadd=document.getElementById("cadd");
+
+  // 默认解锁日期 = 明天，最小值也是明天
+  const tmr=new Date(Date.now()+86400000);
+  const iso=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  cd.min=iso(tmr); cd.value=iso(new Date(Date.now()+86400000*30)); // 默认一个月后
+
+  function petals(x,y){const I=["✨","⭐","💫","🎉","🧡","🌸"];
+    for(let i=0;i<10;i++){const s=document.createElement("span");s.className="petal";s.textContent=I[(Math.random()*I.length)|0];
+      s.style.left=x+"px";s.style.top=y+"px";s.style.setProperty("--dx",(Math.random()*140-70)+"px");
+      s.style.setProperty("--rot",(Math.random()*180-90)+"deg");document.body.appendChild(s);setTimeout(()=>s.remove(),1200);}}
+
+  function fmt(ts){const d=new Date(ts);return iso(d);}
+  function render(){
+    const arr=load().sort((a,b)=>new Date(a.unlock)-new Date(b.unlock));
+    if(!arr.length){list.innerHTML='<p class="empty">还没有胶囊～ 写一颗封存给未来吧 ⏳</p>';return;}
+    const now=Date.now();
+    list.innerHTML=arr.map(c=>{
+      const ut=new Date(c.unlock+"T00:00:00").getTime();
+      const locked=ut>now;
+      if(locked){
+        const days=Math.ceil((ut-now)/86400000);
+        return '<div class="cap locked" data-id="'+c.id+'">'+
+          '<button class="cap__del" data-id="'+c.id+'" title="销毁">✕</button>'+
+          '<div class="cap__h"><span class="cap__icon">🔒</span><div><div class="cap__meta">封存于 '+fmt(c.created)+'</div>'+
+          '<div class="cap__meta">将在 '+c.unlock+' 开启</div></div></div>'+
+          '<div class="cap__count">还有 '+days+' 天解锁 ✦</div></div>';
+      }else{
+        return '<div class="cap open" data-id="'+c.id+'">'+
+          '<button class="cap__del" data-id="'+c.id+'" title="销毁">✕</button>'+
+          '<div class="cap__h"><span class="cap__icon">✨</span><div><div class="cap__meta">封存于 '+fmt(c.created)+'</div>'+
+          '<div class="cap__meta">解锁日 '+c.unlock+' · 时间到啦！</div></div></div>'+
+          '<button class="cap__btn" data-open="'+c.id+'">开启这颗胶囊 🎁</button>'+
+          '<div class="cap__text">'+esc(c.text)+'</div></div>';
+      }
+    }).join("");
+    list.querySelectorAll("[data-open]").forEach(b=>b.addEventListener("click",()=>{
+      const card=b.closest(".cap");card.classList.add("revealed");
+      const r=b.getBoundingClientRect();petals(r.left+r.width/2,r.top);
+    }));
+    list.querySelectorAll(".cap__del").forEach(b=>b.addEventListener("click",()=>{
+      if(!confirm("确定要销毁这颗胶囊吗？里面的话会消失哦。"))return;
+      save(load().filter(x=>String(x.id)!==b.dataset.id));render();
+    }));
+  }
+
+  cadd.addEventListener("click",()=>{
+    const t=ct.value.trim();if(!t){ct.focus();return;}
+    if(!cd.value){cd.focus();return;}
+    const arr=load();arr.push({id:Date.now(),text:t,created:Date.now(),unlock:cd.value});
+    save(arr);ct.value="";render();
+    petals(innerWidth/2,innerHeight*0.4);
+  });
+  render();
+})();
+</script>
+</body>
+</html>
