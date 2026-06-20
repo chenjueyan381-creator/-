@@ -73,7 +73,36 @@
     box-shadow:0 4px 12px rgba(150,170,200,.25);backdrop-filter:blur(4px)}
   .ctrl.on{background:linear-gradient(135deg,#ffd27a,#ff9e6d);color:#5a3a1f}
   .ctrl2{top:58px}
+  .ctrl3{top:100px}
   #dustcv{position:fixed;inset:0;z-index:3;pointer-events:none}
+
+  /* 跟随小克 */
+  .pet{position:fixed;width:58px;z-index:6;pointer-events:none;transform:translate(-50%,-100%);will-change:left,top}
+  .pet__b{width:100%}
+  .pet img{width:100%;display:block;image-rendering:pixelated;filter:drop-shadow(0 6px 10px rgba(150,90,50,.35))}
+
+  /* 愿望星 + 气泡 + 写愿望面板 */
+  .wstar{position:fixed;z-index:5;cursor:pointer;color:#fff;font-size:18px;line-height:1;transform:translate(-50%,-50%);
+    text-shadow:0 0 8px rgba(255,240,180,.95),0 0 18px rgba(255,210,110,.7);animation:tw 2.8s ease-in-out infinite}
+  .wstar.born{animation:starborn .8s ease-out,tw 2.8s ease-in-out .8s infinite}
+  @keyframes starborn{0%{transform:translate(-50%,-50%) scale(0) rotate(-90deg);opacity:0}
+    60%{transform:translate(-50%,-50%) scale(1.6) rotate(12deg);opacity:1}100%{transform:translate(-50%,-50%) scale(1)}}
+  .wbubble{position:fixed;z-index:21;transform:translate(-50%,-100%) scale(.9);opacity:0;transition:.3s;pointer-events:none;
+    max-width:240px;background:rgba(44,32,52,.88);color:#fff6e8;padding:8px 12px;border-radius:12px;font-size:.85rem;
+    box-shadow:0 8px 22px rgba(0,0,0,.3);font-family:var(--serif);white-space:pre-wrap;text-align:center}
+  .wbubble.show{opacity:1;transform:translate(-50%,-112%) scale(1)}
+  .wishbox{position:fixed;inset:0;z-index:20;display:none;align-items:center;justify-content:center;
+    background:rgba(40,28,20,.4);backdrop-filter:blur(3px);padding:20px}
+  .wishbox.show{display:flex}
+  .wishbox__in{background:#fff8ee;border-radius:18px;padding:20px;width:min(92vw,360px);box-shadow:0 20px 50px rgba(120,80,40,.4)}
+  .wishbox__in h3{font-family:var(--serif);color:#7a5f44;font-size:1.05rem;margin-bottom:12px;text-align:center}
+  .wishbox textarea{width:100%;height:96px;border:1.5px solid #ecd9bf;border-radius:12px;padding:10px 12px;
+    font-family:var(--font);font-size:1rem;color:#5b4636;resize:none;outline:none;background:#fffdf8}
+  .wishbox textarea:focus{border-color:#ffbf7a}
+  .wishbox__btns{display:flex;gap:10px;justify-content:flex-end;margin-top:14px}
+  .wishbox__btns button{border:none;cursor:pointer;font-family:var(--font);font-weight:700;padding:9px 16px;border-radius:999px;font-size:.92rem}
+  #wishcancel{background:#efe3d2;color:#8a715a}
+  #wishok{background:linear-gradient(135deg,#ffd27a,#ff9e6d);color:#5a3a1f}
   .claudemoon .cpose{width:100%}
   .claudemoon .cmoon{width:100%;display:block;image-rendering:pixelated;filter:drop-shadow(0 6px 10px rgba(150,90,50,.3))}
   .cm-hop{transform-box:fill-box;transform-origin:bottom center;animation:cmhop 1.6s ease-in-out infinite}
@@ -149,6 +178,7 @@
   <a class="back" href="../">← 回小世界</a>
   <button id="grav" class="ctrl">🪐 引力：关</button>
   <button id="dust" class="ctrl ctrl2 on">🌌 星尘：开</button>
+  <button id="wishbtn" class="ctrl ctrl3">🫙 留言瓶</button>
   <div class="title"><h1>小王子的星球</h1><p>B-612 · 一个个拖着它们去散步吧</p></div>
 
   <!-- ===== 主星球 ===== -->
@@ -428,7 +458,7 @@
   /* ---------- 点空白：流星许愿 ---------- */
   const WISHES=["叮——愿望收到啦 ✨","今天也要开心鸭 🌷","会有好事发生的 🍀","星星记住你了 ⭐","小小的愿望，慢慢实现 🌙","抱抱你 🧡"];
   addEventListener("pointerdown",e=>{
-    if(e.target.closest(".planet,a,.keepsake,.ctrl"))return;
+    if(e.target.closest(".planet,a,.keepsake,.ctrl,.wishbox,.wstar"))return;
     const x=e.clientX,y=e.clientY;
     const st=document.createElement("div");st.className="wishstar";st.style.left=x+"px";st.style.top=y+"px";
     document.body.appendChild(st);setTimeout(()=>st.remove(),900);
@@ -494,6 +524,67 @@
     requestAnimationFrame(dustStep);
   }
   requestAnimationFrame(dustStep);
+
+  /* ====== 跟着手指走的小克（转向行为 + 发呆冒爱心） ====== */
+  const pet=document.createElement("div");pet.className="pet";
+  pet.innerHTML='<div class="pet__b"><img src="claude.png" alt="小克"></div>';
+  document.body.appendChild(pet);
+  const pb=pet.querySelector(".pet__b");
+  let px=innerWidth*0.5,py=innerHeight*0.72,pvx=0,pvy=0,face=1,tgx=px,tgy=py,lastM=-9999,wanderT=0;
+  addEventListener("pointermove",e=>{tgx=e.clientX;tgy=e.clientY;lastM=performance.now();},{passive:true});
+  function petStep(){
+    const now=performance.now(), idle=(now-lastM)>2500;
+    if(idle&&now>wanderT){wanderT=now+1500+Math.random()*2200;tgx=innerWidth*(0.14+Math.random()*0.72);tgy=innerHeight*(0.34+Math.random()*0.5);}
+    const ox=tgx, oy=tgy+(idle?0:34);
+    const dx=ox-px,dy=oy-py,d=Math.hypot(dx,dy),maxsp=idle?1.7:5.2,arrive=80;
+    if(d>2){const ux=dx/d,uy=dy/d,want=Math.min(maxsp,d/(arrive/maxsp));pvx+=(ux*want-pvx)*0.12;pvy+=(uy*want-pvy)*0.12;}
+    else{pvx*=0.8;pvy*=0.8;}
+    px+=pvx;py+=pvy;
+    const sp=Math.hypot(pvx,pvy);
+    if(Math.abs(pvx)>0.3)face=pvx<0?-1:1;
+    const hop=sp>0.6?Math.abs(Math.sin(now/90))*-7*Math.min(1,sp/3):0;
+    const br=sp<=0.6?(1+Math.sin(now/600)*0.05):1;
+    pet.style.left=px+"px";pet.style.top=py+"px";
+    pb.style.transform="translateY("+hop.toFixed(1)+"px) scaleX("+face+") scaleY("+br.toFixed(3)+")";
+    if(idle&&Math.random()<0.006){const e=document.createElement("span");e.className="petal";
+      e.textContent=["♪","❤","✨","· ᴗ ·"][Math.floor(Math.random()*4)];e.style.left=px+"px";e.style.top=(py-52)+"px";
+      e.style.setProperty("--dx",(Math.random()*30-15)+"px");e.style.setProperty("--rot","0deg");
+      document.body.appendChild(e);setTimeout(()=>e.remove(),1200);}
+    requestAnimationFrame(petStep);
+  }
+  requestAnimationFrame(petStep);
+
+  /* ====== 星空留言瓶 ====== */
+  const WK="planet_wishes";
+  function loadW(){try{return JSON.parse(localStorage.getItem(WK))||[];}catch(e){return[];}}
+  function saveW(a){try{localStorage.setItem(WK,JSON.stringify(a));}catch(e){}}
+  const box=document.createElement("div");box.className="wishbox";
+  box.innerHTML='<div class="wishbox__in"><h3>写一颗愿望，放上夜空 🫙</h3><textarea id="wishta" maxlength="120" placeholder="悄悄许个愿……"></textarea><div class="wishbox__btns"><button id="wishcancel">关掉</button><button id="wishok">放上夜空 ✦</button></div></div>';
+  document.body.appendChild(box);
+  const wbtn=document.getElementById("wishbtn");
+  function openBox(){box.classList.add("show");setTimeout(()=>{const t=document.getElementById("wishta");if(t)t.focus();},60);}
+  function closeBox(){box.classList.remove("show");}
+  wbtn.addEventListener("click",openBox);
+  box.addEventListener("pointerdown",e=>{if(e.target===box)closeBox();});
+  document.getElementById("wishcancel").addEventListener("click",closeBox);
+  document.getElementById("wishok").addEventListener("click",()=>{
+    const ta=document.getElementById("wishta"),txt=ta.value.trim();if(!txt){closeBox();return;}
+    const w={id:Date.now(),text:txt,x:8+Math.random()*84,y:9+Math.random()*44,t:new Date().toLocaleDateString()};
+    const arr=loadW();arr.push(w);saveW(arr);ta.value="";closeBox();addStar(w,true);
+  });
+  function showBubble(w,s){const b=document.createElement("div");b.className="wbubble";b.textContent=w.text+"  · "+w.t;
+    const r=s.getBoundingClientRect();b.style.left=(r.left+r.width/2)+"px";b.style.top=(r.top-6)+"px";
+    document.body.appendChild(b);requestAnimationFrame(()=>b.classList.add("show"));
+    setTimeout(()=>{b.classList.remove("show");setTimeout(()=>b.remove(),320);},3400);}
+  function addStar(w,fresh){const s=document.createElement("div");s.className="wstar"+(fresh?" born":"");
+    s.style.left=w.x+"vw";s.style.top=w.y+"vh";s.textContent="✦";
+    s.addEventListener("pointerdown",e=>{e.stopPropagation();showBubble(w,s);});
+    document.body.appendChild(s);
+    if(fresh){const x=innerWidth*w.x/100,y=innerHeight*w.y/100;
+      for(let i=0;i<8;i++){const sp=document.createElement("span");sp.className="petal";sp.textContent="✨";
+        sp.style.left=x+"px";sp.style.top=y+"px";sp.style.setProperty("--dx",(Math.random()*100-50)+"px");
+        sp.style.setProperty("--rot",(Math.random()*180-90)+"deg");document.body.appendChild(sp);setTimeout(()=>sp.remove(),1200);}}}
+  loadW().forEach(w=>addStar(w,false));
 })();
 </script>
 </body>
