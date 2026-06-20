@@ -73,7 +73,10 @@
     box-shadow:0 4px 12px rgba(150,170,200,.25);backdrop-filter:blur(4px)}
   .ctrl.on{background:linear-gradient(135deg,#ffd27a,#ff9e6d);color:#5a3a1f}
   .ctrl2{top:58px}
-  .ctrl3{top:100px}
+  .subnav{position:absolute;top:86px;left:0;right:0;z-index:6;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+  .subnav a{text-decoration:none;background:rgba(255,255,255,.62);color:#6b5440;padding:8px 15px;border-radius:999px;
+    font-family:var(--font);font-weight:700;font-size:.9rem;box-shadow:0 4px 12px rgba(150,170,200,.25);backdrop-filter:blur(4px)}
+  .subnav a:active{transform:scale(.96)}
   #dustcv{position:fixed;inset:0;z-index:3;pointer-events:none}
 
   /* 跟随小克 */
@@ -178,7 +181,10 @@
   <a class="back" href="../">← 回小世界</a>
   <button id="grav" class="ctrl">🪐 引力：关</button>
   <button id="dust" class="ctrl ctrl2 on">🌌 星尘：开</button>
-  <button id="wishbtn" class="ctrl ctrl3">🫙 留言瓶</button>
+  <div class="subnav">
+    <a href="wish/">🫙 愿望星空</a>
+    <a href="pet/">🐾 小克陪你</a>
+  </div>
   <div class="title"><h1>小王子的星球</h1><p>B-612 · 一个个拖着它们去散步吧</p></div>
 
   <!-- ===== 主星球 ===== -->
@@ -524,67 +530,6 @@
     requestAnimationFrame(dustStep);
   }
   requestAnimationFrame(dustStep);
-
-  /* ====== 跟着手指走的小克（转向行为 + 发呆冒爱心） ====== */
-  const pet=document.createElement("div");pet.className="pet";
-  pet.innerHTML='<div class="pet__b"><img src="claude.png" alt="小克"></div>';
-  document.body.appendChild(pet);
-  const pb=pet.querySelector(".pet__b");
-  let px=innerWidth*0.5,py=innerHeight*0.72,pvx=0,pvy=0,face=1,tgx=px,tgy=py,lastM=-9999,wanderT=0;
-  addEventListener("pointermove",e=>{tgx=e.clientX;tgy=e.clientY;lastM=performance.now();},{passive:true});
-  function petStep(){
-    const now=performance.now(), idle=(now-lastM)>2500;
-    if(idle&&now>wanderT){wanderT=now+1500+Math.random()*2200;tgx=innerWidth*(0.14+Math.random()*0.72);tgy=innerHeight*(0.34+Math.random()*0.5);}
-    const ox=tgx, oy=tgy+(idle?0:34);
-    const dx=ox-px,dy=oy-py,d=Math.hypot(dx,dy),maxsp=idle?1.7:5.2,arrive=80;
-    if(d>2){const ux=dx/d,uy=dy/d,want=Math.min(maxsp,d/(arrive/maxsp));pvx+=(ux*want-pvx)*0.12;pvy+=(uy*want-pvy)*0.12;}
-    else{pvx*=0.8;pvy*=0.8;}
-    px+=pvx;py+=pvy;
-    const sp=Math.hypot(pvx,pvy);
-    if(Math.abs(pvx)>0.3)face=pvx<0?-1:1;
-    const hop=sp>0.6?Math.abs(Math.sin(now/90))*-7*Math.min(1,sp/3):0;
-    const br=sp<=0.6?(1+Math.sin(now/600)*0.05):1;
-    pet.style.left=px+"px";pet.style.top=py+"px";
-    pb.style.transform="translateY("+hop.toFixed(1)+"px) scaleX("+face+") scaleY("+br.toFixed(3)+")";
-    if(idle&&Math.random()<0.006){const e=document.createElement("span");e.className="petal";
-      e.textContent=["♪","❤","✨","· ᴗ ·"][Math.floor(Math.random()*4)];e.style.left=px+"px";e.style.top=(py-52)+"px";
-      e.style.setProperty("--dx",(Math.random()*30-15)+"px");e.style.setProperty("--rot","0deg");
-      document.body.appendChild(e);setTimeout(()=>e.remove(),1200);}
-    requestAnimationFrame(petStep);
-  }
-  requestAnimationFrame(petStep);
-
-  /* ====== 星空留言瓶 ====== */
-  const WK="planet_wishes";
-  function loadW(){try{return JSON.parse(localStorage.getItem(WK))||[];}catch(e){return[];}}
-  function saveW(a){try{localStorage.setItem(WK,JSON.stringify(a));}catch(e){}}
-  const box=document.createElement("div");box.className="wishbox";
-  box.innerHTML='<div class="wishbox__in"><h3>写一颗愿望，放上夜空 🫙</h3><textarea id="wishta" maxlength="120" placeholder="悄悄许个愿……"></textarea><div class="wishbox__btns"><button id="wishcancel">关掉</button><button id="wishok">放上夜空 ✦</button></div></div>';
-  document.body.appendChild(box);
-  const wbtn=document.getElementById("wishbtn");
-  function openBox(){box.classList.add("show");setTimeout(()=>{const t=document.getElementById("wishta");if(t)t.focus();},60);}
-  function closeBox(){box.classList.remove("show");}
-  wbtn.addEventListener("click",openBox);
-  box.addEventListener("pointerdown",e=>{if(e.target===box)closeBox();});
-  document.getElementById("wishcancel").addEventListener("click",closeBox);
-  document.getElementById("wishok").addEventListener("click",()=>{
-    const ta=document.getElementById("wishta"),txt=ta.value.trim();if(!txt){closeBox();return;}
-    const w={id:Date.now(),text:txt,x:8+Math.random()*84,y:9+Math.random()*44,t:new Date().toLocaleDateString()};
-    const arr=loadW();arr.push(w);saveW(arr);ta.value="";closeBox();addStar(w,true);
-  });
-  function showBubble(w,s){const b=document.createElement("div");b.className="wbubble";b.textContent=w.text+"  · "+w.t;
-    const r=s.getBoundingClientRect();b.style.left=(r.left+r.width/2)+"px";b.style.top=(r.top-6)+"px";
-    document.body.appendChild(b);requestAnimationFrame(()=>b.classList.add("show"));
-    setTimeout(()=>{b.classList.remove("show");setTimeout(()=>b.remove(),320);},3400);}
-  function addStar(w,fresh){const s=document.createElement("div");s.className="wstar"+(fresh?" born":"");
-    s.style.left=w.x+"vw";s.style.top=w.y+"vh";s.textContent="✦";
-    s.addEventListener("pointerdown",e=>{e.stopPropagation();showBubble(w,s);});
-    document.body.appendChild(s);
-    if(fresh){const x=innerWidth*w.x/100,y=innerHeight*w.y/100;
-      for(let i=0;i<8;i++){const sp=document.createElement("span");sp.className="petal";sp.textContent="✨";
-        sp.style.left=x+"px";sp.style.top=y+"px";sp.style.setProperty("--dx",(Math.random()*100-50)+"px");
-        sp.style.setProperty("--rot",(Math.random()*180-90)+"deg");document.body.appendChild(sp);setTimeout(()=>sp.remove(),1200);}}}
-  loadW().forEach(w=>addStar(w,false));
 })();
 </script>
 </body>

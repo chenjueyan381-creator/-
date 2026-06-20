@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+<meta name="theme-color" content="#0a0f2a" />
+<title>愿望星空</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&family=Noto+Serif+SC:wght@500;700&display=swap" rel="stylesheet" />
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  :root{--font:"Baloo 2","Noto Serif SC",system-ui,sans-serif;--serif:"Noto Serif SC",serif}
+  html,body{height:100%}
+  body{font-family:var(--font);color:#eae4ff;overflow:hidden;height:100dvh;position:relative;
+    background:linear-gradient(180deg,#080c24 0%,#141a3e 46%,#241f4e 80%,#2e2147 100%)}
+  #stars{position:fixed;inset:0;z-index:1}
+  .moon{position:absolute;top:8%;right:12%;width:64px;height:64px;border-radius:50%;background:#fdf6d8;z-index:1;
+    box-shadow:0 0 40px 8px rgba(253,246,216,.45)}
+  .moon::after{content:"";position:absolute;top:-6px;left:16px;width:58px;height:58px;border-radius:50%;background:#0e1330}
+
+  .back{position:absolute;top:16px;left:16px;z-index:6;text-decoration:none;background:rgba(255,255,255,.14);
+    color:#eae4ff;padding:9px 16px;border-radius:999px;font-weight:600;font-size:.95rem;backdrop-filter:blur(4px)}
+  .title{position:absolute;top:22px;left:0;right:0;text-align:center;z-index:5;pointer-events:none}
+  .title h1{font-family:var(--serif);font-size:clamp(1.5rem,6.4vw,2.4rem);letter-spacing:.1em;
+    background:linear-gradient(180deg,#fff,#cdbcff);-webkit-background-clip:text;background-clip:text;color:transparent;
+    text-shadow:0 0 26px rgba(150,120,255,.4)}
+  .title p{font-size:clamp(.8rem,3.4vw,.95rem);color:#b3a8e0;margin-top:6px;letter-spacing:.1em}
+  .count{position:absolute;top:84px;left:0;right:0;text-align:center;z-index:5;color:#c9bff0;font-size:.85rem;letter-spacing:.1em;pointer-events:none}
+
+  .wstar{position:fixed;z-index:4;cursor:pointer;color:#fff;font-size:20px;line-height:1;transform:translate(-50%,-50%);
+    text-shadow:0 0 8px rgba(255,245,200,.95),0 0 20px rgba(255,210,120,.7);animation:tw 2.8s ease-in-out infinite}
+  @keyframes tw{0%,100%{opacity:.5}50%{opacity:1}}
+  .wstar.born{animation:born .9s ease-out,tw 2.8s ease-in-out .9s infinite}
+  @keyframes born{0%{transform:translate(-50%,-50%) scale(0) rotate(-90deg);opacity:0}
+    60%{transform:translate(-50%,-50%) scale(1.7) rotate(12deg);opacity:1}100%{transform:translate(-50%,-50%) scale(1)}}
+  .wbubble{position:fixed;z-index:8;transform:translate(-50%,-100%) scale(.9);opacity:0;transition:.3s;pointer-events:none;
+    max-width:260px;background:rgba(20,16,40,.9);color:#fff6e8;padding:9px 13px;border-radius:12px;font-size:.88rem;
+    box-shadow:0 8px 24px rgba(0,0,0,.45);font-family:var(--serif);white-space:pre-wrap;text-align:center;border:1px solid rgba(170,150,255,.25)}
+  .wbubble.show{opacity:1;transform:translate(-50%,-112%) scale(1)}
+
+  .composer{position:absolute;left:0;right:0;bottom:26px;z-index:6;display:flex;gap:10px;justify-content:center;padding:0 16px}
+  .composer input{flex:1;max-width:420px;background:rgba(255,255,255,.1);border:1.5px solid rgba(180,160,255,.3);
+    color:#fff;padding:13px 16px;border-radius:999px;outline:none;font-family:var(--font);font-size:1rem}
+  .composer input::placeholder{color:#b0a6d8}
+  .composer input:focus{border-color:#9a86ff;background:rgba(255,255,255,.16)}
+  .composer button{border:none;cursor:pointer;font-family:var(--font);font-weight:700;color:#2a1f44;
+    background:linear-gradient(135deg,#ffe79a,#ffc46b);padding:13px 18px;border-radius:999px;font-size:.95rem;white-space:nowrap}
+  .hint{position:absolute;left:0;right:0;bottom:76px;text-align:center;z-index:5;color:#9a8fc8;font-size:.78rem;letter-spacing:.08em;pointer-events:none}
+  .petal{position:fixed;z-index:7;pointer-events:none;font-size:1.1rem;animation:up 1.2s ease-out forwards}
+  @keyframes up{0%{opacity:1;transform:translate(0,0) scale(.6)}100%{opacity:0;transform:translate(var(--dx),-80px) scale(1.15)}}
+  @media(prefers-reduced-motion:reduce){.wstar,.wstar.born{animation:none}}
+</style>
+</head>
+<body>
+  <canvas id="stars" aria-hidden="true"></canvas>
+  <div class="moon" aria-hidden="true"></div>
+  <a class="back" href="../">← 回星球</a>
+  <div class="title"><h1>愿望星空</h1><p>写下的愿望，会化成星星，一直亮着</p></div>
+  <div class="count" id="count"></div>
+  <div class="hint">点亮的星星 · 轻触就能重新读到 ✦</div>
+  <div class="composer">
+    <input id="wi" maxlength="120" placeholder="悄悄许个愿……" />
+    <button id="wb">放上夜空 ✦</button>
+  </div>
+<script>
+(function(){
+  "use strict";
+  // 背景星空
+  const cv=document.getElementById("stars"),ctx=cv.getContext("2d");let bs=[];
+  function rs(){cv.width=innerWidth;cv.height=innerHeight;const n=Math.min(220,(cv.width*cv.height/7000)|0);
+    bs=Array.from({length:n},()=>({x:Math.random()*cv.width,y:Math.random()*cv.height,r:Math.random()*1.3+.2,a:Math.random(),s:Math.random()*.02+.004}));}
+  rs();addEventListener("resize",rs);
+  (function loop(){ctx.clearRect(0,0,cv.width,cv.height);for(const s of bs){s.a+=s.s;const t=(Math.sin(s.a)+1)/2;
+    ctx.globalAlpha=.2+t*.8;ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,7);ctx.fill();}ctx.globalAlpha=1;requestAnimationFrame(loop);})();
+  // 偶尔流星
+  setInterval(()=>{const x=Math.random()*innerWidth*0.8+innerWidth*0.1,y=Math.random()*innerHeight*0.4+30;
+    const m=document.createElement("div");m.style.cssText="position:fixed;z-index:2;left:"+x+"px;top:"+y+"px;width:110px;height:2px;border-radius:2px;background:linear-gradient(90deg,rgba(255,255,255,0),#fff);transform:rotate(26deg);pointer-events:none;opacity:.9";
+    m.animate([{transform:"translate(30px,-20px) rotate(26deg) scaleX(.3)",opacity:0},{opacity:1,offset:.2},{transform:"translate(-200px,90px) rotate(26deg) scaleX(1)",opacity:0}],{duration:1100,easing:"ease-in"});
+    document.body.appendChild(m);setTimeout(()=>m.remove(),1200);},5200);
+
+  const WK="planet_wishes";
+  const load=()=>{try{return JSON.parse(localStorage.getItem(WK))||[];}catch(e){return[];}};
+  const save=a=>{try{localStorage.setItem(WK,JSON.stringify(a));}catch(e){}};
+  const countEl=document.getElementById("count");
+  function refresh(){const n=load().length;countEl.textContent=n?("已点亮 "+n+" 颗愿望"):"还没有愿望，写下第一颗吧 ✦";}
+  function bubble(w,s){const b=document.createElement("div");b.className="wbubble";b.textContent=w.text+"  · "+w.t;
+    const r=s.getBoundingClientRect();b.style.left=(r.left+r.width/2)+"px";b.style.top=(r.top-6)+"px";
+    document.body.appendChild(b);requestAnimationFrame(()=>b.classList.add("show"));
+    setTimeout(()=>{b.classList.remove("show");setTimeout(()=>b.remove(),320);},3600);}
+  function addStar(w,fresh){const s=document.createElement("div");s.className="wstar"+(fresh?" born":"");
+    s.style.left=w.x+"vw";s.style.top=w.y+"vh";s.textContent="✦";
+    s.addEventListener("click",()=>bubble(w,s));document.body.appendChild(s);
+    if(fresh){const x=innerWidth*w.x/100,y=innerHeight*w.y/100;
+      for(let i=0;i<10;i++){const sp=document.createElement("span");sp.className="petal";sp.textContent="✨";
+        sp.style.left=x+"px";sp.style.top=y+"px";sp.style.setProperty("--dx",(Math.random()*120-60)+"px");
+        document.body.appendChild(sp);setTimeout(()=>sp.remove(),1200);}}}
+  load().forEach(w=>addStar(w,false));refresh();
+
+  const wi=document.getElementById("wi"),wb=document.getElementById("wb");
+  function add(){const t=wi.value.trim();if(!t)return;
+    const w={id:Date.now(),text:t,x:8+Math.random()*84,y:14+Math.random()*46,t:new Date().toLocaleDateString()};
+    const a=load();a.push(w);save(a);wi.value="";addStar(w,true);refresh();}
+  wb.addEventListener("click",add);
+  wi.addEventListener("keydown",e=>{if(e.key==="Enter")add();});
+})();
+</script>
+</body>
+</html>
