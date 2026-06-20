@@ -68,6 +68,12 @@
   .onplanet{transform-box:fill-box;transform-origin:bottom center;animation:catbob 3s ease-in-out infinite}
   @keyframes catbob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
   .me-label{font-family:var(--font);font-weight:700;fill:#8a5fae}
+  .ctrl{position:absolute;top:16px;right:16px;z-index:7;border:none;cursor:pointer;background:rgba(255,255,255,.65);
+    color:#6b5440;padding:9px 14px;border-radius:999px;font-family:var(--font);font-weight:700;font-size:.9rem;
+    box-shadow:0 4px 12px rgba(150,170,200,.25);backdrop-filter:blur(4px)}
+  .ctrl.on{background:linear-gradient(135deg,#ffd27a,#ff9e6d);color:#5a3a1f}
+  .claudemoon .cmoon{width:100%;display:block;image-rendering:pixelated;transform-box:fill-box;transform-origin:bottom center;
+    filter:drop-shadow(0 6px 10px rgba(150,90,50,.3));animation:hop 1.6s ease-in-out infinite}
 
   .keepsake{position:absolute;left:16px;bottom:80px;width:128px;z-index:5;background:#fff;
     padding:8px 8px 28px;border-radius:5px;transform:rotate(-5deg);box-shadow:0 12px 26px rgba(120,90,60,.32)}
@@ -131,6 +137,7 @@
   </svg>
 
   <a class="back" href="../">← 回小世界</a>
+  <button id="grav" class="ctrl">🪐 引力：关</button>
   <div class="title"><h1>小王子的星球</h1><p>B-612 · 一个个拖着它们去散步吧</p></div>
 
   <!-- ===== 主星球 ===== -->
@@ -293,6 +300,16 @@
     document.body.appendChild(d);
   });
 
+  // 多几个小克（像素 Claude 小怪，可拖、可被引力牵引）
+  const CLAUDES=[{key:"k1",left:"20%",top:"72%"},{key:"k2",left:"42%",top:"16%"},{key:"k3",left:"88%",top:"48%"}];
+  CLAUDES.forEach(c=>{
+    const d=document.createElement("div");d.className="planet mini claudemoon";d.dataset.key=c.key;
+    d.setAttribute("role","button");d.tabIndex=0;d.setAttribute("aria-label","小克");
+    d.style.left=c.left;d.style.top=c.top;d.style.width="62px";
+    d.innerHTML='<div class="planet__float"><img class="cmoon" src="claude.png" alt="小克"></div>';
+    document.body.appendChild(d);
+  });
+
   document.querySelectorAll(".planet__float").forEach(f=>f.style.animationDelay=(Math.random()*3)+"s");
 
   /* ---------- 物理引擎：惯性 + 撞墙反弹 + 星球互撞 ---------- */
@@ -327,11 +344,41 @@
     p.el.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();petals(p.el);}});
   });
 
-  const FR=0.965, REST=0.72;
+  const FR=0.965, REST=0.72, GM=2600, SOFT=500;
+  let gravMode=false;
+  const mainP=planets.reduce((m,p)=>(p.w*p.h>m.w*m.h?p:m),planets[0]);
+
+  const gbtn=document.getElementById("grav");
+  gbtn.addEventListener("click",()=>{
+    gravMode=!gravMode;
+    gbtn.textContent=gravMode?"🪐 引力：开":"🪐 引力：关";
+    gbtn.classList.toggle("on",gravMode);
+    if(gravMode){
+      const mcx=mainP.x+mainP.w/2,mcy=mainP.y+mainP.h/2;
+      for(const p of planets){if(p===mainP){p.vx=0;p.vy=0;continue;}
+        const dx=mcx-(p.x+p.w/2),dy=mcy-(p.y+p.h/2),r=Math.hypot(dx,dy)||1;
+        const sp=Math.sqrt(GM/r),dir=Math.random()<0.5?1:-1;
+        p.vx=(-dy/r)*sp*dir;p.vy=(dx/r)*sp*dir;p.rest=false;}
+    }else{
+      for(const p of planets){try{localStorage.setItem(p.key,JSON.stringify({x:Math.round(p.x),y:Math.round(p.y)}));}catch(e){}}
+    }
+  });
+
   function step(){
     const W=innerWidth,H=innerHeight;
     for(const p of planets){
-      if(p.drag){p.vx=p.tx-p.x;p.vy=p.ty-p.y;p.x=p.tx;p.y=p.ty;}
+      if(p.drag){p.vx=p.tx-p.x;p.vy=p.ty-p.y;p.x=p.tx;p.y=p.ty;continue;}
+      if(gravMode){
+        if(p!==mainP){
+          const dx=(mainP.x+mainP.w/2)-(p.x+p.w/2),dy=(mainP.y+mainP.h/2)-(p.y+p.h/2);
+          const r2=dx*dx+dy*dy,r=Math.sqrt(r2)||1,a=GM/(r2+SOFT);
+          p.vx+=a*dx/r;p.vy+=a*dy/r;
+          const sp=Math.hypot(p.vx,p.vy);if(sp>16){p.vx=p.vx/sp*16;p.vy=p.vy/sp*16;}
+          p.x+=p.vx;p.y+=p.vy;
+          if(p.x<4){p.x=4;p.vx=-p.vx*REST;} if(p.x>W-p.w-4){p.x=W-p.w-4;p.vx=-p.vx*REST;}
+          if(p.y<4){p.y=4;p.vy=-p.vy*REST;} if(p.y>H-p.h-4){p.y=H-p.h-4;p.vy=-p.vy*REST;}
+        }
+      }
       else if(Math.abs(p.vx)>0.02||Math.abs(p.vy)>0.02){
         p.x+=p.vx;p.y+=p.vy;p.vx*=FR;p.vy*=FR;p.rest=false;
         if(p.x<4){p.x=4;p.vx=-p.vx*REST;} if(p.x>W-p.w-4){p.x=W-p.w-4;p.vx=-p.vx*REST;}
@@ -365,7 +412,7 @@
   /* ---------- 点空白：流星许愿 ---------- */
   const WISHES=["叮——愿望收到啦 ✨","今天也要开心鸭 🌷","会有好事发生的 🍀","星星记住你了 ⭐","小小的愿望，慢慢实现 🌙","抱抱你 🧡"];
   addEventListener("pointerdown",e=>{
-    if(e.target.closest(".planet,a,.keepsake"))return;
+    if(e.target.closest(".planet,a,.keepsake,.ctrl"))return;
     const x=e.clientX,y=e.clientY;
     const st=document.createElement("div");st.className="wishstar";st.style.left=x+"px";st.style.top=y+"px";
     document.body.appendChild(st);setTimeout(()=>st.remove(),900);
