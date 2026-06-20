@@ -314,6 +314,48 @@ body{
 
 .footer{text-align:center;color:var(--ink-dim);margin-top:60px;letter-spacing:.2em;font-size:.8rem}
 
+/* ---------------- 可拖动小星球 ---------------- */
+.planet{
+  position:fixed;z-index:40;left:auto;right:18px;top:120px;
+  width:130px;height:130px;cursor:grab;touch-action:none;user-select:none;
+  filter:drop-shadow(0 0 26px rgba(255,196,90,.35));
+  transition:filter .3s;
+}
+.planet[hidden]{display:none}
+.planet:active,.planet.is-drag{cursor:grabbing}
+.planet.is-drag{filter:drop-shadow(0 0 40px rgba(255,196,90,.6))}
+.planet__float{width:100%;height:100%;animation:planetBob 5s ease-in-out infinite}
+.planet.is-drag .planet__float{animation:none}
+@keyframes planetBob{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-10px) rotate(2deg)}}
+.planet__hint{
+  position:absolute;top:-6px;left:50%;transform:translateX(-50%);
+  font-size:.7rem;letter-spacing:.1em;color:#ffe39a;white-space:nowrap;
+  background:rgba(0,0,0,.4);padding:2px 8px;border-radius:999px;
+  opacity:0;transition:opacity .4s;pointer-events:none;
+}
+.planet:hover .planet__hint,.planet.show-hint .planet__hint{opacity:1}
+.planet__orbit{transform-origin:100px 112px;animation:spin 18s linear infinite}
+.planet__moon{filter:drop-shadow(0 0 4px #ffd86b)}
+.planet__rose{transform-origin:122px 70px;animation:roseSway 4s ease-in-out infinite}
+@keyframes roseSway{0%,100%{transform:translate(122px,70px) rotate(-6deg)}50%{transform:translate(122px,70px) rotate(6deg)}}
+.planet__smoke{animation:smoke 3s ease-in-out infinite;opacity:.8}
+@keyframes smoke{0%{opacity:0;transform:translateY(4px)}40%{opacity:.8}100%{opacity:0;transform:translateY(-6px)}}
+.planet__bird{animation:birdFly 6s ease-in-out infinite}
+@keyframes birdFly{0%{transform:translate(0,0)}50%{transform:translate(-14px,-6px)}100%{transform:translate(0,0)}}
+.planet__tw{animation:blink 2.2s ease-in-out infinite}
+/* 点击星球时迸出的小爱心 */
+.planet-spark{
+  position:fixed;z-index:41;pointer-events:none;font-size:1rem;
+  animation:sparkUp 1s ease-out forwards;
+}
+@keyframes sparkUp{0%{opacity:1;transform:translate(0,0) scale(.6)}
+  100%{opacity:0;transform:translate(var(--dx),-46px) scale(1.1)}}
+@media(max-width:480px){.planet{width:104px;height:104px;right:10px;top:96px}
+  .planet svg{width:104px;height:104px}}
+@media(prefers-reduced-motion:reduce){
+  .planet__float,.planet__orbit,.planet__rose,.planet__smoke,.planet__bird,.planet__tw{animation:none}
+}
+
 /* ---------------- 响应式 ---------------- */
 @media(min-width:760px){
   .diary{grid-template-columns:1fr;}
