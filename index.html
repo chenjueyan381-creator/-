@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+<meta name="theme-color" content="#080808" />
+<title>我的小世界</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Noto+Serif+SC:wght@400;500;700&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ===================== 星空 / 魔法阵背景 ===================== -->
+  <div class="bg-layer">
+    <canvas id="starfield"></canvas>
+    <div class="magic-circle magic-circle--one"></div>
+    <div class="magic-circle magic-circle--two"></div>
+    <div class="vignette"></div>
+  </div>
+
+  <!-- ===================== 密码入口页 ===================== -->
+  <section id="gate" class="gate">
+    <div class="gate__rune"></div>
+    <div class="gate__inner">
+      <p id="typewriter" class="gate__typewriter"></p>
+      <form id="gate-form" class="gate__form" autocomplete="off">
+        <label class="gate__label" for="gate-input">输入通行密语</label>
+        <div class="gate__field">
+          <input id="gate-input" class="gate__input" type="password" inputmode="numeric" placeholder="· · · · · ·" />
+          <button id="gate-submit" class="gate__btn" type="submit">进入</button>
+        </div>
+        <p id="gate-error" class="gate__error"></p>
+      </form>
+    </div>
+  </section>
+
+  <!-- ===================== 主站 ===================== -->
+  <main id="app" class="app" hidden>
+    <header class="topbar">
+      <h1 class="topbar__title">我 的 小 世 界</h1>
+      <nav class="nav">
+        <button class="nav__item is-active" data-section="characters">角色收藏馆</button>
+        <button class="nav__item" data-section="diary">秘密日记</button>
+        <button class="nav__item" data-section="favorites">我喜欢的</button>
+        <button class="nav__item" data-section="mood">今日心情</button>
+        <button class="nav__item" data-section="about">关于这里</button>
+      </nav>
+    </header>
+
+    <!-- ---------- 角色收藏馆 ---------- -->
+    <section id="characters" class="panel is-active">
+      <div class="section-head">
+        <h2 class="section-title">角色收藏馆</h2>
+        <p class="section-sub">收藏于心底的那些灵魂</p>
+      </div>
+      <div id="card-grid" class="card-grid"><!-- JS 注入 --></div>
+    </section>
+
+    <!-- ---------- 秘密日记 ---------- -->
+    <section id="diary" class="panel">
+      <div class="section-head">
+        <h2 class="section-title">秘密日记</h2>
+        <p class="section-sub">CLASSIFIED · 仅本人可阅</p>
+      </div>
+      <div class="diary">
+        <form id="diary-form" class="diary__editor">
+          <div class="diary__stamp">绝密档案</div>
+          <input id="diary-date" class="diary__date" type="date" />
+          <textarea id="diary-text" class="diary__text" rows="6" placeholder="在此记录今日不可示人的心绪……"></textarea>
+          <div class="diary__actions">
+            <button type="submit" class="btn btn--seal">封存此页</button>
+          </div>
+        </form>
+        <div id="diary-list" class="diary__list"><!-- JS 注入 --></div>
+      </div>
+    </section>
+
+    <!-- ---------- 我喜欢的 ---------- -->
+    <section id="favorites" class="panel">
+      <div class="section-head">
+        <h2 class="section-title">我喜欢的</h2>
+        <p class="section-sub">那些让我心动的存在</p>
+      </div>
+      <div class="fav">
+        <form id="fav-form" class="fav__form">
+          <select id="fav-type" class="fav__select">
+            <option value="music">🎵 音乐</option>
+            <option value="movie">🎬 影视</option>
+            <option value="thing">✨ 东西</option>
+          </select>
+          <input id="fav-input" class="fav__input" type="text" placeholder="添加一个喜欢的……" />
+          <button type="submit" class="btn">收藏</button>
+        </form>
+        <div class="fav__columns">
+          <div class="fav__col" data-type="music"><h3>🎵 音乐</h3><ul id="fav-music" class="fav__list"></ul></div>
+          <div class="fav__col" data-type="movie"><h3>🎬 影视</h3><ul id="fav-movie" class="fav__list"></ul></div>
+          <div class="fav__col" data-type="thing"><h3>✨ 东西</h3><ul id="fav-thing" class="fav__list"></ul></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- 今日心情 ---------- -->
+    <section id="mood" class="panel">
+      <div class="section-head">
+        <h2 class="section-title">今日心情</h2>
+        <p class="section-sub">用草莓丈量今天的甜度</p>
+      </div>
+      <div class="mood">
+        <div class="mood__today">
+          <div class="mood__date" id="mood-today-date"></div>
+          <div id="mood-stars" class="mood__stars" role="radiogroup" aria-label="今日草莓评分">
+            <button class="mood__berry" data-v="1">🍓</button>
+            <button class="mood__berry" data-v="2">🍓</button>
+            <button class="mood__berry" data-v="3">🍓</button>
+            <button class="mood__berry" data-v="4">🍓</button>
+            <button class="mood__berry" data-v="5">🍓</button>
+          </div>
+          <input id="mood-note" class="mood__note" type="text" placeholder="今天的一句话……" />
+        </div>
+        <div class="mood__history">
+          <h3>心情轨迹</h3>
+          <div id="mood-list" class="mood__list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- 关于这里 ---------- -->
+    <section id="about" class="panel">
+      <div class="section-head">
+        <h2 class="section-title">关于这里</h2>
+        <p class="section-sub">写给偶然闯入的你</p>
+      </div>
+      <div class="about">
+        <div class="about__sigil"></div>
+        <p>这里是我的小世界，一座藏在深夜尽头的秘密馆。</p>
+        <p>白昼里我把自己折叠收好，只在这片黑色里舒展开来——收藏喜欢的角色，封存不愿说出口的日记，记录每一天的草莓甜度。</p>
+        <p>如果你读到了这些字，说明你已穿过那道门。那么，欢迎你。请轻一点呼吸，别惊扰了这里的星与符文。</p>
+        <p class="about__sign">—— 守门人 · 谨记</p>
+      </div>
+    </section>
+
+    <footer class="footer">⟡ 我的小世界 · 星与符文永驻 ⟡</footer>
+  </main>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
