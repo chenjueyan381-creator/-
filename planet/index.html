@@ -73,7 +73,7 @@
     box-shadow:0 4px 12px rgba(150,170,200,.25);backdrop-filter:blur(4px)}
   .ctrl.on{background:linear-gradient(135deg,#ffd27a,#ff9e6d);color:#5a3a1f}
   .ctrl2{top:58px}
-  .subnav{position:absolute;top:86px;left:0;right:0;z-index:6;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+  .subnav{position:absolute;bottom:22px;left:0;right:0;z-index:6;display:flex;gap:9px;justify-content:center;flex-wrap:wrap}
   .subnav a{text-decoration:none;background:rgba(255,255,255,.62);color:#6b5440;padding:8px 15px;border-radius:999px;
     font-family:var(--font);font-weight:700;font-size:.9rem;box-shadow:0 4px 12px rgba(150,170,200,.25);backdrop-filter:blur(4px)}
   .subnav a:active{transform:scale(.96)}
@@ -121,7 +121,7 @@
     padding:8px 8px 28px;border-radius:5px;transform:rotate(-5deg);box-shadow:0 12px 26px rgba(120,90,60,.32)}
   .keepsake img{width:100%;display:block;border-radius:3px}
   .keepsake figcaption{position:absolute;bottom:7px;left:0;right:0;text-align:center;font-size:.82rem;color:#9a7f63;font-family:var(--serif)}
-  .quote{position:absolute;left:0;right:0;bottom:28px;text-align:center;z-index:5;pointer-events:none;
+  .quote{position:absolute;left:0;right:0;bottom:68px;text-align:center;z-index:5;pointer-events:none;
     font-family:var(--serif);color:#7a5f44;font-size:clamp(.85rem,3.4vw,1.05rem);letter-spacing:.04em;text-shadow:0 1px 0 rgba(255,255,255,.5);padding:0 16px}
   .hint{position:absolute;right:16px;bottom:14px;z-index:7;pointer-events:none;background:rgba(255,255,255,.55);
     color:#7c6450;font-weight:600;font-size:.8rem;padding:6px 12px;border-radius:999px;letter-spacing:.06em;animation:pulse 2.4s ease-in-out infinite}
@@ -155,7 +155,7 @@
   @keyframes wt{0%{opacity:0;transform:translate(-50%,6px) scale(.9)}15%{opacity:1;transform:translate(-50%,-4px) scale(1)}
     80%{opacity:1}100%{opacity:0;transform:translate(-50%,-30px) scale(1)}}
 
-  @media(max-width:480px){.keepsake{width:104px;bottom:96px;left:10px}.quote{bottom:54px}}
+  @media(max-width:480px){.keepsake{width:94px;bottom:120px;left:10px}.quote{bottom:92px}}
   @media(prefers-reduced-motion:reduce){
     .sun__rays,.cloud,.birds,.firefly,.star,.shoot,.planet__float,.spin-orbit,.rose,.smoke,.claude-hop,.bf,.onplanet{animation:none}}
 </style>
@@ -186,7 +186,7 @@
     <a href="pet/">🐾 小克陪你</a>
     <a href="capsule/">📮 时间胶囊</a>
   </div>
-  <div class="title"><h1>小王子的星球</h1><p>B-612 · 一个个拖着它们去散步吧</p></div>
+  <div class="title"><h1>小王子的星球</h1><p>B-612 · 拖一拖、甩一甩 · 点空白处许愿 ✦</p></div>
 
   <!-- ===== 主星球 ===== -->
   <div class="planet" id="main" data-key="main" role="button" aria-label="拖动主星球" tabindex="0">
@@ -242,7 +242,6 @@
 
   <figure class="keepsake"><img src="keepsake.jpg" alt="小王子和他的玫瑰" /><figcaption>我和我的玫瑰</figcaption></figure>
   <p class="quote">“重要的东西，用眼睛是看不见的。”</p>
-  <div class="hint" id="hint">✦ 甩动星球会相撞 · 点空白处许愿 ✦</div>
   <div class="grain"></div><div class="vignette"></div>
 
 <script>
