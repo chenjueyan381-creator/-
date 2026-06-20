@@ -323,6 +323,7 @@
   function initPlanet() {
     const pl = $("#planet");
     if (!pl) return;
+    pl.hidden = false; // 兜底显示，避免只依赖进门那一步
     const KEY = "msw_planet_pos";
 
     const clamp = (x, y) => {
