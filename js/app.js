@@ -153,7 +153,7 @@
         <div class="card__frame">
           <div class="card__media">
             <img class="card__img" src="${c.img}" alt="${esc(c.name)}"
-                 loading="lazy" style="object-position:${c.pos}" />
+                 style="object-position:${c.pos}" />
             <div class="card__fallback">${c.glyph}</div>
             <span class="card__corner tl"></span><span class="card__corner tr"></span>
             <span class="card__corner bl"></span><span class="card__corner br"></span>
