@@ -94,12 +94,6 @@
         gate.classList.add("is-gone");
         const app = $("#app");
         app.hidden = false;
-        const pl = $("#planet");
-        if (pl) {
-          pl.hidden = false;
-          pl.classList.add("show-hint");
-          setTimeout(() => pl.classList.remove("show-hint"), 3800);
-        }
         setTimeout(() => gate.remove(), 900);
       } else {
         err.textContent = "⚠ 密语有误，门不会为你而开。";
@@ -319,77 +313,6 @@
     renderHistory();
   }
 
-  /* ===================== 可拖动小星球 ===================== */
-  function initPlanet() {
-    const pl = $("#planet");
-    if (!pl) return;
-    pl.hidden = false; // 兜底显示，避免只依赖进门那一步
-    const KEY = "msw_planet_pos";
-
-    const clamp = (x, y) => {
-      const w = pl.offsetWidth, h = pl.offsetHeight;
-      return [
-        Math.max(4, Math.min(x, window.innerWidth - w - 4)),
-        Math.max(4, Math.min(y, window.innerHeight - h - 4)),
-      ];
-    };
-    const place = (x, y) => {
-      const [cx, cy] = clamp(x, y);
-      pl.style.left = cx + "px";
-      pl.style.top = cy + "px";
-      pl.style.right = "auto";
-    };
-
-    const pos = load(KEY, null);
-    if (pos) place(pos.x, pos.y);
-
-    let dragging = false, moved = false, sx = 0, sy = 0, ox = 0, oy = 0;
-
-    pl.addEventListener("pointerdown", (e) => {
-      dragging = true; moved = false;
-      try { pl.setPointerCapture(e.pointerId); } catch (_) {}
-      const r = pl.getBoundingClientRect();
-      ox = e.clientX - r.left; oy = e.clientY - r.top;
-      sx = e.clientX; sy = e.clientY;
-      pl.classList.add("is-drag");
-    });
-    pl.addEventListener("pointermove", (e) => {
-      if (!dragging) return;
-      if (Math.abs(e.clientX - sx) > 3 || Math.abs(e.clientY - sy) > 3) moved = true;
-      place(e.clientX - ox, e.clientY - oy);
-    });
-    const end = (e) => {
-      if (!dragging) return;
-      dragging = false;
-      pl.classList.remove("is-drag");
-      const r = pl.getBoundingClientRect();
-      save(KEY, { x: r.left, y: r.top });
-      if (!moved) sparkle();
-    };
-    pl.addEventListener("pointerup", end);
-    pl.addEventListener("pointercancel", end);
-    window.addEventListener("resize", () => {
-      const r = pl.getBoundingClientRect();
-      place(r.left, r.top);
-    });
-
-    function sparkle() {
-      const r = pl.getBoundingClientRect();
-      const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-      const icons = ["💛", "✨", "🌼", "💫", "🌸"];
-      for (let i = 0; i < 5; i++) {
-        const s = document.createElement("span");
-        s.className = "planet-spark";
-        s.textContent = icons[i % icons.length];
-        s.style.left = cx + "px";
-        s.style.top = cy + "px";
-        s.style.setProperty("--dx", (Math.random() * 70 - 35) + "px");
-        document.body.appendChild(s);
-        setTimeout(() => s.remove(), 1000);
-      }
-    }
-  }
-
   /* ===================== 启动 ===================== */
   document.addEventListener("DOMContentLoaded", () => {
     initStarfield();
@@ -399,6 +322,5 @@
     initDiary();
     initFavorites();
     initMood();
-    initPlanet();
   });
 })();

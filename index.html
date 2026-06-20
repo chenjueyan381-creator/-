@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Noto+Serif+SC:wght@400;500;700&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="css/style.css?v=5" />
+<link rel="stylesheet" href="css/style.css?v=6" />
 </head>
 <body>
 
@@ -142,76 +142,6 @@
     <footer class="footer">⟡ 我的小世界 ⟡</footer>
   </main>
 
-  <!-- ===================== 可拖动的小星球（B-612） ===================== -->
-  <div id="planet" class="planet" hidden role="button" aria-label="拖动小星球" tabindex="0">
-    <span class="planet__hint">拖我 ✦</span>
-    <div class="planet__float">
-      <svg viewBox="0 0 200 200" width="130" height="130" aria-hidden="true">
-        <defs>
-          <radialGradient id="sun" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stop-color="#fff4c2" stop-opacity="0.9"/>
-            <stop offset="45%" stop-color="#ffd86b" stop-opacity="0.45"/>
-            <stop offset="100%" stop-color="#ffb347" stop-opacity="0"/>
-          </radialGradient>
-          <radialGradient id="globe" cx="38%" cy="32%" r="75%">
-            <stop offset="0%" stop-color="#bff0a6"/>
-            <stop offset="45%" stop-color="#74c98a"/>
-            <stop offset="80%" stop-color="#3f9d77"/>
-            <stop offset="100%" stop-color="#2b7d6a"/>
-          </radialGradient>
-          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#aee9ff"/>
-            <stop offset="100%" stop-color="#7fd1f0"/>
-          </linearGradient>
-          <clipPath id="globeClip"><circle cx="100" cy="112" r="46"/></clipPath>
-        </defs>
-
-        <!-- 暖阳光晕 -->
-        <circle cx="100" cy="100" r="98" fill="url(#sun)"/>
-
-        <!-- 轨道与小月亮 -->
-        <g class="planet__orbit">
-          <ellipse cx="100" cy="112" rx="78" ry="30" fill="none" stroke="#ffe39a" stroke-opacity="0.5" stroke-width="1.4" stroke-dasharray="3 6"/>
-          <circle class="planet__moon" cx="178" cy="112" r="6" fill="#ffd86b"/>
-        </g>
-
-        <!-- 星球本体 -->
-        <circle cx="100" cy="112" r="46" fill="url(#globe)"/>
-        <g clip-path="url(#globeClip)">
-          <!-- 草地起伏 -->
-          <path d="M54 130 Q72 116 92 128 T132 126 T150 134 L150 160 L54 160 Z" fill="#3f9d77" opacity="0.6"/>
-          <ellipse cx="78" cy="138" rx="10" ry="4" fill="#2f8a64" opacity="0.5"/>
-          <ellipse cx="120" cy="142" rx="13" ry="5" fill="#2f8a64" opacity="0.45"/>
-          <!-- 小火山 + 烟 -->
-          <path d="M70 132 L80 110 L90 132 Z" fill="#e98a5b"/>
-          <path d="M76 110 q-4 -6 1 -11 q5 -4 1 -10" class="planet__smoke" fill="none" stroke="#fff" stroke-opacity="0.8" stroke-width="2.4" stroke-linecap="round"/>
-          <!-- 高光 -->
-          <ellipse cx="80" cy="92" rx="20" ry="12" fill="#ffffff" opacity="0.18"/>
-        </g>
-
-        <!-- 玫瑰（小王子的花） -->
-        <g class="planet__rose" transform="translate(122 70)">
-          <line x1="0" y1="0" x2="0" y2="-22" stroke="#3f9d77" stroke-width="2.4" stroke-linecap="round"/>
-          <path d="M0 -10 q-9 -2 -10 -9 q9 1 10 9" fill="#5ab47f"/>
-          <path d="M0 -14 q9 -2 10 -9 q-9 1 -10 9" fill="#5ab47f"/>
-          <circle cx="0" cy="-26" r="7" fill="#ff7a9c"/>
-          <circle cx="-3" cy="-27" r="3.4" fill="#ff5c84"/>
-          <circle cx="3" cy="-25" r="3.2" fill="#ff97b3"/>
-          <circle cx="0" cy="-26" r="1.8" fill="#ffd1dd"/>
-        </g>
-
-        <!-- 飞过的小鸟 -->
-        <path class="planet__bird" d="M150 56 q5 -5 10 0 q5 -5 10 0" fill="none" stroke="#fff" stroke-opacity="0.85" stroke-width="2" stroke-linecap="round"/>
-        <!-- 闪烁小星 -->
-        <g fill="#fff6cf">
-          <circle class="planet__tw" cx="42" cy="70" r="2"/>
-          <circle class="planet__tw" cx="162" cy="150" r="1.8" style="animation-delay:.8s"/>
-          <circle class="planet__tw" cx="58" cy="168" r="1.6" style="animation-delay:1.4s"/>
-        </g>
-      </svg>
-    </div>
-  </div>
-
-  <script src="js/app.js?v=5"></script>
+  <script src="js/app.js?v=6"></script>
 </body>
 </html>
