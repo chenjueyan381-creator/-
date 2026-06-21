@@ -166,7 +166,7 @@
     {x:90,y:438,w:240,h:150},{x:820,y:66,w:250,h:70},{x:600,y:150,w:160,h:100},
     {x:430,y:506,w:175,h:86},{x:640,y:520,w:120,h:72},{x:820,y:566,w:185,h:72},{x:338,y:478,w:64,h:58}
   ];
-  const slots=[{x:852,y:108},{x:938,y:108},{x:1024,y:108},{x:680,y:132},{x:700,y:512},{x:172,y:128},{x:902,y:556}].map(s=>({x:s.x,y:s.y,item:null}));
+  const slots=[{x:862,y:126},{x:932,y:126},{x:1002,y:126},{x:680,y:132},{x:700,y:512},{x:172,y:128},{x:902,y:556}].map(s=>({x:s.x,y:s.y,item:null}));
   const door={x:RW/2,y:RH-22};
   const phone={x:962,y:556};
   const catRoom={x:206,y:498};
@@ -435,10 +435,33 @@
     g.fillStyle="#2a1d16";g.fillRect(636,182,88,68);
     g.fillStyle="#7a655a";g.fillRect(590,138,180,14);
     g.fillStyle="#6b4a2e";g.fillRect(648,232,64,12);g.fillStyle="#8a5a32";g.fillRect(658,226,44,10);
-    // 书架 + 书
-    g.fillStyle="#8a5a32";g.fillRect(820,66,250,270);g.fillStyle="#6e4423";for(let i=0;i<4;i++)g.fillRect(826,74+i*66,238,8);
-    const bc=["#c0506a","#5a86b8","#5aa06a","#caa14b","#7a5ba0","#cf8a5a"];
-    for(let s=0;s<4;s++)for(let b=0;b<7;b++){if(s===0&&b>2)continue;g.fillStyle=bc[(s*3+b)%bc.length];g.fillRect(832+b*33,86+s*66,24,30+(b%2)*4);}
+    // ===== 书柜（精致木柜） =====
+    const BX=820,BY=72,BW=250,BH=264,pal=["#c0506a","#5a86b8","#5aa06a","#caa14b","#7a5ba0","#cf8a5a","#4f9d92","#d76b8a"];
+    g.fillStyle="rgba(0,0,0,.12)";g.fillRect(BX+6,BY+BH,BW,8);
+    g.fillStyle="#7a5230";g.fillRect(BX-7,BY-13,BW+14,13);
+    g.fillStyle="#8a5e38";g.fillRect(BX,BY,BW,BH);
+    g.fillStyle="#5e3f25";g.fillRect(BX+10,BY+8,BW-20,BH-16);
+    g.fillStyle="rgba(255,255,255,.07)";g.fillRect(BX,BY,8,BH);
+    g.fillStyle="rgba(0,0,0,.12)";g.fillRect(BX+BW-8,BY,8,BH);
+    const shY=[BY+8,BY+70,BY+132,BY+194,BY+250];
+    g.fillStyle="#7a5230";for(const y of shY)g.fillRect(BX+8,y,BW-16,9);
+    function book(x,y,w,h,c,tilt){g.save();g.translate(x,y);if(tilt)g.rotate(tilt);
+      g.fillStyle=c;g.fillRect(0,-h,w,h);g.fillStyle="rgba(255,255,255,.16)";g.fillRect(0,-h,w,3);
+      g.fillStyle="rgba(0,0,0,.14)";g.fillRect(w-2,-h,2,h);g.restore();}
+    g.textAlign="center";g.textBaseline="alphabetic";
+    // 第1格留空（给你摆放收集品）
+    let x,pi;
+    x=BX+22;pi=3;while(x<BX+128){const w=12+((pi*5)%10),h=42+((pi*6)%12);book(x,shY[2],w,h,pal[pi%pal.length]);x+=w+3;pi++;}
+    g.fillStyle="#caa14b";g.fillRect(BX+150,shY[2]-13,72,12);g.fillStyle="#a8843a";g.fillRect(BX+150,shY[2]-13,72,3);
+    g.fillStyle="#cf8a5a";g.fillRect(BX+155,shY[2]-25,62,12);g.fillStyle="#b06f44";g.fillRect(BX+155,shY[2]-25,62,3);
+    g.fillStyle="#8a5a32";g.fillRect(BX+24,shY[3]-46,46,46);g.fillStyle="#dfeaf2";g.fillRect(BX+30,shY[3]-40,34,34);
+    g.fillStyle="#ff9ec4";g.beginPath();g.moveTo(BX+47,shY[3]-16);g.bezierCurveTo(BX+36,shY[3]-30,BX+44,shY[3]-38,BX+47,shY[3]-30);g.bezierCurveTo(BX+50,shY[3]-38,BX+58,shY[3]-30,BX+47,shY[3]-16);g.fill();
+    x=BX+86;pi=5;while(x<BX+178){const w=12+((pi*7)%9),h=38+((pi*5)%14);book(x,shY[3],w,h,pal[pi%pal.length]);x+=w+3;pi++;}
+    g.font="26px serif";g.fillText("⏰",BX+210,shY[3]-4);
+    g.fillStyle="#5a86b8";g.fillRect(BX+24,shY[4]-13,86,12);g.fillStyle="#46689a";g.fillRect(BX+24,shY[4]-13,86,3);
+    g.fillStyle="#5aa06a";g.fillRect(BX+28,shY[4]-25,78,12);
+    book(BX+150,shY[4],15,46,pal[4]);book(BX+168,shY[4],13,40,pal[0],0.15);
+    g.font="28px serif";g.fillText("🌿",BX+216,shY[4]-2);
     // 床
     g.fillStyle="#7a5436";g.fillRect(86,420,250,18);
     g.fillStyle="#9a6f4a";g.fillRect(90,438,240,150);
