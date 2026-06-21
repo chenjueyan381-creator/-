@@ -82,8 +82,9 @@
 (function(){
   "use strict";
   const cv=document.getElementById("c"),ctx=cv.getContext("2d");
-  let W=0,H=0,DPR=Math.min(2,window.devicePixelRatio||1);
-  function resize(){W=innerWidth;H=innerHeight;cv.width=W*DPR;cv.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);}
+  let W=0,H=0,DPR=Math.min(1.25,window.devicePixelRatio||1),vgGrad=null;
+  function resize(){W=innerWidth;H=innerHeight;cv.width=W*DPR;cv.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);
+    vgGrad=ctx.createRadialGradient(W/2,H*.46,H*.3,W/2,H*.5,H*.8);vgGrad.addColorStop(0,"rgba(0,0,0,0)");vgGrad.addColorStop(1,"rgba(30,45,20,.3)");}
   resize();addEventListener("resize",resize);
   const WW=2200,WH=1600;
 
@@ -103,6 +104,24 @@
   const pond={x:640,y:1060,rx:150,ry:96};
   const house={x:1660,y:1040};
   const solids=trees.map(t=>({x:t.x,y:t.y-6,r:24})).concat([{x:pond.x,y:pond.y,r:118},{x:house.x,y:house.y-6,r:58}]);
+
+  // 预渲染静态地面（一次性，省去每帧重画草地+几十个emoji）
+  const ground=document.createElement("canvas");ground.width=WW;ground.height=WH;
+  function buildGround(){const g=ground.getContext("2d");
+    g.fillStyle=g.createPattern(tile,"repeat");g.fillRect(0,0,WW,WH);
+    g.strokeStyle="#d9c89a";g.lineWidth=46;g.lineCap="round";g.globalAlpha=.65;
+    g.beginPath();g.moveTo(1100,170);g.quadraticCurveTo(900,700,1100,820);g.quadraticCurveTo(1300,980,1120,1440);g.stroke();
+    g.beginPath();g.moveTo(330,300);g.quadraticCurveTo(700,650,1100,820);g.quadraticCurveTo(1500,560,1880,330);g.stroke();g.globalAlpha=1;
+    g.fillStyle="#8fd0e6";g.beginPath();g.ellipse(pond.x,pond.y,pond.rx,pond.ry,0,0,7);g.fill();
+    g.fillStyle="#b6e6f2";g.beginPath();g.ellipse(pond.x-30,pond.y-22,pond.rx*.5,pond.ry*.4,0,0,7);g.fill();
+    g.textAlign="center";g.textBaseline="alphabetic";
+    for(const d of decals){g.font=d.s+"px serif";g.fillText(d.e,d.x,d.y);}}
+  buildGround();
+  // emoji 贴图缓存（用 drawImage 代替逐帧 fillText）
+  const eCache={};
+  function eSprite(ch,px){const k=ch+px;if(eCache[k])return eCache[k];
+    const c=document.createElement("canvas");c.width=c.height=px;const g=c.getContext("2d");
+    g.font=Math.round(px*0.84)+"px serif";g.textAlign="center";g.textBaseline="middle";g.fillText(ch,px/2,px/2+1);eCache[k]=c;return c;}
 
   const npcs=[
     {id:"prince",x:780,y:600,kind:"prince",r:92,lines:["你也在找属于自己的星球吗？✦","重要的东西，用眼睛是看不见的。"],li:0,
@@ -281,25 +300,23 @@
     if(WW<W)tcx=(WW-W)/2;if(WH<H)tcy=(WH-H)/2;camX+=(tcx-camX)*.12;camY+=(tcy-camY)*.12;
 
     ctx.clearRect(0,0,W,H);ctx.save();ctx.translate(-camX,-camY);
-    ctx.fillStyle=pat;ctx.fillRect(camX,camY,W,H);
-    ctx.strokeStyle="#d9c89a";ctx.lineWidth=46;ctx.lineCap="round";ctx.globalAlpha=.65;
-    ctx.beginPath();ctx.moveTo(1100,170);ctx.quadraticCurveTo(900,700,1100,820);ctx.quadraticCurveTo(1300,980,1120,1440);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(330,300);ctx.quadraticCurveTo(700,650,1100,820);ctx.quadraticCurveTo(1500,560,1880,330);ctx.stroke();ctx.globalAlpha=1;
-    ctx.fillStyle="#8fd0e6";ctx.beginPath();ctx.ellipse(pond.x,pond.y,pond.rx,pond.ry,0,0,7);ctx.fill();
-    ctx.fillStyle="#b6e6f2";ctx.beginPath();ctx.ellipse(pond.x-30,pond.y-22,pond.rx*.5,pond.ry*.4,0,0,7);ctx.fill();
+    // 静态地面（预渲染的一张图）
+    const sx=Math.max(0,Math.min(camX,WW-1)),sy=Math.max(0,Math.min(camY,WH-1)),sw=Math.min(W,WW-sx),sh=Math.min(H,WH-sy);
+    ctx.drawImage(ground,sx,sy,sw,sh,sx,sy,sw,sh);
+    // 池塘涟漪（动态）
     ctx.strokeStyle="rgba(255,255,255,.5)";ctx.lineWidth=2;
     for(let k=0;k<3;k++){const ph=((tnow/1400+k/3)%1);ctx.globalAlpha=(1-ph)*.5;ctx.beginPath();ctx.ellipse(pond.x,pond.y,pond.rx*.3+pond.rx*.6*ph,pond.ry*.3+pond.ry*.6*ph,0,0,7);ctx.stroke();}
-    ctx.globalAlpha=1;ctx.textAlign="center";ctx.textBaseline="alphabetic";
-    for(const d of decals){if(d.x<camX-40||d.x>camX+W+40||d.y<camY-40||d.y>camY+H+40)continue;const sw=Math.sin(tnow/900+d.ph)*1.5;ctx.font=d.s+"px serif";ctx.fillText(d.e,d.x+sw,d.y);}
+    ctx.globalAlpha=1;
+    // 花粉
     ctx.fillStyle="rgba(255,255,240,.7)";
     for(const p of pollen){let yy=p.y-((tnow*0.01*p.sp)%WH);const xx=p.x+Math.sin(tnow/1200+p.ph)*14;if(yy<camY-20)yy+=WH;
       if(xx<camX-20||xx>camX+W+20||yy<camY-20||yy>camY+H+20)continue;ctx.globalAlpha=.5+.4*Math.sin(tnow/500+p.ph);ctx.beginPath();ctx.arc(xx,yy,2,0,7);ctx.fill();}
     ctx.globalAlpha=1;
-    // 物品（带光圈，当前可拾取的高亮）
+    // 物品（贴图 + 光圈）
     for(const it of items){if(it.got)continue;const fl=Math.sin(tnow/400+it.ph)*2,hi=act&&act.type==="item"&&act.o===it;
       ctx.strokeStyle=hi?"rgba(255,235,150,.95)":"rgba(255,230,140,.38)";ctx.lineWidth=2;ctx.beginPath();ctx.arc(it.x,it.y-8,(hi?19:14)+Math.sin(tnow/260+it.ph)*1.5,0,7);ctx.stroke();
-      ctx.font="26px serif";ctx.textAlign="center";ctx.fillText(it.emo,it.x,it.y-6+fl);}
-    for(const st of stars){if(st.got)continue;const fl=1+Math.sin(tnow/300+st.ph)*.12;ctx.font=(30*fl)+"px serif";ctx.fillText("⭐",st.x,st.y);}
+      ctx.drawImage(eSprite(it.emo,30),it.x-15,it.y-21+fl,30,30);}
+    for(const st of stars){if(st.got)continue;const s=30*(1+Math.sin(tnow/300+st.ph)*.12);ctx.drawImage(eSprite("⭐",36),st.x-s/2,st.y-8-s/2,s,s);}
 
     const sp=[];for(const g of gates)sp.push({y:g.y,t:"gate",o:g});for(const t of trees)sp.push({y:t.y,t:"tree",o:t});
     for(const n of npcs)sp.push({y:n.y,t:"npc",o:n});for(const f of friends)sp.push({y:f.y,t:"friend",o:f});
@@ -322,12 +339,12 @@
         if(n.quest&&n.quest.state!=="done"){ctx.fillStyle="#ffcf5a";ctx.font="20px serif";ctx.textAlign="center";ctx.fillText(n.quest.state==="active"?"…":"！",n.x,n.y-(n.kind==="prince"?70:48)+Math.sin(tnow/300)*2);}
         if(n.kind==="prince"){if(prince.complete&&prince.naturalWidth){ctx.imageSmoothingEnabled=true;const w=54,h=w*(prince.naturalHeight/prince.naturalWidth);ctx.drawImage(prince,n.x-w/2,n.y-h,w,h);}}
         else if(n.kind==="sign"){ctx.fillStyle="#8a5a32";ctx.fillRect(n.x-3,n.y-28,6,28);ctx.fillStyle="#caa96a";ctx.fillRect(n.x-22,n.y-46,44,22);ctx.fillStyle="#5a4632";ctx.font="16px serif";ctx.textAlign="center";ctx.fillText("?",n.x,n.y-30);}
-        else{ctx.font="40px serif";ctx.textAlign="center";ctx.fillText(n.emo,n.x,n.y);}}
+        else{ctx.drawImage(eSprite(n.emo,40),n.x-20,n.y-34,40,40);}}
       else if(it.t==="friend"){const f=it.o;shadow(f.x,f.y+2,14);
         if(f.img.complete&&f.img.naturalWidth){ctx.imageSmoothingEnabled=false;const w=40,h=w*(f.img.naturalHeight/f.img.naturalWidth);
           const bob=(Math.hypot(f.vx,f.vy)>.3)?Math.abs(Math.sin(tnow/130+f.ph))*-4:0;ctx.save();ctx.translate(f.x,f.y+bob);ctx.scale(f.face,1);ctx.drawImage(f.img,-w/2,-h,w,h);ctx.restore();}}
       else if(it.t==="cat"){const bob=Math.hypot(cat.vx,cat.vy)>.6?Math.abs(Math.sin(tnow/100))*-4:0;shadow(cat.x,cat.y+2,12);
-        ctx.font="30px serif";ctx.textAlign="center";ctx.save();ctx.translate(cat.x,cat.y+bob);ctx.scale(cat.face,1);ctx.fillText("🐈",0,0);ctx.restore();}
+        ctx.save();ctx.translate(cat.x,cat.y+bob);ctx.scale(cat.face,1);ctx.drawImage(eSprite("🐈",30),-15,-26,30,30);ctx.restore();}
       else if(it.t==="player"){const bob=(moving&&player.jz<=0)?Math.abs(Math.sin(tnow/90))*-7:0;
         shadow(player.x,player.y+2,16*(1-Math.min(.5,player.jz/40)));
         if(claude.complete&&claude.naturalWidth){ctx.imageSmoothingEnabled=false;const w=46,h=w*(claude.naturalHeight/claude.naturalWidth);
@@ -346,7 +363,7 @@
       let bx=Math.max(8,Math.min(W-bw-8,sx-bw/2)),by=Math.max(58,sy-bh);
       ctx.fillStyle="rgba(40,30,20,.86)";rr(bx,by,bw,bh,12);ctx.fill();ctx.fillStyle="#fff6e8";ctx.textAlign="left";ctx.textBaseline="middle";ctx.fillText(o._say,bx+pad,by+bh/2);ctx.textBaseline="alphabetic";}}
 
-    const vg=ctx.createRadialGradient(W/2,H*.46,H*.3,W/2,H*.5,H*.8);vg.addColorStop(0,"rgba(0,0,0,0)");vg.addColorStop(1,"rgba(30,45,20,.3)");ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
+    if(vgGrad){ctx.fillStyle=vgGrad;ctx.fillRect(0,0,W,H);}
     miniMap();requestAnimationFrame(step);
   }
   function fireworks(){for(let b=0;b<5;b++)setTimeout(()=>{const x=player.x+(Math.random()*300-150),y=player.y-100-Math.random()*120;
