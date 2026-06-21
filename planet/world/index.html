@@ -87,9 +87,10 @@
 (function(){
   "use strict";
   const cv=document.getElementById("c"),ctx=cv.getContext("2d");
-  let W=0,H=0,DPR=Math.min(1.25,window.devicePixelRatio||1),vgGrad=null;
+  let W=0,H=0,DPR=Math.min(1.25,window.devicePixelRatio||1),vgGrad=null,rvGrad=null;
   function resize(){W=innerWidth;H=innerHeight;cv.width=W*DPR;cv.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);
-    vgGrad=ctx.createRadialGradient(W/2,H*.46,H*.3,W/2,H*.5,H*.8);vgGrad.addColorStop(0,"rgba(0,0,0,0)");vgGrad.addColorStop(1,"rgba(30,45,20,.3)");}
+    vgGrad=ctx.createRadialGradient(W/2,H*.46,H*.3,W/2,H*.5,H*.8);vgGrad.addColorStop(0,"rgba(0,0,0,0)");vgGrad.addColorStop(1,"rgba(30,45,20,.3)");
+    rvGrad=ctx.createRadialGradient(W/2,H*.5,H*.28,W/2,H*.5,H*.86);rvGrad.addColorStop(0,"rgba(0,0,0,0)");rvGrad.addColorStop(1,"rgba(45,22,10,.36)");}
   resize();addEventListener("resize",resize);
   const WW=2200,WH=1600;
 
@@ -158,11 +159,17 @@
 
   // ===== 室内房间 =====
   let scene="world";
-  const RW=1000,RH=680;
+  const RW=1100,RH=720;
   const rp={x:RW/2,y:RH-90,vx:0,vy:0,face:1,jz:0,jvz:0};
-  const furn=[{x:120,y:360,w:210,h:150},{x:630,y:66,w:250,h:64},{x:382,y:150,w:150,h:96},{x:452,y:432,w:152,h:70}];
-  const slots=[{x:672,y:116},{x:755,y:116},{x:838,y:116},{x:457,y:120},{x:528,y:418}].map(s=>({x:s.x,y:s.y,item:null}));
+  const furn=[
+    {x:90,y:438,w:240,h:150},{x:820,y:66,w:250,h:70},{x:600,y:150,w:160,h:100},
+    {x:430,y:506,w:175,h:86},{x:640,y:520,w:120,h:72},{x:820,y:566,w:185,h:72},{x:338,y:478,w:64,h:58}
+  ];
+  const slots=[{x:852,y:108},{x:938,y:108},{x:1024,y:108},{x:680,y:132},{x:700,y:512},{x:172,y:128},{x:902,y:556}].map(s=>({x:s.x,y:s.y,item:null}));
   const door={x:RW/2,y:RH-22};
+  const phone={x:962,y:556};
+  const catRoom={x:206,y:498};
+  const claudeRoom={x:516,y:548};
 
   // 存档
   const SK="world_save_v1";
@@ -233,6 +240,7 @@
     if(!act)return;
     if(act.type==="door"){enterRoom();return;}
     if(act.type==="exit"){leaveRoom();return;}
+    if(act.type==="phone"){phoneMsg();return;}
     if(act.type==="slot"){openPlace(act.o);return;}
     if(act.type==="item"){const it=act.o;it.got=true;inv[it.name]=(inv[it.name]||0)+1;pick();
       for(let i=0;i<10;i++){const a=Math.random()*6.28,s=1+Math.random()*2.5;P(it.x,it.y,Math.cos(a)*s,Math.sin(a)*s-1,34,"rgba(255,255,255,",2,.04);}
@@ -394,27 +402,72 @@
   // ===== 室内房间 =====
   const roomBg=document.createElement("canvas");roomBg.width=RW;roomBg.height=RH;
   function buildRoom(){const g=roomBg.getContext("2d");
-    g.fillStyle="#e7d3b3";g.fillRect(0,0,RW,150);
-    g.fillStyle="#c79b6e";g.fillRect(0,150,RW,RH-150);
-    g.strokeStyle="rgba(120,80,40,.16)";g.lineWidth=2;for(let y=192;y<RH;y+=46){g.beginPath();g.moveTo(0,y);g.lineTo(RW,y);g.stroke();}
-    g.strokeStyle="rgba(120,80,40,.1)";for(let x=0;x<RW;x+=82){g.beginPath();g.moveTo(x,158);g.lineTo(x,RH);g.stroke();}
-    g.fillStyle="#b98c5e";g.fillRect(0,150,RW,8);
-    g.fillStyle="#bfe6ff";g.fillRect(120,40,170,92);g.fillStyle="#9ad0ff";g.fillRect(120,90,170,42);
-    g.strokeStyle="#8a5a32";g.lineWidth=6;g.strokeRect(120,40,170,92);g.beginPath();g.moveTo(205,40);g.lineTo(205,132);g.moveTo(120,86);g.lineTo(290,86);g.stroke();
-    g.fillStyle="#d98aa0";g.beginPath();g.ellipse(RW/2,470,180,80,0,0,7);g.fill();
-    g.fillStyle="#e8a8ba";g.beginPath();g.ellipse(RW/2,470,128,54,0,0,7);g.fill();
-    g.fillStyle="#9a6f4a";g.fillRect(120,360,210,150);g.fillStyle="#fff3e0";g.fillRect(128,372,194,90);g.fillStyle="#ffd0e0";g.fillRect(128,372,60,90);
-    g.fillStyle="#8a5a32";g.fillRect(630,66,250,210);g.fillStyle="#6e4423";for(let i=0;i<3;i++)g.fillRect(636,74+i*68,238,8);
-    const bc=["#c0506a","#5a86b8","#5aa06a","#caa14b","#7a5ba0"];
-    for(let s=0;s<3;s++)for(let b=0;b<7;b++){g.fillStyle=bc[(s+b)%bc.length];g.fillRect(644+b*32,90+s*68,22,32);}
-    g.fillStyle="#9a8478";g.fillRect(382,150,150,96);g.fillStyle="#3a2a22";g.fillRect(404,178,106,68);
-    g.fillStyle="#7a655a";g.fillRect(370,138,176,14);
-    g.fillStyle="#a9794e";g.fillRect(452,432,152,18);g.fillStyle="#8a5a32";g.fillRect(460,450,12,60);g.fillRect(592,450,12,60);
-    g.font="44px serif";g.textAlign="center";g.textBaseline="alphabetic";g.fillText("🪴",928,500);
-    g.fillStyle="#caa96a";g.beginPath();g.ellipse(door.x,door.y,62,18,0,0,7);g.fill();
-    g.fillStyle="#6b5440";g.font="700 14px sans-serif";g.fillText("地垫",door.x,door.y+5);}
+    // 墙：壁纸渐变 + 竖纹 + 护墙板
+    const wg=g.createLinearGradient(0,0,0,170);wg.addColorStop(0,"#efd9bd");wg.addColorStop(1,"#e2c69d");g.fillStyle=wg;g.fillRect(0,0,RW,170);
+    g.strokeStyle="rgba(180,140,100,.16)";g.lineWidth=2;for(let x=20;x<RW;x+=40){g.beginPath();g.moveTo(x,0);g.lineTo(x,150);g.stroke();}
+    g.fillStyle="#caa274";g.fillRect(0,150,RW,10);
+    // 地板：木纹渐变
+    const fg=g.createLinearGradient(0,160,0,RH);fg.addColorStop(0,"#c89b6a");fg.addColorStop(1,"#b3853f");g.fillStyle=fg;g.fillRect(0,160,RW,RH-160);
+    g.strokeStyle="rgba(110,75,40,.16)";g.lineWidth=2;for(let y=204;y<RH;y+=44){g.beginPath();g.moveTo(0,y);g.lineTo(RW,y);g.stroke();}
+    g.strokeStyle="rgba(110,75,40,.09)";for(let x=0;x<RW;x+=120){g.beginPath();g.moveTo(x,160);g.lineTo(x,RH);g.stroke();}
+    // 地毯（三层）
+    g.fillStyle="#c56a86";g.beginPath();g.ellipse(RW/2,500,212,92,0,0,7);g.fill();
+    g.fillStyle="#e493a8";g.beginPath();g.ellipse(RW/2,500,170,72,0,0,7);g.fill();
+    g.fillStyle="#f7c0cf";g.beginPath();g.ellipse(RW/2,500,92,38,0,0,7);g.fill();
+    // 窗 + 黄昏景 + 窗帘
+    const sky=g.createLinearGradient(0,34,0,142);sky.addColorStop(0,"#8ec5ff");sky.addColorStop(1,"#ffd9a8");g.fillStyle=sky;g.fillRect(96,34,170,108);
+    g.fillStyle="#fff3c0";g.beginPath();g.arc(150,72,16,0,7);g.fill();
+    g.lineWidth=7;g.strokeStyle="#8a5a32";g.strokeRect(96,34,170,108);g.beginPath();g.moveTo(181,34);g.lineTo(181,142);g.moveTo(96,88);g.lineTo(266,88);g.stroke();
+    g.fillStyle="#cf6f86";g.fillRect(80,26,26,124);g.fillRect(256,26,26,124);
+    g.fillStyle="#caa96a";g.fillRect(86,144,194,8);
+    // 挂画
+    g.fillStyle="#8a5a32";g.fillRect(330,46,92,70);g.fillStyle="#bfe0c8";g.fillRect(337,53,78,56);
+    g.fillStyle="#7fb88f";g.beginPath();g.moveTo(337,109);g.lineTo(366,78);g.lineTo(386,96);g.lineTo(401,84);g.lineTo(415,109);g.closePath();g.fill();
+    g.fillStyle="#ffe27a";g.beginPath();g.arc(400,66,7,0,7);g.fill();
+    // 挂钟表盘（指针在 roomStep 动态画）
+    g.fillStyle="#fff";g.beginPath();g.arc(500,80,30,0,7);g.fill();g.lineWidth=4;g.strokeStyle="#8a5a32";g.stroke();
+    g.fillStyle="#5a4636";for(let i=0;i<12;i++){const a=i/12*6.283;g.beginPath();g.arc(500+Math.cos(a)*24,80+Math.sin(a)*24,1.5,0,7);g.fill();}
+    // 壁炉（砖）+ 炉膛 + 木柴 + 台面
+    g.fillStyle="#a9806a";g.fillRect(600,150,160,100);
+    g.strokeStyle="rgba(255,255,255,.16)";g.lineWidth=2;for(let by=156,r=0;by<250;by+=16,r++){for(let bx=604+(r%2?16:0);bx<756;bx+=32)g.strokeRect(bx,by,30,14);}
+    g.fillStyle="#2a1d16";g.fillRect(636,182,88,68);
+    g.fillStyle="#7a655a";g.fillRect(590,138,180,14);
+    g.fillStyle="#6b4a2e";g.fillRect(648,232,64,12);g.fillStyle="#8a5a32";g.fillRect(658,226,44,10);
+    // 书架 + 书
+    g.fillStyle="#8a5a32";g.fillRect(820,66,250,270);g.fillStyle="#6e4423";for(let i=0;i<4;i++)g.fillRect(826,74+i*66,238,8);
+    const bc=["#c0506a","#5a86b8","#5aa06a","#caa14b","#7a5ba0","#cf8a5a"];
+    for(let s=0;s<4;s++)for(let b=0;b<7;b++){if(s===0&&b>2)continue;g.fillStyle=bc[(s*3+b)%bc.length];g.fillRect(832+b*33,86+s*66,24,30+(b%2)*4);}
+    // 床
+    g.fillStyle="#7a5436";g.fillRect(86,420,250,18);
+    g.fillStyle="#9a6f4a";g.fillRect(90,438,240,150);
+    g.fillStyle="#eef3ff";g.fillRect(98,452,224,98);g.fillStyle="#cfe0ff";g.fillRect(98,452,224,20);
+    g.fillStyle="#ffd0e0";g.fillRect(104,448,66,40);
+    g.fillStyle="rgba(0,0,0,.1)";g.fillRect(90,586,240,8);
+    // 床头柜 + 台灯（灯罩静态）
+    g.fillStyle="#8a5a32";g.fillRect(338,478,64,58);g.fillStyle="#6e4423";g.fillRect(338,478,64,8);
+    g.fillStyle="#caa86a";g.fillRect(364,452,12,26);g.fillStyle="#ffe9a8";g.beginPath();g.moveTo(350,452);g.lineTo(390,452);g.lineTo(382,430);g.lineTo(358,430);g.closePath();g.fill();
+    // 沙发
+    g.fillStyle="#6f9a8a";g.fillRect(430,506,175,86);g.fillStyle="#7fa898";g.fillRect(424,520,18,72);g.fillRect(593,520,18,72);
+    g.fillStyle="#86b3a2";g.fillRect(438,500,160,26);g.fillStyle="#9ec8b8";g.fillRect(446,508,68,26);g.fillRect(522,508,68,26);
+    // 圆桌
+    g.fillStyle="#a9794e";g.beginPath();g.ellipse(700,524,62,20,0,0,7);g.fill();g.fillStyle="#8a5a32";g.fillRect(694,540,12,52);
+    // 书桌 + 电脑
+    g.fillStyle="#a9794e";g.fillRect(820,566,185,16);g.fillStyle="#8a5a32";g.fillRect(828,582,12,56);g.fillRect(986,582,12,56);
+    g.fillStyle="#3a3a44";g.fillRect(848,520,70,46);g.fillStyle="#7fd0ff";g.fillRect(852,524,62,38);g.fillStyle="#2a2a32";g.fillRect(854,566,58,6);
+    // 盆栽 + 角落小树
+    g.font="46px serif";g.textAlign="center";g.textBaseline="alphabetic";g.fillText("🪴",1052,474);g.fillText("🌿",58,474);
+    g.fillStyle="#3f8f5a";g.beginPath();g.moveTo(1040,360);g.lineTo(1010,420);g.lineTo(1070,420);g.closePath();g.fill();
+    g.beginPath();g.moveTo(1040,336);g.lineTo(1016,388);g.lineTo(1064,388);g.closePath();g.fill();
+    g.fillStyle="#7a5230";g.fillRect(1034,420,12,14);g.fillStyle="#ffe27a";g.beginPath();g.arc(1040,330,5,0,7);g.fill();
+    g.fillStyle="#ff6f91";g.beginPath();g.arc(1028,402,3,0,7);g.fill();g.fillStyle="#9ad0ff";g.beginPath();g.arc(1052,376,3,0,7);g.fill();g.fillStyle="#ffd24a";g.beginPath();g.arc(1040,408,3,0,7);g.fill();
+    // 门垫
+    g.fillStyle="#caa96a";g.beginPath();g.ellipse(door.x,door.y,64,18,0,0,7);g.fill();
+    g.fillStyle="#6b5440";g.font="700 14px sans-serif";g.textAlign="center";g.fillText("地垫",door.x,door.y+5);}
   buildRoom();
 
+  function phoneMsg(){const d=new Date(),t=d.getHours()+":"+String(d.getMinutes()).padStart(2,"0");
+    const M=["📱 小克：今天也辛苦啦，抱抱 🧡","📱 1 条新消息：要开心鸭 🌷","📱 备忘：记得给玫瑰浇水 🌹","📱 天气：今天有点想你 ☁️","📱 妈妈：早点睡哦 🌙"];
+    showBanner("现在是 "+t+"<br>"+M[(Math.random()*M.length)|0],3200);}
   const placePanel=document.getElementById("placePanel"),placeGrid=document.getElementById("placeGrid");let curSlot=null;
   function openPlace(s){curSlot=s;const ks=Object.keys(inv).filter(k=>inv[k]>0);
     placeGrid.innerHTML=ks.length?ks.map(k=>'<div class="cell" data-e="'+k+'">'+k+'</div>').join(""):'<div class="empty">背包空空的，先去收集物品~</div>';
@@ -435,9 +488,10 @@
     // 互动检测
     act=null;let bd=1e9;
     for(const s of slots){const d=Math.hypot(s.x-rp.x,s.y-rp.y);if(d<74&&d<bd){bd=d;act={type:"slot",o:s};}}
-    const dd=Math.hypot(door.x-rp.x,door.y-rp.y);if(dd<64&&dd<bd){bd=dd;act={type:"exit"};}
+    const dp=Math.hypot(phone.x-rp.x,phone.y-rp.y);if(dp<58&&dp<bd){bd=dp;act={type:"phone"};}
+    const dd=Math.hypot(door.x-rp.x,door.y-rp.y);if(dd<62&&dd<bd){bd=dd;act={type:"exit"};}
     const ab=document.getElementById("btnAct");
-    if(act){ab.classList.remove("dim");ab.innerHTML=act.type==="exit"?"🚪<br>出门":(act.o.item?"🔄<br>换/取":"✋<br>摆放");}
+    if(act){ab.classList.remove("dim");ab.innerHTML=act.type==="exit"?"🚪<br>出门":act.type==="phone"?"📱<br>看":(act.o.item?"🔄<br>换/取":"✋<br>摆放");}
     else{ab.classList.add("dim");ab.innerHTML="✋<br>摆放";}
     document.getElementById("gatebtn").classList.remove("show");
 
@@ -449,8 +503,28 @@
     const sx=Math.max(0,Math.min(camX,RW-1)),sy=Math.max(0,Math.min(camY,RH-1)),sw=Math.min(W,RW-sx),sh=Math.min(H,RH-sy);
     ctx.drawImage(roomBg,sx,sy,sw,sh,sx,sy,sw,sh);
     // 壁炉火焰
-    if(Math.random()<0.7){const fx=457+(Math.random()*64-32);P(fx,236,(Math.random()*0.8-0.4),-1-Math.random()*1.3,28,["rgba(255,170,60,","rgba(255,120,40,","rgba(255,220,120,"][(Math.random()*3)|0],3+Math.random()*2,-0.02);}
-    ctx.save();ctx.globalAlpha=.4+.2*Math.sin(tnow/120);ctx.fillStyle="rgba(255,150,60,.5)";ctx.beginPath();ctx.ellipse(457,238,42,16,0,0,7);ctx.fill();ctx.restore();
+    if(Math.random()<0.7){const fx=680+(Math.random()*60-30);P(fx,238,(Math.random()*0.8-0.4),-1-Math.random()*1.3,28,["rgba(255,170,60,","rgba(255,120,40,","rgba(255,220,120,"][(Math.random()*3)|0],3+Math.random()*2,-0.02);}
+    ctx.save();ctx.globalAlpha=.4+.2*Math.sin(tnow/120);ctx.fillStyle="rgba(255,150,60,.5)";ctx.beginPath();ctx.ellipse(680,236,42,16,0,0,7);ctx.fill();ctx.restore();
+    // 暖光（壁炉 + 台灯，lighter 叠加）
+    ctx.save();ctx.globalCompositeOperation="lighter";
+    const fg=ctx.createRadialGradient(680,210,6,680,210,150);fg.addColorStop(0,"rgba(255,170,80,"+(.32+.08*Math.sin(tnow/130))+")");fg.addColorStop(1,"rgba(255,170,80,0)");ctx.fillStyle=fg;ctx.beginPath();ctx.arc(680,210,150,0,7);ctx.fill();
+    const lg=ctx.createRadialGradient(370,440,4,370,440,96);lg.addColorStop(0,"rgba(255,226,150,.34)");lg.addColorStop(1,"rgba(255,226,150,0)");ctx.fillStyle=lg;ctx.beginPath();ctx.arc(370,440,96,0,7);ctx.fill();
+    ctx.restore();
+    // 挂钟指针
+    {const d=new Date(),hh=(d.getHours()%12)/12*6.283+d.getMinutes()/60*0.5236,mm=d.getMinutes()/60*6.283;
+     ctx.strokeStyle="#5a4636";ctx.lineCap="round";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(500,80);ctx.lineTo(500+Math.sin(hh)*12,80-Math.cos(hh)*12);ctx.stroke();
+     ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(500,80);ctx.lineTo(500+Math.sin(mm)*19,80-Math.cos(mm)*19);ctx.stroke();}
+    // 睡在床上的猫（呼吸）
+    {const br=1+Math.sin(tnow/750)*0.06;ctx.save();ctx.translate(catRoom.x,catRoom.y);ctx.scale(1.1,br);ctx.drawImage(eSprite("🐈",34),-17,-30,34,34);ctx.restore();
+     ctx.fillStyle="#7a5f44";ctx.font="11px sans-serif";ctx.textAlign="center";ctx.globalAlpha=.5+.3*Math.sin(tnow/600);ctx.fillText("Zzz",catRoom.x+18,catRoom.y-26);ctx.globalAlpha=1;}
+    // 沙发上的小克
+    {const bob=Math.sin(tnow/600)*2;if(claude.complete&&claude.naturalWidth){ctx.imageSmoothingEnabled=false;const w=40,h=w*(claude.naturalHeight/claude.naturalWidth);
+       ctx.fillStyle="rgba(0,0,0,.14)";ctx.beginPath();ctx.ellipse(claudeRoom.x,claudeRoom.y+2,15,5,0,0,7);ctx.fill();
+       ctx.drawImage(claude,claudeRoom.x-w/2,claudeRoom.y-h+bob,w,h);}}
+    // 桌上手机
+    {const hi=act&&act.type==="phone";ctx.fillStyle="#2a2a32";rr(phone.x-9,phone.y-18,18,30,4);ctx.fill();
+     ctx.fillStyle=Math.sin(tnow/500)>0?"#9ad0ff":"#bfe6ff";rr(phone.x-7,phone.y-16,14,24,2);ctx.fill();
+     if(hi){ctx.strokeStyle="rgba(255,235,150,.95)";ctx.lineWidth=2;ctx.beginPath();ctx.arc(phone.x,phone.y-4,18,0,7);ctx.stroke();}}
     // 槽位与摆件
     for(const s of slots){const hi=act&&act.type==="slot"&&act.o===s;
       if(hi){ctx.strokeStyle="rgba(255,235,150,.9)";ctx.lineWidth=2;ctx.beginPath();ctx.arc(s.x,s.y-6,17,0,7);ctx.stroke();}
@@ -469,8 +543,8 @@
       if(typeof p.col==="string"&&p.col.indexOf("txt:")===0){ctx.font="700 18px sans-serif";ctx.textAlign="center";ctx.fillText(p.col.slice(4),p.x,p.y);}
       else{ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,7);ctx.fill();}}
     ctx.globalAlpha=1;ctx.restore();
-    if(vgGrad){ctx.fillStyle=vgGrad;ctx.fillRect(0,0,W,H);}
-    ctx.fillStyle="rgba(255,255,255,.9)";ctx.font="700 17px 'Noto Serif SC',serif";ctx.textAlign="center";ctx.fillText("🏡 小克的家",W/2,32);
+    if(rvGrad){ctx.fillStyle=rvGrad;ctx.fillRect(0,0,W,H);}
+    ctx.fillStyle="rgba(255,255,255,.92)";ctx.font="700 17px 'Noto Serif SC',serif";ctx.textAlign="center";ctx.fillText("🏡 小克的家",W/2,32);
   }
 
   function fireworks(){for(let b=0;b<5;b++)setTimeout(()=>{const x=player.x+(Math.random()*300-150),y=player.y-100-Math.random()*120;
