@@ -27,10 +27,8 @@
     background:radial-gradient(circle at 38% 32%,#fff,#e7ecdf);box-shadow:0 4px 10px rgba(0,0,0,.22)}
   .abtn{position:fixed;z-index:7;width:66px;height:66px;border-radius:50%;border:none;cursor:pointer;font-family:var(--font);
     font-weight:700;font-size:.82rem;color:#3a2f1a;box-shadow:0 6px 16px rgba(60,80,40,.3);display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.15}
-  #btnJump{right:104px;bottom:36px;background:radial-gradient(circle at 38% 30%,#cdecff,#8fc3ef)}
-  #btnAct{right:24px;bottom:36px;background:radial-gradient(circle at 38% 30%,#ffe79a,#ffc46b)}
+  #btnA{right:28px;bottom:40px;width:78px;height:78px;background:radial-gradient(circle at 38% 30%,#cdecff,#8fc3ef)}
   .abtn:active{transform:scale(.93)}
-  .abtn.dim{opacity:.45}
   .gatebtn{position:fixed;left:50%;bottom:118px;transform:translateX(-50%);z-index:8;display:none;border:none;cursor:pointer;
     font-family:var(--font);font-weight:700;color:#3a2f1a;background:linear-gradient(135deg,#ffe79a,#ffc46b);
     padding:11px 20px;border-radius:999px;font-size:.95rem;box-shadow:0 8px 20px rgba(150,110,40,.35)}
@@ -63,10 +61,9 @@
   <a class="back pill" href="../">← 回星球</a>
   <div class="hud pill" id="hud">⭐ 0 / 0</div>
   <button class="bag pill" id="bag">🎒 背包</button>
-  <div class="tip" id="tip">摇杆走路 · ⤴跳 · ✋拾取/对话 · 接任务、收集物品、集星星</div>
+  <div class="tip" id="tip">摇杆走路（可边跑边跳）· 走过去自动捡东西 · 靠近朋友按钮变💬对话 · 集齐⭐</div>
   <div class="stick" id="stick"><div class="knob" id="knob"></div></div>
-  <button class="abtn" id="btnJump">⤴<br>跳</button>
-  <button class="abtn dim" id="btnAct">✋<br>互动</button>
+  <button class="abtn" id="btnA">⤴<br>跳</button>
   <button class="gatebtn" id="gatebtn"></button>
   <div class="banner" id="banner"></div>
   <div class="bagpanel" id="bagpanel"><div class="bagpanel__in">
@@ -168,11 +165,10 @@
   const jEnd=()=>{jActive=false;jx=jy=0;knob.style.transform="translate(-50%,-50%)";};
   stick.addEventListener("pointerup",jEnd);stick.addEventListener("pointercancel",jEnd);
   const keys={};addEventListener("keydown",e=>{audio();const k=e.key.toLowerCase();keys[k]=true;
-    if(k===" "||k==="j"){doJump();e.preventDefault();}if(k==="e"||k==="f"){doAct();}if(k==="b")toggleBag();});
+    if(k===" "||k==="j"){doJump();e.preventDefault();}if(k==="e"||k==="f"){doTalk();}if(k==="b")toggleBag();});
   addEventListener("keyup",e=>{keys[e.key.toLowerCase()]=false;});
 
-  document.getElementById("btnJump").addEventListener("click",()=>{audio();doJump();});
-  document.getElementById("btnAct").addEventListener("click",()=>{audio();doAct();});
+  document.getElementById("btnA").addEventListener("click",()=>{audio();doPrimary();});
   const gbtn=document.getElementById("gatebtn");let nearGate=null;
   gbtn.addEventListener("click",()=>{if(nearGate)location.href=nearGate.href;});
   const tip=document.getElementById("tip");setTimeout(()=>tip.classList.add("hide"),7500);
@@ -180,15 +176,13 @@
   function showBanner(html,ms){banner.innerHTML=html;banner.classList.add("show");setTimeout(()=>banner.classList.remove("show"),ms||4800);}
 
   function doJump(){if(player.jz<=0){player.jvz=6.4;hop();}}
-  let act=null;
+  let nearNPC=null;
   function say(o,t){o._say=t;o._sayT=performance.now()+3000;}
   function reward(r){inv[r]=(inv[r]||0)+1;for(let i=0;i<10;i++){const a=Math.random()*6.28,s=1+Math.random()*2.5;P(player.x,player.y-20,Math.cos(a)*s,Math.sin(a)*s-1,40,"rgba(255,221,120,",2,.05);}save();}
-  function doAct(){
-    if(!act)return;
-    if(act.type==="item"){const it=act.o;it.got=true;inv[it.name]=(inv[it.name]||0)+1;pick();
-      for(let i=0;i<10;i++){const a=Math.random()*6.28,s=1+Math.random()*2.5;P(it.x,it.y,Math.cos(a)*s,Math.sin(a)*s-1,34,"rgba(255,255,255,",2,.04);}
-      P(it.x,it.y-8,0,-.6,42,"txt:+"+it.emo,0);save();return;}
-    const o=act.o;
+  function doPrimary(){if(nearNPC)doTalk();else doJump();}
+  function doTalk(){
+    if(!nearNPC)return;
+    const o=nearNPC;
     if(o.quest){const q=o.quest;
       if(q.state==="done"){say(o,q.done);}
       else if(q.state==="active"){
@@ -256,13 +250,17 @@
       P(st.x,st.y-10,0,-.6,46,"txt:+⭐",0);
       if(got===stars.length&&!won){won=true;winSfx();fireworks();showBanner("✨ 你集齐了所有星星！<br>这个小世界，因你而闪亮 ✨",5200);}}}
 
-    // 最近可互动（物品优先，其次NPC/朋友）
-    act=null;let bd=1e9;
-    for(const it of items){if(it.got)continue;const d=Math.hypot(it.x-player.x,it.y-player.y);if(d<48&&d<bd){bd=d;act={type:"item",o:it};}}
-    if(!act){let nd=1e9;for(const n of npcs){const d=Math.hypot(n.x-player.x,n.y-player.y);if(d<n.r&&d<nd){nd=d;act={type:"npc",o:n};}}
-      for(const f of friends){const d=Math.hypot(f.x-player.x,f.y-player.y);if(d<96&&d<nd){nd=d;act={type:"npc",o:f};}}}
-    const ab=document.getElementById("btnAct");
-    if(act){ab.classList.remove("dim");ab.innerHTML=act.type==="item"?("✋<br>"+act.o.emo):"💬<br>聊聊";}else{ab.classList.add("dim");ab.innerHTML="✋<br>互动";}
+    // 走过去自动拾取物品
+    for(const it of items){if(it.got)continue;if(player.jz<16&&Math.hypot(it.x-player.x,it.y-player.y)<42){it.got=true;inv[it.name]=(inv[it.name]||0)+1;pick();
+      for(let i=0;i<10;i++){const a=Math.random()*6.28,s=1+Math.random()*2.5;P(it.x,it.y,Math.cos(a)*s,Math.sin(a)*s-1,34,"rgba(255,255,255,",2,.04);}
+      P(it.x,it.y-8,0,-.6,42,"txt:+"+it.emo,0);save();}}
+    // 最近 NPC/朋友（按钮上下文）
+    nearNPC=null;let nd=1e9;
+    for(const n of npcs){const d=Math.hypot(n.x-player.x,n.y-player.y);if(d<n.r&&d<nd){nd=d;nearNPC=n;}}
+    for(const f of friends){const d=Math.hypot(f.x-player.x,f.y-player.y);if(d<96&&d<nd){nd=d;nearNPC=f;}}
+    const ab=document.getElementById("btnA");
+    if(nearNPC){ab.innerHTML="💬<br>聊";ab.style.background="radial-gradient(circle at 38% 30%,#bff0c8,#7fd0a0)";}
+    else{ab.innerHTML="⤴<br>跳";ab.style.background="radial-gradient(circle at 38% 30%,#cdecff,#8fc3ef)";}
 
     nearGate=null;let gd=82;for(const g of gates){const d=Math.hypot(g.x-player.x,g.y-player.y);if(d<gd){gd=d;nearGate=g;}}
     if(nearGate){gbtn.textContent="进入 "+nearGate.label+" ➜";gbtn.classList.add("show");}else gbtn.classList.remove("show");
@@ -287,8 +285,8 @@
     ctx.globalAlpha=1;
     // 物品（带光圈，当前可拾取的高亮）
     for(const it of items){if(it.got)continue;const fl=Math.sin(tnow/400+it.ph)*2;
-      if(act&&act.type==="item"&&act.o===it){ctx.strokeStyle="rgba(255,230,140,.9)";ctx.lineWidth=2;ctx.beginPath();ctx.arc(it.x,it.y-8,18+Math.sin(tnow/200)*2,0,7);ctx.stroke();}
-      ctx.font="26px serif";ctx.fillText(it.emo,it.x,it.y-6+fl);}
+      ctx.strokeStyle="rgba(255,230,140,.5)";ctx.lineWidth=2;ctx.beginPath();ctx.arc(it.x,it.y-8,15+Math.sin(tnow/260+it.ph)*1.5,0,7);ctx.stroke();
+      ctx.font="26px serif";ctx.textAlign="center";ctx.fillText(it.emo,it.x,it.y-6+fl);}
     for(const st of stars){if(st.got)continue;const fl=1+Math.sin(tnow/300+st.ph)*.12;ctx.font=(30*fl)+"px serif";ctx.fillText("⭐",st.x,st.y);}
 
     const sp=[];for(const g of gates)sp.push({y:g.y,t:"gate",o:g});for(const t of trees)sp.push({y:t.y,t:"tree",o:t});

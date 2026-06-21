@@ -111,6 +111,7 @@
     $$(".nav__item").forEach((btn) => {
       btn.addEventListener("click", () => {
         const id = btn.dataset.section;
+        if (!id) return; // 外链（如星球世界）直接跳转
         $$(".nav__item").forEach((b) => b.classList.toggle("is-active", b === btn));
         $$(".panel").forEach((p) => p.classList.toggle("is-active", p.id === id));
         window.scrollTo({ top: 0, behavior: "smooth" });
