@@ -95,6 +95,7 @@
   const WW=2200,WH=1600;
 
   const claude=new Image();claude.src="../claude.png";
+  const claudePink=new Image();claudePink.src="../claude_pink.png";
   const prince=new Image();prince.src="../prince.png";
   const FR=["../claude_pink.png","../claude_blue.png","../claude_mint.png"].map(s=>{const i=new Image();i.src=s;return i;});
 
@@ -170,6 +171,7 @@
   const phone={x:962,y:556};
   const catRoom={x:206,y:498};
   const claudeRoom={x:516,y:548};
+  const bulbs=[];for(let i=0;i<16;i++){const t=i/15;bulbs.push({x:40+t*(RW-80),y:16+Math.sin(t*Math.PI)*16,c:["#ff7a7a","#ffd24a","#7fd0ff","#9ae08a","#d9a0ff"][i%5]});}
 
   // 存档
   const SK="world_save_v1";
@@ -460,6 +462,24 @@
     g.beginPath();g.moveTo(1040,336);g.lineTo(1016,388);g.lineTo(1064,388);g.closePath();g.fill();
     g.fillStyle="#7a5230";g.fillRect(1034,420,12,14);g.fillStyle="#ffe27a";g.beginPath();g.arc(1040,330,5,0,7);g.fill();
     g.fillStyle="#ff6f91";g.beginPath();g.arc(1028,402,3,0,7);g.fill();g.fillStyle="#9ad0ff";g.beginPath();g.arc(1052,376,3,0,7);g.fill();g.fillStyle="#ffd24a";g.beginPath();g.arc(1040,408,3,0,7);g.fill();
+    // 圆镜（墙上）
+    g.fillStyle="#caa86a";g.beginPath();g.arc(444,84,26,0,7);g.fill();g.fillStyle="#dcecf2";g.beginPath();g.arc(444,84,21,0,7);g.fill();
+    g.fillStyle="#eef6fa";g.beginPath();g.arc(438,78,9,0,7);g.fill();
+    // 壁炉绿植花环
+    g.strokeStyle="#3f8f5a";g.lineWidth=5;g.beginPath();g.moveTo(592,138);g.quadraticCurveTo(680,158,768,138);g.stroke();
+    for(let i=0;i<7;i++){const t=i/6,x=592+t*176,y=138+Math.sin(t*Math.PI)*10;g.fillStyle=["#ff6f91","#ffd24a","#9ad0ff"][i%3];g.beginPath();g.arc(x,y,3,0,7);g.fill();}
+    // 桌上茶杯
+    g.fillStyle="#fff";g.fillRect(716,506,18,12);g.fillStyle="#fff";g.beginPath();g.arc(736,512,5,0,7);g.stroke();g.strokeStyle="#caa";g.lineWidth=2;g.beginPath();g.arc(736,512,5,0,7);g.stroke();
+    g.fillStyle="#b07a4a";g.fillRect(718,508,14,5);
+    // 吊灯（吊在桌子上方）
+    g.strokeStyle="#7a655a";g.lineWidth=3;g.beginPath();g.moveTo(700,0);g.lineTo(700,318);g.stroke();
+    g.fillStyle="#caa86a";g.beginPath();g.moveTo(672,348);g.lineTo(728,348);g.lineTo(716,318);g.lineTo(684,318);g.closePath();g.fill();
+    g.fillStyle="#fff3c0";g.beginPath();g.ellipse(700,348,28,7,0,0,7);g.fill();
+    // 阳光斜照（地面光斑）
+    g.fillStyle="rgba(255,240,180,.22)";g.beginPath();g.moveTo(110,160);g.lineTo(250,160);g.lineTo(320,300);g.lineTo(180,300);g.closePath();g.fill();
+    // 串灯（电线 + 彩灯，发光在 roomStep）
+    g.strokeStyle="rgba(90,70,50,.6)";g.lineWidth=2;g.beginPath();g.moveTo(bulbs[0].x,bulbs[0].y);for(const b of bulbs)g.lineTo(b.x,b.y);g.stroke();
+    for(const b of bulbs){g.fillStyle=b.c;g.beginPath();g.arc(b.x,b.y+4,3.4,0,7);g.fill();}
     // 门垫
     g.fillStyle="#caa96a";g.beginPath();g.ellipse(door.x,door.y,64,18,0,0,7);g.fill();
     g.fillStyle="#6b5440";g.font="700 14px sans-serif";g.textAlign="center";g.fillText("地垫",door.x,door.y+5);}
@@ -517,10 +537,18 @@
     // 睡在床上的猫（呼吸）
     {const br=1+Math.sin(tnow/750)*0.06;ctx.save();ctx.translate(catRoom.x,catRoom.y);ctx.scale(1.1,br);ctx.drawImage(eSprite("🐈",34),-17,-30,34,34);ctx.restore();
      ctx.fillStyle="#7a5f44";ctx.font="11px sans-serif";ctx.textAlign="center";ctx.globalAlpha=.5+.3*Math.sin(tnow/600);ctx.fillText("Zzz",catRoom.x+18,catRoom.y-26);ctx.globalAlpha=1;}
-    // 沙发上的小克
-    {const bob=Math.sin(tnow/600)*2;if(claude.complete&&claude.naturalWidth){ctx.imageSmoothingEnabled=false;const w=40,h=w*(claude.naturalHeight/claude.naturalWidth);
+    // 沙发上的粉色小克朋友（和你区分开）
+    {const bob=Math.sin(tnow/600)*2;if(claudePink.complete&&claudePink.naturalWidth){ctx.imageSmoothingEnabled=false;const w=40,h=w*(claudePink.naturalHeight/claudePink.naturalWidth);
        ctx.fillStyle="rgba(0,0,0,.14)";ctx.beginPath();ctx.ellipse(claudeRoom.x,claudeRoom.y+2,15,5,0,0,7);ctx.fill();
-       ctx.drawImage(claude,claudeRoom.x-w/2,claudeRoom.y-h+bob,w,h);}}
+       ctx.drawImage(claudePink,claudeRoom.x-w/2,claudeRoom.y-h+bob,w,h);
+       ctx.fillStyle="#b85a7a";ctx.font="700 11px 'Noto Serif SC',serif";ctx.textAlign="center";ctx.fillText("小克",claudeRoom.x,claudeRoom.y-h+bob-4);}}
+    // 串灯发光
+    ctx.save();ctx.globalCompositeOperation="lighter";
+    for(let i=0;i<bulbs.length;i++){const b=bulbs[i],a=.4+.5*Math.sin(tnow/400+i*0.9);ctx.globalAlpha=a;ctx.fillStyle=b.c;ctx.beginPath();ctx.arc(b.x,b.y+4,6,0,7);ctx.fill();}
+    ctx.restore();ctx.globalAlpha=1;
+    // 吊灯暖光
+    {const pg=ctx.createRadialGradient(700,352,6,700,352,120);pg.addColorStop(0,"rgba(255,232,150,.3)");pg.addColorStop(1,"rgba(255,232,150,0)");
+     ctx.save();ctx.globalCompositeOperation="lighter";ctx.fillStyle=pg;ctx.beginPath();ctx.arc(700,352,120,0,7);ctx.fill();ctx.restore();}
     // 桌上手机
     {const hi=act&&act.type==="phone";ctx.fillStyle="#2a2a32";rr(phone.x-9,phone.y-18,18,30,4);ctx.fill();
      ctx.fillStyle=Math.sin(tnow/500)>0?"#9ad0ff":"#bfe6ff";rr(phone.x-7,phone.y-16,14,24,2);ctx.fill();
