@@ -72,6 +72,11 @@
   </div>
   <button class="gatebtn" id="gatebtn"></button>
   <div class="banner" id="banner"></div>
+  <div class="bagpanel" id="placePanel"><div class="bagpanel__in">
+    <h3>摆一件到架子上 🏡</h3><div class="sub">点一个物品放上去（点「取下」可清空）</div>
+    <div class="grid" id="placeGrid"></div>
+    <div class="bagpanel__foot"><button id="placeClear">取下</button><button id="placeClose">取消</button></div>
+  </div></div>
   <div class="bagpanel" id="bagpanel"><div class="bagpanel__in">
     <h3>🎒 我的背包</h3><div class="sub" id="bagsub"></div>
     <div class="grid" id="baggrid"></div>
@@ -151,6 +156,14 @@
   const stars=[];for(let i=0;i<9;i++)stars.push({id:"st"+i,x:120+Math.random()*(WW-240),y:170+Math.random()*(WH-320),got:false,ph:Math.random()*6});
   let got=0,won=false,doneCount=0;
 
+  // ===== 室内房间 =====
+  let scene="world";
+  const RW=1000,RH=680;
+  const rp={x:RW/2,y:RH-90,vx:0,vy:0,face:1,jz:0,jvz:0};
+  const furn=[{x:120,y:360,w:210,h:150},{x:630,y:66,w:250,h:64},{x:382,y:150,w:150,h:96},{x:452,y:432,w:152,h:70}];
+  const slots=[{x:672,y:116},{x:755,y:116},{x:838,y:116},{x:457,y:120},{x:528,y:418}].map(s=>({x:s.x,y:s.y,item:null}));
+  const door={x:RW/2,y:RH-22};
+
   // 存档
   const SK="world_save_v1";
   let inv={};
@@ -160,9 +173,10 @@
     got=stars.filter(s2=>s2.got).length;
     if(s.quests)for(const n of npcs)if(n.quest&&s.quests[n.id])n.quest.state=s.quests[n.id];
     doneCount=npcs.filter(n=>n.quest&&n.quest.state==="done").length;
+    if(s.deco)s.deco.forEach((e,i)=>{if(slots[i])slots[i].item=e;});
   }catch(e){}}
   function save(){try{const q={};for(const n of npcs)if(n.quest)q[n.id]=n.quest.state;
-    localStorage.setItem(SK,JSON.stringify({inv,gotItems:items.filter(i=>i.got).map(i=>i.id),gotStars:stars.filter(s=>s.got).map(s=>s.id),quests:q}));}catch(e){}}
+    localStorage.setItem(SK,JSON.stringify({inv,gotItems:items.filter(i=>i.got).map(i=>i.id),gotStars:stars.filter(s=>s.got).map(s=>s.id),quests:q,deco:slots.map(s=>s.item)}));}catch(e){}}
   load();
   const hud=document.getElementById("hud");const updHud=()=>hud.textContent="⭐ "+got+" / "+stars.length;updHud();
 
@@ -207,12 +221,19 @@
     o.frequency.setValueAtTime(380,n);o.frequency.exponentialRampToValueAtTime(1180,n+0.12);o.frequency.exponentialRampToValueAtTime(740,n+0.22);
     v.gain.setValueAtTime(0.0001,n);v.gain.linearRampToValueAtTime(0.09,n+0.012);v.gain.exponentialRampToValueAtTime(0.0001,n+0.26);
     o.connect(v);v.connect(AC.destination);o.start(n);o.stop(n+0.28);}
-  function doJump(){if(player.jz<=0){player.jvz=6.6;marioJump();}}
+  function doJump(){const p=scene==="room"?rp:player;if(p.jz<=0){p.jvz=6.6;marioJump();}}
+  function enterRoom(){scene="room";rp.x=RW/2;rp.y=RH-90;rp.vx=rp.vy=0;rp.jz=0;gbtn.classList.remove("show");
+    camX=(RW<W)?(RW-W)/2:Math.max(0,Math.min(RW-W,rp.x-W/2));camY=(RH<H)?(RH-H)/2:Math.max(0,Math.min(RH-H,rp.y-H/2));}
+  function leaveRoom(){scene="world";player.x=house.x;player.y=house.y+46;player.vx=player.vy=0;
+    camX=Math.max(0,Math.min(WW-W,player.x-W/2));camY=Math.max(0,Math.min(WH-H,player.y-H/2));}
   let act=null;
   function say(o,t){o._say=t;o._sayT=performance.now()+3000;}
   function reward(r){inv[r]=(inv[r]||0)+1;for(let i=0;i<10;i++){const a=Math.random()*6.28,s=1+Math.random()*2.5;P(player.x,player.y-20,Math.cos(a)*s,Math.sin(a)*s-1,40,"rgba(255,221,120,",2,.05);}save();}
   function doAct(){
     if(!act)return;
+    if(act.type==="door"){enterRoom();return;}
+    if(act.type==="exit"){leaveRoom();return;}
+    if(act.type==="slot"){openPlace(act.o);return;}
     if(act.type==="item"){const it=act.o;it.got=true;inv[it.name]=(inv[it.name]||0)+1;pick();
       for(let i=0;i<10;i++){const a=Math.random()*6.28,s=1+Math.random()*2.5;P(it.x,it.y,Math.cos(a)*s,Math.sin(a)*s-1,34,"rgba(255,255,255,",2,.04);}
       P(it.x,it.y-8,0,-.6,42,"txt:+"+it.emo,0);save();return;}
@@ -255,6 +276,7 @@
     let ix=Math.max(-1,Math.min(1,jx+kx)),iy=Math.max(-1,Math.min(1,jy+ky));
     let mag=Math.hypot(ix,iy);if(mag>1){ix/=mag;iy/=mag;mag=1;}
     player.vx=ix*SPEED;player.vy=iy*SPEED;const moving=mag>0.06;
+    if(scene==="room"){roomStep(tnow,ix,iy,mag);requestAnimationFrame(step);return;}
     player.x+=player.vx;player.y+=player.vy;
     if(Math.abs(player.vx)>0.2)player.face=player.vx<0?-1:1;
     player.x=Math.max(34,Math.min(WW-34,player.x));player.y=Math.max(70,Math.min(WH-24,player.y));
@@ -287,10 +309,12 @@
     // 最近可互动：物品优先，其次 NPC/朋友
     act=null;let bd=1e9;
     for(const it of items){if(it.got)continue;const d=Math.hypot(it.x-player.x,it.y-player.y);if(d<56&&d<bd){bd=d;act={type:"item",o:it};}}
-    if(!act){let nd=1e9;for(const n of npcs){const d=Math.hypot(n.x-player.x,n.y-player.y);if(d<n.r&&d<nd){nd=d;act={type:"npc",o:n};}}
+    if(!act){let nd=1e9;
+      const dd=Math.hypot(house.x-player.x,(house.y-12)-player.y);if(dd<82&&dd<nd){nd=dd;act={type:"door"};}
+      for(const n of npcs){const d=Math.hypot(n.x-player.x,n.y-player.y);if(d<n.r&&d<nd){nd=d;act={type:"npc",o:n};}}
       for(const f of friends){const d=Math.hypot(f.x-player.x,f.y-player.y);if(d<96&&d<nd){nd=d;act={type:"npc",o:f};}}}
     const ab=document.getElementById("btnAct");
-    if(act){ab.classList.remove("dim");ab.innerHTML=act.type==="item"?(act.o.emo+"<br>拾取"):"💬<br>对话";}
+    if(act){ab.classList.remove("dim");ab.innerHTML=act.type==="item"?(act.o.emo+"<br>拾取"):(act.type==="door"?"🚪<br>进屋":"💬<br>对话");}
     else{ab.classList.add("dim");ab.innerHTML="✋<br>拾取";}
 
     nearGate=null;let gd=82;for(const g of gates){const d=Math.hypot(g.x-player.x,g.y-player.y);if(d<gd){gd=d;nearGate=g;}}
@@ -366,6 +390,89 @@
     if(vgGrad){ctx.fillStyle=vgGrad;ctx.fillRect(0,0,W,H);}
     miniMap();requestAnimationFrame(step);
   }
+
+  // ===== 室内房间 =====
+  const roomBg=document.createElement("canvas");roomBg.width=RW;roomBg.height=RH;
+  function buildRoom(){const g=roomBg.getContext("2d");
+    g.fillStyle="#e7d3b3";g.fillRect(0,0,RW,150);
+    g.fillStyle="#c79b6e";g.fillRect(0,150,RW,RH-150);
+    g.strokeStyle="rgba(120,80,40,.16)";g.lineWidth=2;for(let y=192;y<RH;y+=46){g.beginPath();g.moveTo(0,y);g.lineTo(RW,y);g.stroke();}
+    g.strokeStyle="rgba(120,80,40,.1)";for(let x=0;x<RW;x+=82){g.beginPath();g.moveTo(x,158);g.lineTo(x,RH);g.stroke();}
+    g.fillStyle="#b98c5e";g.fillRect(0,150,RW,8);
+    g.fillStyle="#bfe6ff";g.fillRect(120,40,170,92);g.fillStyle="#9ad0ff";g.fillRect(120,90,170,42);
+    g.strokeStyle="#8a5a32";g.lineWidth=6;g.strokeRect(120,40,170,92);g.beginPath();g.moveTo(205,40);g.lineTo(205,132);g.moveTo(120,86);g.lineTo(290,86);g.stroke();
+    g.fillStyle="#d98aa0";g.beginPath();g.ellipse(RW/2,470,180,80,0,0,7);g.fill();
+    g.fillStyle="#e8a8ba";g.beginPath();g.ellipse(RW/2,470,128,54,0,0,7);g.fill();
+    g.fillStyle="#9a6f4a";g.fillRect(120,360,210,150);g.fillStyle="#fff3e0";g.fillRect(128,372,194,90);g.fillStyle="#ffd0e0";g.fillRect(128,372,60,90);
+    g.fillStyle="#8a5a32";g.fillRect(630,66,250,210);g.fillStyle="#6e4423";for(let i=0;i<3;i++)g.fillRect(636,74+i*68,238,8);
+    const bc=["#c0506a","#5a86b8","#5aa06a","#caa14b","#7a5ba0"];
+    for(let s=0;s<3;s++)for(let b=0;b<7;b++){g.fillStyle=bc[(s+b)%bc.length];g.fillRect(644+b*32,90+s*68,22,32);}
+    g.fillStyle="#9a8478";g.fillRect(382,150,150,96);g.fillStyle="#3a2a22";g.fillRect(404,178,106,68);
+    g.fillStyle="#7a655a";g.fillRect(370,138,176,14);
+    g.fillStyle="#a9794e";g.fillRect(452,432,152,18);g.fillStyle="#8a5a32";g.fillRect(460,450,12,60);g.fillRect(592,450,12,60);
+    g.font="44px serif";g.textAlign="center";g.textBaseline="alphabetic";g.fillText("🪴",928,500);
+    g.fillStyle="#caa96a";g.beginPath();g.ellipse(door.x,door.y,62,18,0,0,7);g.fill();
+    g.fillStyle="#6b5440";g.font="700 14px sans-serif";g.fillText("地垫",door.x,door.y+5);}
+  buildRoom();
+
+  const placePanel=document.getElementById("placePanel"),placeGrid=document.getElementById("placeGrid");let curSlot=null;
+  function openPlace(s){curSlot=s;const ks=Object.keys(inv).filter(k=>inv[k]>0);
+    placeGrid.innerHTML=ks.length?ks.map(k=>'<div class="cell" data-e="'+k+'">'+k+'</div>').join(""):'<div class="empty">背包空空的，先去收集物品~</div>';
+    placePanel.classList.add("show");}
+  placeGrid.addEventListener("click",e=>{const c=e.target.closest(".cell");if(!c||!curSlot)return;curSlot.item=c.dataset.e;save();placePanel.classList.remove("show");});
+  document.getElementById("placeClear").addEventListener("click",()=>{if(curSlot){curSlot.item=null;save();}placePanel.classList.remove("show");});
+  document.getElementById("placeClose").addEventListener("click",()=>placePanel.classList.remove("show"));
+  placePanel.addEventListener("pointerdown",e=>{if(e.target===placePanel)placePanel.classList.remove("show");});
+
+  function roomStep(tnow,ix,iy,mag){
+    const moving=mag>0.06;
+    rp.x+=ix*2.7;rp.y+=iy*2.7;
+    if(Math.abs(ix)>0.06)rp.face=ix<0?-1:1;
+    rp.x=Math.max(38,Math.min(RW-38,rp.x));rp.y=Math.max(176,Math.min(RH-28,rp.y));
+    for(const f of furn){const cx=Math.max(f.x,Math.min(rp.x,f.x+f.w)),cy=Math.max(f.y,Math.min(rp.y,f.y+f.h)),dx=rp.x-cx,dy=rp.y-cy,d=Math.hypot(dx,dy);
+      if(d<14){if(d<0.01)rp.y=f.y+f.h+14;else{rp.x=cx+dx/d*14;rp.y=cy+dy/d*14;}}}
+    const wasAir=rp.jz>0;rp.jz+=rp.jvz;rp.jvz-=0.5;if(rp.jz<=0){rp.jz=0;rp.jvz=0;if(wasAir){}}
+    // 互动检测
+    act=null;let bd=1e9;
+    for(const s of slots){const d=Math.hypot(s.x-rp.x,s.y-rp.y);if(d<74&&d<bd){bd=d;act={type:"slot",o:s};}}
+    const dd=Math.hypot(door.x-rp.x,door.y-rp.y);if(dd<64&&dd<bd){bd=dd;act={type:"exit"};}
+    const ab=document.getElementById("btnAct");
+    if(act){ab.classList.remove("dim");ab.innerHTML=act.type==="exit"?"🚪<br>出门":(act.o.item?"🔄<br>换/取":"✋<br>摆放");}
+    else{ab.classList.add("dim");ab.innerHTML="✋<br>摆放";}
+    document.getElementById("gatebtn").classList.remove("show");
+
+    let tcx=Math.max(0,Math.min(RW-W,rp.x-W/2)),tcy=Math.max(0,Math.min(RH-H,rp.y-H/2));
+    if(RW<W)tcx=(RW-W)/2;if(RH<H)tcy=(RH-H)/2;camX+=(tcx-camX)*.15;camY+=(tcy-camY)*.15;
+
+    ctx.clearRect(0,0,W,H);ctx.fillStyle="#212c34";ctx.fillRect(0,0,W,H);
+    ctx.save();ctx.translate(-camX,-camY);
+    const sx=Math.max(0,Math.min(camX,RW-1)),sy=Math.max(0,Math.min(camY,RH-1)),sw=Math.min(W,RW-sx),sh=Math.min(H,RH-sy);
+    ctx.drawImage(roomBg,sx,sy,sw,sh,sx,sy,sw,sh);
+    // 壁炉火焰
+    if(Math.random()<0.7){const fx=457+(Math.random()*64-32);P(fx,236,(Math.random()*0.8-0.4),-1-Math.random()*1.3,28,["rgba(255,170,60,","rgba(255,120,40,","rgba(255,220,120,"][(Math.random()*3)|0],3+Math.random()*2,-0.02);}
+    ctx.save();ctx.globalAlpha=.4+.2*Math.sin(tnow/120);ctx.fillStyle="rgba(255,150,60,.5)";ctx.beginPath();ctx.ellipse(457,238,42,16,0,0,7);ctx.fill();ctx.restore();
+    // 槽位与摆件
+    for(const s of slots){const hi=act&&act.type==="slot"&&act.o===s;
+      if(hi){ctx.strokeStyle="rgba(255,235,150,.9)";ctx.lineWidth=2;ctx.beginPath();ctx.arc(s.x,s.y-6,17,0,7);ctx.stroke();}
+      if(s.item)ctx.drawImage(eSprite(s.item,28),s.x-14,s.y-22,28,28);
+      else if(hi){ctx.globalAlpha=.6;ctx.fillStyle="#fff";ctx.font="12px sans-serif";ctx.textAlign="center";ctx.fillText("放这里",s.x,s.y-2);ctx.globalAlpha=1;}}
+    // 玩家
+    const bob=(moving&&rp.jz<=0)?Math.abs(Math.sin(tnow/90))*-7:0;
+    ctx.fillStyle="rgba(0,0,0,.18)";ctx.beginPath();ctx.ellipse(rp.x,rp.y+2,16*(1-Math.min(.5,rp.jz/40)),5,0,0,7);ctx.fill();
+    if(claude.complete&&claude.naturalWidth){ctx.imageSmoothingEnabled=false;const w=46,h=w*(claude.naturalHeight/claude.naturalWidth);
+      ctx.save();ctx.translate(rp.x,rp.y+bob-rp.jz);ctx.scale(rp.face,1);ctx.drawImage(claude,-w/2,-h,w,h);ctx.restore();}
+    else{ctx.fillStyle="#e8945a";ctx.fillRect(rp.x-16,rp.y-30,32,30);}
+    // 粒子
+    for(let i=parts.length-1;i>=0;i--){const p=parts[i];p.x+=p.vx;p.y+=p.vy;p.vy+=p.grav;p.life--;
+      if(p.life<=0){parts.splice(i,1);continue;}const al=p.life/p.max;ctx.globalAlpha=al;
+      ctx.fillStyle=(typeof p.col==="string"&&p.col.indexOf("txt:")===0)?"#ffcf5a":(p.col+al+")");
+      if(typeof p.col==="string"&&p.col.indexOf("txt:")===0){ctx.font="700 18px sans-serif";ctx.textAlign="center";ctx.fillText(p.col.slice(4),p.x,p.y);}
+      else{ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,7);ctx.fill();}}
+    ctx.globalAlpha=1;ctx.restore();
+    if(vgGrad){ctx.fillStyle=vgGrad;ctx.fillRect(0,0,W,H);}
+    ctx.fillStyle="rgba(255,255,255,.9)";ctx.font="700 17px 'Noto Serif SC',serif";ctx.textAlign="center";ctx.fillText("🏡 小克的家",W/2,32);
+  }
+
   function fireworks(){for(let b=0;b<5;b++)setTimeout(()=>{const x=player.x+(Math.random()*300-150),y=player.y-100-Math.random()*120;
     const cols=["255,120,120","120,200,255","255,221,120","200,140,255","160,240,180"][b%5];
     for(let i=0;i<26;i++){const a=Math.random()*6.28,sp=1.5+Math.random()*3.5;P(x,y,Math.cos(a)*sp,Math.sin(a)*sp,50,"rgba("+cols+",",2+Math.random()*2,.05);}},b*260);}
