@@ -141,7 +141,7 @@
     }
     // 柔和光照：中心提亮 + 边缘压暗
     const lg=g.createRadialGradient(WW*.46,WH*.4,220,WW*.5,WH*.5,Math.max(WW,WH)*.72);
-    lg.addColorStop(0,"rgba(255,250,210,.12)");lg.addColorStop(.7,"rgba(255,250,210,0)");lg.addColorStop(1,"rgba(28,55,28,.2)");
+    lg.addColorStop(0,"rgba(255,250,210,.12)");lg.addColorStop(.7,"rgba(255,250,210,0)");lg.addColorStop(1,"rgba(28,55,28,0)");
     g.fillStyle=lg;g.fillRect(0,0,WW,WH);}
   buildGround();
   // emoji 贴图缓存（用 drawImage 代替逐帧 fillText）
@@ -180,17 +180,19 @@
 
   // ===== 室内房间 =====
   let scene="world";
-  const RW=1100,RH=720;
+  const RW=1400,RH=760;
   const rp={x:RW/2,y:RH-90,vx:0,vy:0,face:1,jz:0,jvz:0};
+  // 隔墙把家分成 卧室｜客厅｜书房 三个小房间（x=470 与 x=960，各留门洞 y400~500）
+  const WALLS=[{x:470,y:150,w:26,h:250},{x:470,y:500,w:26,h:RH-500},{x:960,y:150,w:26,h:250},{x:960,y:500,w:26,h:RH-500}];
   const furn=[
-    {x:90,y:438,w:240,h:150},{x:820,y:66,w:250,h:70},{x:600,y:150,w:160,h:100},
-    {x:430,y:506,w:175,h:86},{x:640,y:520,w:120,h:72},{x:820,y:566,w:185,h:72},{x:338,y:478,w:64,h:58}
-  ];
-  const slots=[{x:862,y:126},{x:932,y:126},{x:1002,y:126},{x:680,y:132},{x:700,y:512},{x:172,y:128},{x:902,y:556}].map(s=>({x:s.x,y:s.y,item:null}));
+    {x:90,y:438,w:240,h:150},{x:1020,y:66,w:250,h:270},{x:600,y:150,w:160,h:100},
+    {x:564,y:506,w:175,h:86},{x:788,y:506,w:124,h:60},{x:1118,y:566,w:190,h:72},{x:338,y:478,w:64,h:58}
+  ].concat(WALLS);
+  const slots=[{x:1062,y:126},{x:1132,y:126},{x:1202,y:126},{x:680,y:132},{x:850,y:512},{x:172,y:128},{x:1202,y:556}].map(s=>({x:s.x,y:s.y,item:null}));
   const door={x:RW/2,y:RH-22};
-  const phone={x:962,y:556};
+  const phone={x:1262,y:556};
   const catRoom={x:206,y:498};
-  const claudeRoom={x:516,y:548};
+  const claudeRoom={x:656,y:548};
   const bulbs=[];for(let i=0;i<16;i++){const t=i/15;bulbs.push({x:40+t*(RW-80),y:16+Math.sin(t*Math.PI)*16,c:["#ff7a7a","#ffd24a","#7fd0ff","#9ae08a","#d9a0ff"][i%5]});}
 
   // 存档
@@ -436,7 +438,6 @@
       let bx=Math.max(8,Math.min(W-bw-8,sx-bw/2)),by=Math.max(58,sy-bh);
       ctx.fillStyle="rgba(40,30,20,.86)";rr(bx,by,bw,bh,12);ctx.fill();ctx.fillStyle="#fff6e8";ctx.textAlign="left";ctx.textBaseline="middle";ctx.fillText(o._say,bx+pad,by+bh/2);ctx.textBaseline="alphabetic";}}
 
-    if(vgGrad){ctx.fillStyle=vgGrad;ctx.fillRect(0,0,W,H);}
     miniMap();requestAnimationFrame(step);
   }
 
@@ -454,6 +455,24 @@
     const fg=g.createLinearGradient(0,160,0,RH);fg.addColorStop(0,"#c89b6a");fg.addColorStop(1,"#b3853f");g.fillStyle=fg;g.fillRect(0,160,RW,RH-160);
     g.strokeStyle="rgba(110,75,40,.16)";g.lineWidth=2;for(let y=204;y<RH;y+=44){g.beginPath();g.moveTo(0,y);g.lineTo(RW,y);g.stroke();}
     g.strokeStyle="rgba(110,75,40,.09)";for(let x=0;x<RW;x+=120){g.beginPath();g.moveTo(x,160);g.lineTo(x,RH);g.stroke();}
+    // 每个房间的地板色调（卧室偏粉 / 书房偏蓝）
+    g.fillStyle="rgba(255,190,205,.09)";g.fillRect(0,160,470,RH-160);
+    g.fillStyle="rgba(190,215,255,.07)";g.fillRect(986,160,RW-986,RH-160);
+    // 隔墙（留门洞 y400~500）+ 门框柱
+    for(const wx of [470,960]){
+      for(const [sy,sh] of [[150,250],[500,RH-500]]){
+        g.fillStyle="#ecd5ae";g.fillRect(wx,sy,26,sh);
+        g.fillStyle="rgba(180,140,100,.18)";g.fillRect(wx,sy,4,sh);
+        g.fillStyle="rgba(255,255,255,.35)";g.fillRect(wx+22,sy,4,sh);
+        g.fillStyle="#caa274";g.fillRect(wx-2,sy+sh-10,30,10);
+      }
+      B(wx-4,392,34,14,6,"#a9794e");B(wx-4,496,34,14,6,"#a9794e");
+    }
+    // 房间小木牌
+    function sign(x,label){B(x-40,106,80,26,9,"#f7e6c8");
+      g.fillStyle="#7a5f44";g.font="700 14px sans-serif";g.textAlign="center";g.textBaseline="middle";
+      g.fillText(label,x,120);g.textBaseline="alphabetic";}
+    sign(250,"卧 室 ♡");sign(715,"客 厅 ☕");sign(1330,"书 房 ✎");
     // 地毯（蕾丝花边 + 三层 + 小爱心）
     g.fillStyle="#e493a8";
     for(let a=0;a<6.283;a+=0.22){g.beginPath();g.arc(RW/2+Math.cos(a)*206,500+Math.sin(a)*88,13,0,7);g.fill();}
@@ -483,8 +502,8 @@
     g.fillStyle="#7fb88f";g.beginPath();g.moveTo(337,109);g.lineTo(366,78);g.lineTo(386,96);g.lineTo(401,84);g.lineTo(415,109);g.closePath();g.fill();
     g.fillStyle="#ffe27a";g.beginPath();g.arc(400,66,7,0,7);g.fill();
     // 挂钟表盘（指针在 roomStep 动态画）
-    g.fillStyle="#fff";g.beginPath();g.arc(500,80,30,0,7);g.fill();g.lineWidth=4;g.strokeStyle="#8a5a32";g.stroke();
-    g.fillStyle="#5a4636";for(let i=0;i<12;i++){const a=i/12*6.283;g.beginPath();g.arc(500+Math.cos(a)*24,80+Math.sin(a)*24,1.5,0,7);g.fill();}
+    g.fillStyle="#fff";g.beginPath();g.arc(545,80,30,0,7);g.fill();g.lineWidth=4;g.strokeStyle="#8a5a32";g.stroke();
+    g.fillStyle="#5a4636";for(let i=0;i<12;i++){const a=i/12*6.283;g.beginPath();g.arc(545+Math.cos(a)*24,80+Math.sin(a)*24,1.5,0,7);g.fill();}
     // 壁炉（砖）+ 炉膛 + 木柴 + 台面
     g.fillStyle="#a9806a";g.fillRect(600,150,160,100);
     g.strokeStyle="rgba(255,255,255,.16)";g.lineWidth=2;for(let by=156,r=0;by<250;by+=16,r++){for(let bx=604+(r%2?16:0);bx<756;bx+=32)g.strokeRect(bx,by,30,14);}
@@ -497,7 +516,7 @@
     g.beginPath();g.moveTo(750,124);g.lineTo(755.5,130);g.lineTo(761,124);g.closePath();g.fill();
     g.fillStyle="#6b4a2e";g.fillRect(648,232,64,12);g.fillStyle="#8a5a32";g.fillRect(658,226,44,10);
     // ===== 书柜（精致木柜） =====
-    const BX=820,BY=72,BW=250,BH=264,pal=["#c0506a","#5a86b8","#5aa06a","#caa14b","#7a5ba0","#cf8a5a","#4f9d92","#d76b8a"];
+    const BX=1020,BY=72,BW=250,BH=264,pal=["#c0506a","#5a86b8","#5aa06a","#caa14b","#7a5ba0","#cf8a5a","#4f9d92","#d76b8a"];
     g.fillStyle="rgba(0,0,0,.12)";g.fillRect(BX+6,BY+BH,BW,8);
     g.fillStyle="#7a5230";g.fillRect(BX-7,BY-13,BW+14,13);
     g.fillStyle="#8a5e38";g.fillRect(BX,BY,BW,BH);
@@ -548,49 +567,49 @@
     g.fillStyle="#ffd24a";g.beginPath();g.arc(370,495,3,0,7);g.fill();
     g.fillStyle="#caa86a";g.fillRect(364,452,12,26);
     B(348,428,44,26,8,"#ffe9a8");
-    // 沙发（圆润扶手 + 靠垫 + 爱心抱枕）
-    B(438,494,160,36,14,"#8fb8a5");
-    B(446,500,70,26,10,"#a8cbb8",true);B(522,500,70,26,10,"#a8cbb8",true);
-    B(430,516,175,68,16,"#8fb8a5");
-    B(444,540,72,32,12,"#a8cbb8",true);B(522,540,72,32,12,"#a8cbb8",true);
-    B(420,512,24,74,12,"#7fa898");B(592,512,24,74,12,"#7fa898");
-    g.fillStyle="#6b8f7d";g.fillRect(444,584,10,10);g.fillRect(582,584,10,10);
+    // 沙发（圆润扶手 + 靠垫 + 爱心抱枕）— 客厅
+    B(572,494,160,36,14,"#8fb8a5");
+    B(580,500,70,26,10,"#a8cbb8",true);B(656,500,70,26,10,"#a8cbb8",true);
+    B(564,516,175,68,16,"#8fb8a5");
+    B(578,540,72,32,12,"#a8cbb8",true);B(656,540,72,32,12,"#a8cbb8",true);
+    B(554,512,24,74,12,"#7fa898");B(726,512,24,74,12,"#7fa898");
+    g.fillStyle="#6b8f7d";g.fillRect(578,584,10,10);g.fillRect(716,584,10,10);
     // 爱心抱枕
-    B(452,522,36,32,10,"#f7c0cf");
-    g.fillStyle="#e75a7c";g.beginPath();g.arc(466,534,4.4,0,7);g.arc(475,534,4.4,0,7);g.fill();
-    g.beginPath();g.moveTo(461,537);g.lineTo(470.5,547);g.lineTo(480,537);g.closePath();g.fill();
-    // 圆桌（蕾丝桌垫 + 小蛋糕）
-    g.fillStyle="#8a5a32";g.fillRect(694,540,12,52);g.fillStyle="#6e4423";g.beginPath();g.ellipse(700,592,20,6,0,0,7);g.fill();
-    g.fillStyle="#a9794e";g.beginPath();g.ellipse(700,524,62,20,0,0,7);g.fill();
-    g.strokeStyle="rgba(120,85,55,.28)";g.lineWidth=2;g.beginPath();g.ellipse(700,524,62,20,0,0,7);g.stroke();
+    B(586,522,36,32,10,"#f7c0cf");
+    g.fillStyle="#e75a7c";g.beginPath();g.arc(600,534,4.4,0,7);g.arc(609,534,4.4,0,7);g.fill();
+    g.beginPath();g.moveTo(595,537);g.lineTo(604.5,547);g.lineTo(614,537);g.closePath();g.fill();
+    // 圆桌（蕾丝桌垫 + 小蛋糕）— 客厅
+    g.fillStyle="#8a5a32";g.fillRect(844,540,12,52);g.fillStyle="#6e4423";g.beginPath();g.ellipse(850,592,20,6,0,0,7);g.fill();
+    g.fillStyle="#a9794e";g.beginPath();g.ellipse(850,524,62,20,0,0,7);g.fill();
+    g.strokeStyle="rgba(120,85,55,.28)";g.lineWidth=2;g.beginPath();g.ellipse(850,524,62,20,0,0,7);g.stroke();
     g.fillStyle="#fffdf9";
-    for(let a=0;a<6.283;a+=0.42){g.beginPath();g.arc(700+Math.cos(a)*40,520+Math.sin(a)*12,4.5,0,7);g.fill();}
-    g.beginPath();g.ellipse(700,520,40,12,0,0,7);g.fill();
+    for(let a=0;a<6.283;a+=0.42){g.beginPath();g.arc(850+Math.cos(a)*40,520+Math.sin(a)*12,4.5,0,7);g.fill();}
+    g.beginPath();g.ellipse(850,520,40,12,0,0,7);g.fill();
     // 小蛋糕
-    g.fillStyle="#fffdf9";g.beginPath();g.ellipse(684,516,15,5,0,0,7);g.fill();
-    B(674,498,20,15,4,"#f7d0a0",true);
-    g.fillStyle="#f7c0cf";g.beginPath();g.moveTo(674,502);
-    for(let k=0;k<=5;k++){g.quadraticCurveTo(674+k*4-2,506,674+k*4,502);}
-    g.lineTo(694,498);g.lineTo(674,498);g.closePath();g.fill();
-    g.fillStyle="#e75a7c";g.beginPath();g.arc(684,495,3,0,7);g.fill();
-    // 书桌 + 电脑（圆角显示器 + 键盘 + 马克杯）
-    B(818,564,190,18,8,"#a9794e");
-    g.fillStyle="#8a5a32";g.fillRect(828,582,12,56);g.fillRect(986,582,12,56);
-    B(844,514,78,52,10,"#4a4a54");
+    g.fillStyle="#fffdf9";g.beginPath();g.ellipse(834,516,15,5,0,0,7);g.fill();
+    B(824,498,20,15,4,"#f7d0a0",true);
+    g.fillStyle="#f7c0cf";g.beginPath();g.moveTo(824,502);
+    for(let k=0;k<=5;k++){g.quadraticCurveTo(824+k*4-2,506,824+k*4,502);}
+    g.lineTo(844,498);g.lineTo(824,498);g.closePath();g.fill();
+    g.fillStyle="#e75a7c";g.beginPath();g.arc(834,495,3,0,7);g.fill();
+    // 书桌 + 电脑（圆角显示器 + 键盘 + 马克杯）— 书房
+    B(1118,564,190,18,8,"#a9794e");
+    g.fillStyle="#8a5a32";g.fillRect(1128,582,12,56);g.fillRect(1286,582,12,56);
+    B(1144,514,78,52,10,"#4a4a54");
     const scr=g.createLinearGradient(0,518,0,560);scr.addColorStop(0,"#cdedff");scr.addColorStop(1,"#8fd0ff");
-    B(850,520,66,40,6,scr,true);
-    g.fillStyle="#e75a7c";g.beginPath();g.arc(878,537,3.6,0,7);g.arc(886,537,3.6,0,7);g.fill();
-    g.beginPath();g.moveTo(874,539);g.lineTo(882,548);g.lineTo(890,539);g.closePath();g.fill();
-    g.fillStyle="#3a3a44";g.fillRect(878,566,10,6);
-    B(852,572,62,8,4,"#e8e0d2",true);
-    B(928,548,16,18,4,"#f27e9d");
-    g.strokeStyle="#f27e9d";g.lineWidth=3;g.beginPath();g.arc(948,557,5,-1.4,1.4);g.stroke();
+    B(1150,520,66,40,6,scr,true);
+    g.fillStyle="#e75a7c";g.beginPath();g.arc(1178,537,3.6,0,7);g.arc(1186,537,3.6,0,7);g.fill();
+    g.beginPath();g.moveTo(1174,539);g.lineTo(1182,548);g.lineTo(1190,539);g.closePath();g.fill();
+    g.fillStyle="#3a3a44";g.fillRect(1178,566,10,6);
+    B(1152,572,62,8,4,"#e8e0d2",true);
+    B(1228,548,16,18,4,"#f27e9d");
+    g.strokeStyle="#f27e9d";g.lineWidth=3;g.beginPath();g.arc(1248,557,5,-1.4,1.4);g.stroke();
     // 盆栽 + 角落小树
-    g.font="46px serif";g.textAlign="center";g.textBaseline="alphabetic";g.fillText("🪴",1052,474);g.fillText("🌿",58,474);
-    g.fillStyle="#3f8f5a";g.beginPath();g.moveTo(1040,360);g.lineTo(1010,420);g.lineTo(1070,420);g.closePath();g.fill();
-    g.beginPath();g.moveTo(1040,336);g.lineTo(1016,388);g.lineTo(1064,388);g.closePath();g.fill();
-    g.fillStyle="#7a5230";g.fillRect(1034,420,12,14);g.fillStyle="#ffe27a";g.beginPath();g.arc(1040,330,5,0,7);g.fill();
-    g.fillStyle="#ff6f91";g.beginPath();g.arc(1028,402,3,0,7);g.fill();g.fillStyle="#9ad0ff";g.beginPath();g.arc(1052,376,3,0,7);g.fill();g.fillStyle="#ffd24a";g.beginPath();g.arc(1040,408,3,0,7);g.fill();
+    g.font="46px serif";g.textAlign="center";g.textBaseline="alphabetic";g.fillText("🪴",1030,500);g.fillText("🌿",58,474);
+    g.fillStyle="#3f8f5a";g.beginPath();g.moveTo(1350,400);g.lineTo(1320,460);g.lineTo(1380,460);g.closePath();g.fill();
+    g.beginPath();g.moveTo(1350,376);g.lineTo(1326,428);g.lineTo(1374,428);g.closePath();g.fill();
+    g.fillStyle="#7a5230";g.fillRect(1344,460,12,14);g.fillStyle="#ffe27a";g.beginPath();g.arc(1350,370,5,0,7);g.fill();
+    g.fillStyle="#ff6f91";g.beginPath();g.arc(1338,442,3,0,7);g.fill();g.fillStyle="#9ad0ff";g.beginPath();g.arc(1362,416,3,0,7);g.fill();g.fillStyle="#ffd24a";g.beginPath();g.arc(1350,448,3,0,7);g.fill();
     // 圆镜（墙上）
     g.fillStyle="#caa86a";g.beginPath();g.arc(444,84,26,0,7);g.fill();g.fillStyle="#dcecf2";g.beginPath();g.arc(444,84,21,0,7);g.fill();
     g.fillStyle="#eef6fa";g.beginPath();g.arc(438,78,9,0,7);g.fill();
@@ -598,12 +617,12 @@
     g.strokeStyle="#3f8f5a";g.lineWidth=5;g.beginPath();g.moveTo(592,138);g.quadraticCurveTo(680,158,768,138);g.stroke();
     for(let i=0;i<7;i++){const t=i/6,x=592+t*176,y=138+Math.sin(t*Math.PI)*10;g.fillStyle=["#ff6f91","#ffd24a","#9ad0ff"][i%3];g.beginPath();g.arc(x,y,3,0,7);g.fill();}
     // 桌上茶杯
-    g.fillStyle="#fff";g.fillRect(716,506,18,12);g.fillStyle="#fff";g.beginPath();g.arc(736,512,5,0,7);g.stroke();g.strokeStyle="#caa";g.lineWidth=2;g.beginPath();g.arc(736,512,5,0,7);g.stroke();
-    g.fillStyle="#b07a4a";g.fillRect(718,508,14,5);
+    g.fillStyle="#fff";g.fillRect(866,506,18,12);g.fillStyle="#fff";g.beginPath();g.arc(886,512,5,0,7);g.stroke();g.strokeStyle="#caa";g.lineWidth=2;g.beginPath();g.arc(886,512,5,0,7);g.stroke();
+    g.fillStyle="#b07a4a";g.fillRect(868,508,14,5);
     // 吊灯（吊在桌子上方）
-    g.strokeStyle="#7a655a";g.lineWidth=3;g.beginPath();g.moveTo(700,0);g.lineTo(700,318);g.stroke();
-    g.fillStyle="#caa86a";g.beginPath();g.moveTo(672,348);g.lineTo(728,348);g.lineTo(716,318);g.lineTo(684,318);g.closePath();g.fill();
-    g.fillStyle="#fff3c0";g.beginPath();g.ellipse(700,348,28,7,0,0,7);g.fill();
+    g.strokeStyle="#7a655a";g.lineWidth=3;g.beginPath();g.moveTo(850,0);g.lineTo(850,318);g.stroke();
+    g.fillStyle="#caa86a";g.beginPath();g.moveTo(822,348);g.lineTo(878,348);g.lineTo(866,318);g.lineTo(834,318);g.closePath();g.fill();
+    g.fillStyle="#fff3c0";g.beginPath();g.ellipse(850,348,28,7,0,0,7);g.fill();
     // 阳光斜照（地面光斑）
     g.fillStyle="rgba(255,240,180,.22)";g.beginPath();g.moveTo(110,160);g.lineTo(250,160);g.lineTo(320,300);g.lineTo(180,300);g.closePath();g.fill();
     // 串灯（电线 + 彩灯，发光在 roomStep）
@@ -611,7 +630,7 @@
     for(const b of bulbs){g.fillStyle=b.c;g.beginPath();g.arc(b.x,b.y+4,3.4,0,7);g.fill();}
     // 门垫
     g.fillStyle="#caa96a";g.beginPath();g.ellipse(door.x,door.y,64,18,0,0,7);g.fill();
-    g.fillStyle="#6b5440";g.font="700 14px sans-serif";g.textAlign="center";g.fillText("地垫",door.x,door.y+5);}
+    g.fillStyle="#6b5440";g.font="700 13px sans-serif";g.textAlign="center";g.fillText("欢迎回家 ♡",door.x,door.y+5);}
   buildRoom();
 
   function phoneMsg(){const d=new Date(),t=d.getHours()+":"+String(d.getMinutes()).padStart(2,"0");
@@ -661,8 +680,8 @@
     ctx.restore();
     // 挂钟指针
     {const d=new Date(),hh=(d.getHours()%12)/12*6.283+d.getMinutes()/60*0.5236,mm=d.getMinutes()/60*6.283;
-     ctx.strokeStyle="#5a4636";ctx.lineCap="round";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(500,80);ctx.lineTo(500+Math.sin(hh)*12,80-Math.cos(hh)*12);ctx.stroke();
-     ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(500,80);ctx.lineTo(500+Math.sin(mm)*19,80-Math.cos(mm)*19);ctx.stroke();}
+     ctx.strokeStyle="#5a4636";ctx.lineCap="round";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(545,80);ctx.lineTo(545+Math.sin(hh)*12,80-Math.cos(hh)*12);ctx.stroke();
+     ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(545,80);ctx.lineTo(545+Math.sin(mm)*19,80-Math.cos(mm)*19);ctx.stroke();}
     // 睡在床上的猫（呼吸）
     {const br=1+Math.sin(tnow/750)*0.06;ctx.save();ctx.translate(catRoom.x,catRoom.y);ctx.scale(1.1,br);ctx.drawImage(eSprite("🐈",34),-17,-30,34,34);ctx.restore();
      ctx.fillStyle="#7a5f44";ctx.font="11px sans-serif";ctx.textAlign="center";ctx.globalAlpha=.5+.3*Math.sin(tnow/600);ctx.fillText("Zzz",catRoom.x+18,catRoom.y-26);ctx.globalAlpha=1;}
@@ -676,8 +695,8 @@
     for(let i=0;i<bulbs.length;i++){const b=bulbs[i],a=.4+.5*Math.sin(tnow/400+i*0.9);ctx.globalAlpha=a;ctx.fillStyle=b.c;ctx.beginPath();ctx.arc(b.x,b.y+4,6,0,7);ctx.fill();}
     ctx.restore();ctx.globalAlpha=1;
     // 吊灯暖光
-    {const pg=ctx.createRadialGradient(700,352,6,700,352,120);pg.addColorStop(0,"rgba(255,232,150,.3)");pg.addColorStop(1,"rgba(255,232,150,0)");
-     ctx.save();ctx.globalCompositeOperation="lighter";ctx.fillStyle=pg;ctx.beginPath();ctx.arc(700,352,120,0,7);ctx.fill();ctx.restore();}
+    {const pg=ctx.createRadialGradient(850,352,6,850,352,120);pg.addColorStop(0,"rgba(255,232,150,.3)");pg.addColorStop(1,"rgba(255,232,150,0)");
+     ctx.save();ctx.globalCompositeOperation="lighter";ctx.fillStyle=pg;ctx.beginPath();ctx.arc(850,352,120,0,7);ctx.fill();ctx.restore();}
     // 桌上手机
     {const hi=act&&act.type==="phone";ctx.fillStyle="#2a2a32";rr(phone.x-9,phone.y-18,18,30,4);ctx.fill();
      ctx.fillStyle=Math.sin(tnow/500)>0?"#9ad0ff":"#bfe6ff";rr(phone.x-7,phone.y-16,14,24,2);ctx.fill();
@@ -700,7 +719,6 @@
       if(typeof p.col==="string"&&p.col.indexOf("txt:")===0){ctx.font="700 18px sans-serif";ctx.textAlign="center";ctx.fillText(p.col.slice(4),p.x,p.y);}
       else{ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,7);ctx.fill();}}
     ctx.globalAlpha=1;ctx.restore();
-    if(rvGrad){ctx.fillStyle=rvGrad;ctx.fillRect(0,0,W,H);}
     ctx.fillStyle="rgba(255,255,255,.92)";ctx.font="700 17px 'Noto Serif SC',serif";ctx.textAlign="center";ctx.fillText("🏡 小克的家",W/2,32);
   }
 
