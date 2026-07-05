@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
-<meta name="theme-color" content="#080808" />
+<meta name="theme-color" content="#fdf6ee" />
 <title>我的小世界</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Noto+Serif+SC:wght@400;500;700&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="css/style.css?v=9" />
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Noto+Serif+SC:wght@400;500;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/style.css?v=10" />
 </head>
 <body>
 
@@ -74,6 +74,11 @@
             <button type="submit" class="btn btn--seal">封存此页</button>
           </div>
         </form>
+        <div class="syncrow">
+          <button type="button" id="backup-btn">🔑 备份口令</button>
+          <button type="button" id="import-btn">📥 导入备份</button>
+          <span class="syncnote">换设备时，用口令把日记带走</span>
+        </div>
         <div id="diary-list" class="diary__list"><!-- JS 注入 --></div>
       </div>
     </section>
@@ -143,6 +148,6 @@
     <footer class="footer">⟡ 我的小世界 ⟡</footer>
   </main>
 
-  <script src="js/app.js?v=8"></script>
+  <script src="js/app.js?v=10"></script>
 </body>
 </html>

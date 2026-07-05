@@ -27,43 +27,102 @@
     return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
   };
 
-  /* ===================== 星空背景 ===================== */
+  /* ===================== 奶油背景：飘落的小点缀 ===================== */
   function initStarfield() {
     const cv = $("#starfield");
     if (!cv) return;
     const ctx = cv.getContext("2d");
-    let stars = [];
+    const COLS = ["rgba(242,126,157,", "rgba(247,215,116,", "rgba(155,201,143,", "rgba(168,216,240,", "rgba(199,179,230,"];
+    const EMO = ["🍓", "✿", "♡", "⭐", "🌸"];
+    const sprites = EMO.map((ch) => {
+      const c = document.createElement("canvas");
+      c.width = c.height = 36;
+      const g = c.getContext("2d");
+      g.font = "26px serif";
+      g.textAlign = "center";
+      g.textBaseline = "middle";
+      g.globalAlpha = 0.9;
+      g.fillStyle = "#f27e9d";
+      g.fillText(ch, 18, 19);
+      return c;
+    });
+    let bits = [];
     function resize() {
       cv.width = window.innerWidth;
       cv.height = window.innerHeight;
-      const count = Math.min(180, Math.floor((cv.width * cv.height) / 9000));
-      stars = Array.from({ length: count }, () => ({
+      const count = Math.min(46, Math.floor((cv.width * cv.height) / 24000));
+      bits = Array.from({ length: count }, (_, i) => ({
         x: Math.random() * cv.width,
         y: Math.random() * cv.height,
-        r: Math.random() * 1.3 + 0.2,
-        a: Math.random(),
-        s: Math.random() * 0.02 + 0.003,
-        hue: Math.random() < 0.15 ? "purple" : (Math.random() < 0.1 ? "red" : "white"),
+        r: Math.random() * 2.6 + 1.6,
+        sp: Math.random() * 0.35 + 0.12,
+        ph: Math.random() * 6.28,
+        col: COLS[(Math.random() * COLS.length) | 0],
+        emo: i % 7 === 0 ? sprites[(Math.random() * sprites.length) | 0] : null,
+        rot: Math.random() * 6.28,
+        vr: (Math.random() - 0.5) * 0.01,
       }));
     }
-    function tick() {
+    function tick(t) {
       ctx.clearRect(0, 0, cv.width, cv.height);
-      for (const st of stars) {
-        st.a += st.s;
-        const tw = (Math.sin(st.a) + 1) / 2;
-        let col = `rgba(255,255,255,${0.15 + tw * 0.7})`;
-        if (st.hue === "purple") col = `rgba(160,110,220,${0.15 + tw * 0.6})`;
-        if (st.hue === "red") col = `rgba(192,60,72,${0.15 + tw * 0.55})`;
-        ctx.beginPath();
-        ctx.arc(st.x, st.y, st.r, 0, Math.PI * 2);
-        ctx.fillStyle = col;
-        ctx.fill();
+      for (const b of bits) {
+        b.y += b.sp;
+        b.x += Math.sin(t / 1800 + b.ph) * 0.3;
+        b.rot += b.vr;
+        if (b.y > cv.height + 24) { b.y = -24; b.x = Math.random() * cv.width; }
+        if (b.emo) {
+          ctx.save();
+          ctx.globalAlpha = 0.22 + 0.1 * Math.sin(t / 900 + b.ph);
+          ctx.translate(b.x, b.y);
+          ctx.rotate(b.rot);
+          ctx.drawImage(b.emo, -13, -13, 26, 26);
+          ctx.restore();
+        } else {
+          ctx.globalAlpha = 1;
+          ctx.fillStyle = b.col + (0.18 + 0.12 * Math.sin(t / 800 + b.ph)) + ")";
+          ctx.beginPath();
+          ctx.arc(b.x, b.y, b.r, 0, 6.29);
+          ctx.fill();
+        }
       }
+      ctx.globalAlpha = 1;
       requestAnimationFrame(tick);
     }
     resize();
     window.addEventListener("resize", resize);
-    tick();
+    requestAnimationFrame(tick);
+  }
+
+  /* ===================== 备份口令（跨设备同步） ===================== */
+  function initBackup() {
+    const KEYS = ["msw_diary", "msw_fav", "msw_mood", "planet_wishes", "planet_capsules", "world_save_v1"];
+    const bBtn = $("#backup-btn"), iBtn = $("#import-btn");
+    if (!bBtn || !iBtn) return;
+    bBtn.addEventListener("click", () => {
+      const data = {};
+      KEYS.forEach((k) => { const v = localStorage.getItem(k); if (v != null) data[k] = v; });
+      const code = "XSJ1." + btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+      const done = () => alert("备份口令已复制！🍓\n到另一台设备打开网站，点「导入备份」粘贴即可。");
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(code).then(done).catch(() => prompt("手动复制下面这串口令：", code));
+      } else {
+        prompt("手动复制下面这串口令：", code);
+      }
+    });
+    iBtn.addEventListener("click", () => {
+      const code = prompt("把备份口令粘贴到这里：");
+      if (!code) return;
+      try {
+        const s = code.trim();
+        if (!s.startsWith("XSJ1.")) throw 0;
+        const data = JSON.parse(decodeURIComponent(escape(atob(s.slice(5)))));
+        Object.keys(data).forEach((k) => { if (KEYS.includes(k)) localStorage.setItem(k, data[k]); });
+        alert("导入成功！日记、收藏、心情都回来啦 🍓");
+        location.reload();
+      } catch (e) {
+        alert("口令好像不对，再检查一下有没有复制完整～");
+      }
+    });
   }
 
   /* ===================== 密码入口 ===================== */
@@ -323,5 +382,6 @@
     initDiary();
     initFavorites();
     initMood();
+    initBackup();
   });
 })();
