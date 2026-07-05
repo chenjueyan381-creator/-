@@ -136,6 +136,8 @@ body::after{
 /* ---------------- 主站布局 ---------------- */
 .app{position:relative;z-index:1;max-width:1120px;margin:0 auto;padding:36px 20px 90px}
 .app[hidden]{display:none}
+.app::before{content:"⭐";position:absolute;top:120px;right:4%;font-size:1.1rem;opacity:.45;transform:rotate(14deg);pointer-events:none}
+.app::after{content:"🌷";position:absolute;top:216px;left:3%;font-size:1.1rem;opacity:.45;transform:rotate(-12deg);pointer-events:none}
 .topbar{text-align:center;padding:22px 0 4px}
 .topbar__title{
   font-family:var(--hand);font-weight:400;
@@ -192,6 +194,10 @@ body::after{
   letter-spacing:.26em;text-indent:.26em;
 }
 .section-sub::after{content:" ˚₊·"}
+.section-head::after{
+  content:"";display:block;width:150px;height:8px;margin:14px auto 0;
+  background:radial-gradient(circle at 5px 4px, rgba(242,126,157,.4) 2.2px, transparent 2.8px) 0 0/17px 8px repeat-x;
+}
 
 /* ---------------- 角色卡片 ---------------- */
 .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:28px}
@@ -278,6 +284,10 @@ body::after{
   transform:rotate(-4deg);background:rgba(168,216,240,.6);border-radius:3px;
   box-shadow:0 2px 5px rgba(150,110,90,.12);
 }
+.diary__editor::after{
+  content:"🍓";position:absolute;bottom:12px;left:14px;font-size:1rem;
+  opacity:.55;transform:rotate(-10deg);pointer-events:none;
+}
 .diary__stamp{
   position:absolute;top:16px;right:18px;color:var(--berry);
   border:2.5px dashed rgba(231,90,124,.5);border-radius:999px;padding:6px 14px;
@@ -346,6 +356,7 @@ body::after{
   border-radius:var(--r-lg);padding:22px 20px;position:relative;
   background:var(--card);border:2px solid var(--line);box-shadow:var(--shadow-md);
 }
+.fav__col::after{content:"♡";position:absolute;top:12px;right:16px;color:var(--berry-soft);font-size:1.05rem;opacity:.6;pointer-events:none}
 .fav__col[data-type="music"]{border-top:6px solid var(--sky)}
 .fav__col[data-type="movie"]{border-top:6px solid var(--lilac)}
 .fav__col[data-type="thing"]{border-top:6px solid var(--butter)}
@@ -380,6 +391,10 @@ body::after{
   content:"";position:absolute;top:-13px;right:36px;width:82px;height:26px;
   transform:rotate(4deg);background:rgba(255,217,227,.75);border-radius:3px;
   box-shadow:0 2px 5px rgba(150,110,90,.12);
+}
+.mood__today::after{
+  content:"⭐";position:absolute;bottom:10px;left:14px;font-size:.95rem;
+  opacity:.5;transform:rotate(-12deg);pointer-events:none;
 }
 .mood__date{
   color:var(--ink-dim);letter-spacing:.22em;text-indent:.22em;
@@ -434,14 +449,12 @@ body::after{
 }
 .about p{line-height:2.1;color:var(--ink-soft);margin-bottom:16px;font-size:.98rem}
 .about__sigil{
-  width:64px;height:64px;margin:0 auto 26px;border-radius:50%;
-  border:2.5px dashed rgba(242,126,157,.5);
-  background:none;mask:none;-webkit-mask:none;
-  animation:spin 50s linear infinite;position:relative;
+  width:auto;height:auto;margin:0 auto 24px;border:none;border-radius:0;
+  background:none;mask:none;-webkit-mask:none;animation:none;
 }
 .about__sigil::after{
-  content:"🍓";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-  font-size:1.5rem;animation:spin 50s linear infinite reverse;
+  content:"🍓 ⭐ 🌷 🎀 🌸";display:block;font-size:1.3rem;
+  letter-spacing:.55em;text-indent:.55em;
 }
 .about__sign{margin-top:26px;color:var(--ink-dim);font-family:var(--hand);letter-spacing:.12em;font-size:.9rem}
 .about__kao{font-size:clamp(1.2rem,4.6vw,1.7rem);color:var(--ink);letter-spacing:.04em;margin-bottom:20px}
@@ -452,11 +465,14 @@ body::after{
   -webkit-background-clip:text;background-clip:text;color:transparent;
   margin-bottom:0;
 }
+.about__grow::after{content:" 🌱";font-size:.8em}
 
 .footer{
   text-align:center;color:var(--ink-dim);margin-top:70px;
   letter-spacing:.3em;text-indent:.3em;font-size:.78rem;font-family:var(--hand);
 }
+.footer::before{content:"🍓 "}
+.footer::after{content:" 🍓"}
 
 /* ---------------- 响应式 ---------------- */
 @media(min-width:760px){

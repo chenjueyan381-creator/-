@@ -33,7 +33,7 @@
     if (!cv) return;
     const ctx = cv.getContext("2d");
     const COLS = ["rgba(242,126,157,", "rgba(247,215,116,", "rgba(155,201,143,", "rgba(168,216,240,", "rgba(199,179,230,"];
-    const EMO = ["🍓", "✿", "♡", "⭐", "🌸"];
+    const EMO = ["🍓", "✿", "♡", "⭐", "🌸", "🎀", "🍰"];
     const sprites = EMO.map((ch) => {
       const c = document.createElement("canvas");
       c.width = c.height = 36;
@@ -50,7 +50,7 @@
     function resize() {
       cv.width = window.innerWidth;
       cv.height = window.innerHeight;
-      const count = Math.min(46, Math.floor((cv.width * cv.height) / 24000));
+      const count = Math.min(64, Math.floor((cv.width * cv.height) / 17000));
       bits = Array.from({ length: count }, (_, i) => ({
         x: Math.random() * cv.width,
         y: Math.random() * cv.height,
@@ -58,7 +58,7 @@
         sp: Math.random() * 0.35 + 0.12,
         ph: Math.random() * 6.28,
         col: COLS[(Math.random() * COLS.length) | 0],
-        emo: i % 7 === 0 ? sprites[(Math.random() * sprites.length) | 0] : null,
+        emo: i % 6 === 0 ? sprites[(Math.random() * sprites.length) | 0] : null,
         rot: Math.random() * 6.28,
         vr: (Math.random() - 0.5) * 0.01,
       }));
