@@ -266,8 +266,16 @@
     o.frequency.setValueAtTime(380,n);o.frequency.exponentialRampToValueAtTime(1180,n+0.12);o.frequency.exponentialRampToValueAtTime(740,n+0.22);
     v.gain.setValueAtTime(0.0001,n);v.gain.linearRampToValueAtTime(0.09,n+0.012);v.gain.exponentialRampToValueAtTime(0.0001,n+0.26);
     o.connect(v);v.connect(AC.destination);o.start(n);o.stop(n+0.28);}
-  function doJump(){const p=scene==="room"?rp:player;if(p.jz<=0){p.jvz=6.6;marioJump();}}
-  function enterRoom(){scene="room";rp.x=770;rp.y=RH-90;rp.vx=rp.vy=0;rp.jz=0;gbtn.classList.remove("show");
+  function doJump(){if(scene==="room"&&rest)return;const p=scene==="room"?rp:player;if(p.jz<=0){p.jvz=6.6;marioJump();}}
+  let rest=null,restT=0;
+  function startRest(m){rest=m;restT=performance.now();rp.vx=rp.vy=0;rp.jz=0;rp.jvz=0;
+    if(m==="sleep"){rp.x=252;rp.y=524;rp.face=1;}else{rp.x=181;rp.y=768;rp.face=1;}}
+  function endRest(){const m=rest;rest=null;
+    if(m==="sleep"){rp.x=356;rp.y=566;P(rp.x,rp.y-58,0,-.5,64,"txt:睡饱啦 ☀",0);}
+    else{rp.x=336;rp.y=856;P(rp.x,rp.y-58,0,-.5,64,"txt:香香的 ✨",0);}
+    for(let i=0;i<12;i++){const a=Math.random()*6.28,s2=1+Math.random()*2.2;P(rp.x,rp.y-22,Math.cos(a)*s2,Math.sin(a)*s2-1,42,"rgba(255,221,120,",2,.05);}
+    chime();}
+  function enterRoom(){scene="room";rest=null;rp.x=770;rp.y=RH-90;rp.vx=rp.vy=0;rp.jz=0;gbtn.classList.remove("show");
     camX=(RW<W)?(RW-W)/2:Math.max(0,Math.min(RW-W,rp.x-W/2));camY=(RH<H)?(RH-H)/2:Math.max(0,Math.min(RH-H,rp.y-H/2));}
   function leaveRoom(){scene="world";player.x=house.x;player.y=house.y+46;player.vx=player.vy=0;
     camX=Math.max(0,Math.min(WW-W,player.x-W/2));camY=Math.max(0,Math.min(WH-H,player.y-H/2));}
@@ -278,6 +286,9 @@
     if(!act)return;
     if(act.type==="door"){enterRoom();return;}
     if(act.type==="exit"){leaveRoom();return;}
+    if(act.type==="bed"){startRest("sleep");return;}
+    if(act.type==="tub"){startRest("bath");return;}
+    if(act.type==="wake"){endRest();return;}
     if(act.type==="phone"){phoneMsg();return;}
     if(act.type==="slot"){openPlace(act.o);return;}
     if(act.type==="item"){const it=act.o;it.got=true;inv[it.name]=(inv[it.name]||0)+1;pick();
@@ -709,20 +720,33 @@
   placePanel.addEventListener("pointerdown",e=>{if(e.target===placePanel)placePanel.classList.remove("show");});
 
   function roomStep(tnow,ix,iy,mag){
-    const moving=mag>0.06;
-    rp.x+=ix*2.7;rp.y+=iy*2.7;
-    if(Math.abs(ix)>0.06)rp.face=ix<0?-1:1;
-    rp.x=Math.max(38,Math.min(RW-38,rp.x));rp.y=Math.max(176,Math.min(RH-28,rp.y));
-    for(const f of furn){const cx=Math.max(f.x,Math.min(rp.x,f.x+f.w)),cy=Math.max(f.y,Math.min(rp.y,f.y+f.h)),dx=rp.x-cx,dy=rp.y-cy,d=Math.hypot(dx,dy);
-      if(d<14){if(d<0.01)rp.y=f.y+f.h+14;else{rp.x=cx+dx/d*14;rp.y=cy+dy/d*14;}}}
-    const wasAir=rp.jz>0;rp.jz+=rp.jvz;rp.jvz-=0.5;if(rp.jz<=0){rp.jz=0;rp.jvz=0;if(wasAir){}}
+    const moving=!rest&&mag>0.06;
+    if(rest){if(mag>0.4)endRest();}
+    else{
+      rp.x+=ix*2.7;rp.y+=iy*2.7;
+      if(Math.abs(ix)>0.06)rp.face=ix<0?-1:1;
+      rp.x=Math.max(38,Math.min(RW-38,rp.x));rp.y=Math.max(176,Math.min(RH-28,rp.y));
+      for(const f of furn){const cx=Math.max(f.x,Math.min(rp.x,f.x+f.w)),cy=Math.max(f.y,Math.min(rp.y,f.y+f.h)),dx=rp.x-cx,dy=rp.y-cy,d=Math.hypot(dx,dy);
+        if(d<14){if(d<0.01)rp.y=f.y+f.h+14;else{rp.x=cx+dx/d*14;rp.y=cy+dy/d*14;}}}
+      const wasAir=rp.jz>0;rp.jz+=rp.jvz;rp.jvz-=0.5;if(rp.jz<=0){rp.jz=0;rp.jvz=0;if(wasAir){}}
+    }
     // 互动检测
     act=null;let bd=1e9;
-    for(const s of slots){const d=Math.hypot(s.x-rp.x,s.y-rp.y);if(d<74&&d<bd){bd=d;act={type:"slot",o:s};}}
-    const dp=Math.hypot(phone.x-rp.x,phone.y-rp.y);if(dp<58&&dp<bd){bd=dp;act={type:"phone"};}
-    const dd=Math.hypot(door.x-rp.x,door.y-rp.y);if(dd<62&&dd<bd){bd=dd;act={type:"exit"};}
+    if(rest){act={type:"wake"};}
+    else{
+      for(const s of slots){const d=Math.hypot(s.x-rp.x,s.y-rp.y);if(d<74&&d<bd){bd=d;act={type:"slot",o:s};}}
+      const dR=(x,y,w,h)=>{const cx=Math.max(x,Math.min(rp.x,x+w)),cy=Math.max(y,Math.min(rp.y,y+h));return Math.hypot(rp.x-cx,rp.y-cy);};
+      const db=dR(90,438,240,150);if(db<42&&db<bd){bd=db;act={type:"bed"};}
+      const dt2=dR(56,690,250,130);if(dt2<42&&dt2<bd){bd=dt2;act={type:"tub"};}
+      const dp=Math.hypot(phone.x-rp.x,phone.y-rp.y);if(dp<58&&dp<bd){bd=dp;act={type:"phone"};}
+      const dd=Math.hypot(door.x-rp.x,door.y-rp.y);if(dd<62&&dd<bd){bd=dd;act={type:"exit"};}
+    }
     const ab=document.getElementById("btnAct");
-    if(act){ab.classList.remove("dim");ab.innerHTML=act.type==="exit"?"🚪<br>出门":act.type==="phone"?"📱<br>看":(act.o.item?"🔄<br>换/取":"✋<br>摆放");}
+    if(act){ab.classList.remove("dim");
+      ab.innerHTML=act.type==="exit"?"🚪<br>出门":act.type==="phone"?"📱<br>看":
+        act.type==="bed"?"😴<br>睡觉":act.type==="tub"?"🛁<br>泡澡":
+        act.type==="wake"?(rest==="sleep"?"⏰<br>起床":"🧼<br>洗好啦"):
+        (act.o.item?"🔄<br>换/取":"✋<br>摆放");}
     else{ab.classList.add("dim");ab.innerHTML="✋<br>摆放";}
     document.getElementById("gatebtn").classList.remove("show");
 
@@ -772,11 +796,27 @@
       if(s.item)ctx.drawImage(eSprite(s.item,28),s.x-14,s.y-22,28,28);
       else if(hi){ctx.globalAlpha=.6;ctx.fillStyle="#fff";ctx.font="12px sans-serif";ctx.textAlign="center";ctx.fillText("放这里",s.x,s.y-2);ctx.globalAlpha=1;}}
     // 玩家
-    const bob=(moving&&rp.jz<=0)?Math.abs(Math.sin(tnow/90))*-7:0;
-    ctx.fillStyle="rgba(0,0,0,.18)";ctx.beginPath();ctx.ellipse(rp.x,rp.y+2,16*(1-Math.min(.5,rp.jz/40)),5,0,0,7);ctx.fill();
-    if(claude.complete&&claude.naturalWidth){ctx.imageSmoothingEnabled=false;const w=46,h=w*(claude.naturalHeight/claude.naturalWidth);
-      ctx.save();ctx.translate(rp.x,rp.y+bob-rp.jz);ctx.scale(rp.face,1);ctx.drawImage(claude,-w/2,-h,w,h);ctx.restore();}
-    else{ctx.fillStyle="#e8945a";ctx.fillRect(rp.x-16,rp.y-30,32,30);}
+    if(rest==="sleep"){
+      const br=1+Math.sin(tnow/700)*0.04;
+      if(claude.complete&&claude.naturalWidth){ctx.imageSmoothingEnabled=false;const w=44,h=w*(claude.naturalHeight/claude.naturalWidth);
+        ctx.save();ctx.translate(rp.x,rp.y);ctx.scale(1,br);ctx.drawImage(claude,-w/2,-h,w,h);ctx.restore();}
+      rr(rp.x-32,rp.y-24,64,30,12);ctx.fillStyle="#ffd9e3";ctx.fill();ctx.strokeStyle="rgba(231,90,124,.4)";ctx.lineWidth=2;ctx.stroke();
+      if(Math.random()<0.02)P(rp.x+16,rp.y-48,0.25,-0.5,70,"txt:Z",0);
+    }else if(rest==="bath"){
+      if(claude.complete&&claude.naturalWidth){ctx.imageSmoothingEnabled=false;const w=44,h=w*(claude.naturalHeight/claude.naturalWidth);
+        ctx.save();ctx.beginPath();ctx.rect(rp.x-44,rp.y-78,88,48);ctx.clip();
+        ctx.translate(rp.x,rp.y-14+Math.sin(tnow/500)*2);ctx.drawImage(claude,-w/2,-h,w,h);ctx.restore();}
+      ctx.fillStyle="rgba(255,255,255,.9)";
+      ctx.beginPath();ctx.arc(rp.x-30,rp.y-20,7,0,7);ctx.arc(rp.x+28,rp.y-16,6,0,7);ctx.arc(rp.x+12,rp.y-24,5,0,7);ctx.fill();
+      if(Math.random()<0.3)P(rp.x+(Math.random()*70-35),rp.y-16,0,-0.4,32,"rgba(255,255,255,",2.5,-0.004);
+      if(Math.random()<0.12)P(rp.x+(Math.random()*44-22),rp.y-42,0,-0.6,42,"rgba(255,255,255,",3,-0.01);
+    }else{
+      const bob=(moving&&rp.jz<=0)?Math.abs(Math.sin(tnow/90))*-7:0;
+      ctx.fillStyle="rgba(0,0,0,.18)";ctx.beginPath();ctx.ellipse(rp.x,rp.y+2,16*(1-Math.min(.5,rp.jz/40)),5,0,0,7);ctx.fill();
+      if(claude.complete&&claude.naturalWidth){ctx.imageSmoothingEnabled=false;const w=46,h=w*(claude.naturalHeight/claude.naturalWidth);
+        ctx.save();ctx.translate(rp.x,rp.y+bob-rp.jz);ctx.scale(rp.face,1);ctx.drawImage(claude,-w/2,-h,w,h);ctx.restore();}
+      else{ctx.fillStyle="#e8945a";ctx.fillRect(rp.x-16,rp.y-30,32,30);}
+    }
     // 粒子
     for(let i=parts.length-1;i>=0;i--){const p=parts[i];p.x+=p.vx;p.y+=p.vy;p.vy+=p.grav;p.life--;
       if(p.life<=0){parts.splice(i,1);continue;}const al=p.life/p.max;ctx.globalAlpha=al;
@@ -784,6 +824,8 @@
       if(typeof p.col==="string"&&p.col.indexOf("txt:")===0){ctx.font="700 18px sans-serif";ctx.textAlign="center";ctx.fillText(p.col.slice(4),p.x,p.y);}
       else{ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,7);ctx.fill();}}
     ctx.globalAlpha=1;ctx.restore();
+    if(rest==="sleep"){ctx.fillStyle="rgba(24,28,66,"+(0.18+Math.min(0.16,(tnow-restT)/6000*0.16))+")";ctx.fillRect(0,0,W,H);
+      ctx.font="24px serif";ctx.textAlign="center";ctx.fillText("🌙",W-42,46);}
     ctx.fillStyle="rgba(255,255,255,.92)";ctx.font="700 17px 'Noto Serif SC',serif";ctx.textAlign="center";ctx.fillText("🏡 小克的家",W/2,32);
   }
 
@@ -802,6 +844,8 @@
     for(const f of friends){ctx.fillStyle="#ff8fb3";ctx.beginPath();ctx.arc(mx+f.x*sx,my+f.y*sy,1.8,0,7);ctx.fill();}
     ctx.fillStyle="#e8602a";ctx.beginPath();ctx.arc(mx+player.x*sx,my+player.y*sy,3.2,0,7);ctx.fill();ctx.restore();}
   requestAnimationFrame(step);
+  // 测试钩子（不影响游戏）
+  window.__w={player,rp,enterRoom,leaveRoom};
 })();
 </script>
 </body>
