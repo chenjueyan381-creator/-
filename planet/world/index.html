@@ -180,19 +180,29 @@
 
   // ===== 室内房间 =====
   let scene="world";
-  const RW=1400,RH=760;
-  const rp={x:RW/2,y:RH-90,vx:0,vy:0,face:1,jz:0,jvz:0};
-  // 隔墙把家分成 卧室｜客厅｜书房 三个小房间（x=470 与 x=960，各留门洞 y400~500）
-  const WALLS=[{x:470,y:150,w:26,h:250},{x:470,y:500,w:26,h:RH-500},{x:960,y:150,w:26,h:250},{x:960,y:500,w:26,h:RH-500}];
+  const RW=1700,RH=1060;
+  const rp={x:770,y:RH-90,vx:0,vy:0,face:1,jz:0,jvz:0};
+  // 六区户型：卧室/浴室(左) ｜ 客厅(中) ｜ 厨房/书房(右) ｜ 阳台(最右)
+  // 竖墙 x=470/1050/1450(门洞 y330~450 与 y780~900)，横墙 y=610(门洞见下)
+  const WALLS=[
+    {x:470,y:150,w:22,h:180},{x:470,y:450,w:22,h:330},{x:470,y:900,w:22,h:RH-900},
+    {x:1050,y:150,w:22,h:180},{x:1050,y:450,w:22,h:330},{x:1050,y:900,w:22,h:RH-900},
+    {x:1450,y:150,w:22,h:180},{x:1450,y:450,w:22,h:330},{x:1450,y:900,w:22,h:RH-900},
+    {x:0,y:610,w:190,h:22},{x:310,y:610,w:160,h:22},{x:1050,y:610,w:140,h:22},{x:1310,y:610,w:140,h:22}
+  ];
   const furn=[
-    {x:90,y:438,w:240,h:150},{x:1020,y:66,w:250,h:270},{x:600,y:150,w:160,h:100},
-    {x:564,y:506,w:175,h:86},{x:788,y:506,w:124,h:60},{x:1118,y:566,w:190,h:72},{x:338,y:478,w:64,h:58}
+    {x:90,y:438,w:240,h:150},{x:338,y:478,w:64,h:58},
+    {x:600,y:150,w:160,h:100},{x:664,y:506,w:175,h:86},{x:878,y:506,w:124,h:60},
+    {x:1080,y:640,w:250,h:264},{x:1118,y:986,w:190,h:72},
+    {x:1060,y:168,w:300,h:64},{x:1380,y:158,w:62,h:150},
+    {x:56,y:690,w:250,h:130},{x:330,y:630,w:92,h:72},{x:422,y:700,w:30,h:86},
+    {x:1500,y:842,w:120,h:96},{x:1592,y:752,w:68,h:42},{x:1524,y:546,w:72,h:40}
   ].concat(WALLS);
-  const slots=[{x:1062,y:126},{x:1132,y:126},{x:1202,y:126},{x:680,y:132},{x:850,y:512},{x:172,y:128},{x:1202,y:556}].map(s=>({x:s.x,y:s.y,item:null}));
-  const door={x:RW/2,y:RH-22};
-  const phone={x:1262,y:556};
+  const slots=[{x:1122,y:694},{x:1192,y:694},{x:1262,y:694},{x:680,y:132},{x:940,y:512},{x:172,y:128},{x:1202,y:976},{x:1330,y:214},{x:376,y:668},{x:1596,y:756}].map(s=>({x:s.x,y:s.y,item:null}));
+  const door={x:770,y:RH-22};
+  const phone={x:1262,y:976};
   const catRoom={x:206,y:498};
-  const claudeRoom={x:656,y:548};
+  const claudeRoom={x:756,y:548};
   const bulbs=[];for(let i=0;i<16;i++){const t=i/15;bulbs.push({x:40+t*(RW-80),y:16+Math.sin(t*Math.PI)*16,c:["#ff7a7a","#ffd24a","#7fd0ff","#9ae08a","#d9a0ff"][i%5]});}
 
   // 存档
@@ -257,7 +267,7 @@
     v.gain.setValueAtTime(0.0001,n);v.gain.linearRampToValueAtTime(0.09,n+0.012);v.gain.exponentialRampToValueAtTime(0.0001,n+0.26);
     o.connect(v);v.connect(AC.destination);o.start(n);o.stop(n+0.28);}
   function doJump(){const p=scene==="room"?rp:player;if(p.jz<=0){p.jvz=6.6;marioJump();}}
-  function enterRoom(){scene="room";rp.x=RW/2;rp.y=RH-90;rp.vx=rp.vy=0;rp.jz=0;gbtn.classList.remove("show");
+  function enterRoom(){scene="room";rp.x=770;rp.y=RH-90;rp.vx=rp.vy=0;rp.jz=0;gbtn.classList.remove("show");
     camX=(RW<W)?(RW-W)/2:Math.max(0,Math.min(RW-W,rp.x-W/2));camY=(RH<H)?(RH-H)/2:Math.max(0,Math.min(RH-H,rp.y-H/2));}
   function leaveRoom(){scene="world";player.x=house.x;player.y=house.y+46;player.vx=player.vy=0;
     camX=Math.max(0,Math.min(WW-W,player.x-W/2));camY=Math.max(0,Math.min(WH-H,player.y-H/2));}
@@ -455,32 +465,88 @@
     const fg=g.createLinearGradient(0,160,0,RH);fg.addColorStop(0,"#c89b6a");fg.addColorStop(1,"#b3853f");g.fillStyle=fg;g.fillRect(0,160,RW,RH-160);
     g.strokeStyle="rgba(110,75,40,.16)";g.lineWidth=2;for(let y=204;y<RH;y+=44){g.beginPath();g.moveTo(0,y);g.lineTo(RW,y);g.stroke();}
     g.strokeStyle="rgba(110,75,40,.09)";for(let x=0;x<RW;x+=120){g.beginPath();g.moveTo(x,160);g.lineTo(x,RH);g.stroke();}
-    // 每个房间的地板色调（卧室偏粉 / 书房偏蓝）
-    g.fillStyle="rgba(255,190,205,.09)";g.fillRect(0,160,470,RH-160);
-    g.fillStyle="rgba(190,215,255,.07)";g.fillRect(986,160,RW-986,RH-160);
-    // 隔墙（留门洞 y400~500）+ 门框柱
-    for(const wx of [470,960]){
-      for(const [sy,sh] of [[150,250],[500,RH-500]]){
-        g.fillStyle="#ecd5ae";g.fillRect(wx,sy,26,sh);
-        g.fillStyle="rgba(180,140,100,.18)";g.fillRect(wx,sy,4,sh);
-        g.fillStyle="rgba(255,255,255,.35)";g.fillRect(wx+22,sy,4,sh);
-        g.fillStyle="#caa274";g.fillRect(wx-2,sy+sh-10,30,10);
-      }
-      B(wx-4,392,34,14,6,"#a9794e");B(wx-4,496,34,14,6,"#a9794e");
+    // ===== 六区地面 =====
+    g.fillStyle="#f9e3ea";g.fillRect(0,160,470,450);
+    g.fillStyle="rgba(231,90,124,.08)";for(let dy=178;dy<600;dy+=34)for(let dx=((dy/34|0)%2?17:0);dx<470;dx+=34){g.beginPath();g.arc(dx,dy,2.5,0,7);g.fill();}
+    g.fillStyle="#e6f3f8";g.fillRect(0,632,470,RH-632);
+    g.fillStyle="#d5eaf2";for(let ty=632;ty<RH;ty+=40)for(let tx=((ty/40|0)%2?40:0);tx<470;tx+=80)g.fillRect(tx,ty,40,40);
+    g.fillStyle="#fbf2df";g.fillRect(1072,160,378,450);
+    g.fillStyle="#f1e3c6";for(let ty=160;ty<610;ty+=40)for(let tx=1072+((ty/40|0)%2?40:0);tx<1450;tx+=80)g.fillRect(tx,ty,40,40);
+    g.fillStyle="rgba(190,215,255,.10)";g.fillRect(1072,632,378,RH-632);
+    g.fillStyle="#ecc793";g.fillRect(1472,150,RW-1472,RH-150);
+    g.strokeStyle="rgba(150,105,60,.22)";g.lineWidth=2;for(let y=184;y<RH;y+=34){g.beginPath();g.moveTo(1472,y);g.lineTo(RW,y);g.stroke();}
+    const bsun=g.createRadialGradient(1586,420,20,1586,420,360);bsun.addColorStop(0,"rgba(255,235,160,.28)");bsun.addColorStop(1,"rgba(255,235,160,0)");
+    g.fillStyle=bsun;g.fillRect(1472,150,RW-1472,RH-150);
+    g.fillStyle="#caa274";g.fillRect(1668,150,10,RH-150);
+    for(let y=170;y<RH-20;y+=44)B(1676,y,20,10,4,"#d9b27a",true);
+    // ===== 墙体（奶油墙 + 木门框柱） =====
+    for(const wx of [470,1050,1450]){
+      for(const [a,b2] of [[150,330],[450,780],[900,RH]]){
+        g.fillStyle="#f0dfc0";g.fillRect(wx,a,22,b2-a);
+        g.fillStyle="rgba(150,110,70,.15)";g.fillRect(wx,a,4,b2-a);
+        g.fillStyle="rgba(255,255,255,.45)";g.fillRect(wx+18,a,4,b2-a);}
+      for(const gy of [330,450,780,900])B(wx-3,gy-7,28,14,6,"#b98a5c");
     }
-    // 房间小木牌
-    function sign(x,label){B(x-40,106,80,26,9,"#f7e6c8");
+    for(const [a,b2] of [[0,190],[310,470],[1050,1190],[1310,1450]]){
+      g.fillStyle="#f0dfc0";g.fillRect(a,610,b2-a,22);
+      g.fillStyle="rgba(150,110,70,.15)";g.fillRect(a,610,b2-a,4);
+      g.fillStyle="rgba(255,255,255,.45)";g.fillRect(a,628,b2-a,4);}
+    for(const gx of [190,310,1190,1310])B(gx-7,607,14,28,6,"#b98a5c");
+    // ===== 厨房 =====
+    B(1060,168,300,64,10,"#e8cfa8");
+    g.fillStyle="#fdf3e2";g.fillRect(1062,168,296,14);
+    g.strokeStyle="rgba(120,85,55,.2)";g.lineWidth=2;for(let cx=1110;cx<1360;cx+=62)g.strokeRect(cx,190,44,34);
+    g.fillStyle="#bfe6f2";g.beginPath();g.ellipse(1108,180,26,8,0,0,7);g.fill();
+    g.strokeStyle="#9aa8b0";g.lineWidth=3;g.beginPath();g.arc(1128,168,10,-3.1,0);g.stroke();
+    B(1196,170,88,18,6,"#4a4a54",true);
+    g.fillStyle="#2a2a32";g.beginPath();g.ellipse(1218,179,12,5,0,0,7);g.fill();g.beginPath();g.ellipse(1256,179,12,5,0,0,7);g.fill();
+    B(1236,150,40,22,6,"#e75a7c");g.fillStyle="#c5455f";g.fillRect(1236,150,40,6);g.fillStyle="#ffd24a";g.beginPath();g.arc(1256,148,3,0,7);g.fill();
+    B(1380,158,62,150,14,"#bfe0d8");g.fillStyle="rgba(255,255,255,.4)";g.fillRect(1386,164,10,138);
+    g.fillStyle="#8fb8a5";g.fillRect(1434,190,5,26);g.fillRect(1434,240,5,26);
+    g.strokeStyle="rgba(120,85,55,.2)";g.lineWidth=2;g.beginPath();g.moveTo(1380,226);g.lineTo(1442,226);g.stroke();
+    B(1090,88,130,10,4,"#a9794e");
+    for(const [jc,jx] of [["#f7c0cf",1102],["#f7d774",1144],["#a8d8f0",1186]]){B(jx,62,24,26,6,jc);g.fillStyle="#8a5a32";g.fillRect(jx+2,58,20,7);}
+    // ===== 浴室 =====
+    B(56,690,250,130,36,"#fffdf9");
+    B(70,704,222,102,28,"#cdeaf5",true);
+    g.fillStyle="rgba(255,255,255,.85)";
+    g.beginPath();g.arc(120,730,10,0,7);g.arc(150,748,7,0,7);g.arc(240,724,9,0,7);g.arc(258,752,6,0,7);g.arc(96,764,6,0,7);g.fill();
+    g.font="26px serif";g.textAlign="center";g.fillText("🦆",196,766);
+    g.fillStyle="#e8cfa8";g.fillRect(88,820,20,14);g.fillRect(254,820,20,14);
+    g.fillStyle="#f7c0cf";for(let a=0;a<6.283;a+=0.5){g.beginPath();g.arc(180+Math.cos(a)*56,912+Math.sin(a)*24,8,0,7);g.fill();}
+    g.beginPath();g.ellipse(180,912,56,24,0,0,7);g.fill();g.fillStyle="#fdeef2";g.beginPath();g.ellipse(180,912,34,13,0,0,7);g.fill();
+    B(330,630,92,72,10,"#e8cfa8");g.fillStyle="#fdf3e2";g.fillRect(332,630,88,12);
+    g.fillStyle="#bfe6f2";g.beginPath();g.ellipse(376,648,24,8,0,0,7);g.fill();
+    g.strokeStyle="#9aa8b0";g.lineWidth=3;g.beginPath();g.arc(394,636,9,-3.1,0);g.stroke();
+    B(430,700,10,92,5,"#b98a5c");
+    B(420,712,30,34,8,"#f7c0cf",true);B(420,754,30,30,8,"#a8d8f0",true);
+    // ===== 阳台家具 =====
+    B(1500,842,120,96,18,"#fffdf9");
+    g.fillStyle="#f7c0cf";for(let sx=1512;sx<1612;sx+=24)g.fillRect(sx,846,12,88);
+    B(1494,824,132,30,12,"#f2b3c4");B(1506,830,34,20,8,"#e75a7c",true);
+    g.fillStyle="#8a5a32";g.fillRect(1620,772,10,40);
+    g.fillStyle="#a9794e";g.beginPath();g.ellipse(1625,768,38,13,0,0,7);g.fill();
+    g.strokeStyle="rgba(120,85,55,.28)";g.lineWidth=2;g.beginPath();g.ellipse(1625,768,38,13,0,0,7);g.stroke();
+    B(1636,738,15,22,4,"#fff3c0");g.strokeStyle="#f27e9d";g.lineWidth=2.4;g.beginPath();g.moveTo(1646,740);g.lineTo(1652,726);g.stroke();
+    for(const [px2,py2,fc] of [[1520,320,"#f27e9d"],[1620,430,"#f7d774"],[1510,660,"#c7a6e8"]]){
+      B(px2-14,py2-14,28,20,6,"#cf8a5a");
+      g.strokeStyle="#5aa06a";g.lineWidth=2.4;g.beginPath();g.moveTo(px2,py2-14);g.lineTo(px2,py2-30);g.stroke();
+      g.fillStyle=fc;for(let pp=0;pp<5;pp++){const a=pp/5*6.283;g.beginPath();g.arc(px2+Math.cos(a)*6,py2-34+Math.sin(a)*6,4,0,7);g.fill();}
+      g.fillStyle="#fff3c0";g.beginPath();g.arc(px2,py2-34,2.6,0,7);g.fill();}
+    // ===== 房间小木牌 =====
+    function sign(x,y,label){B(x-42,y,84,26,9,"#f7e6c8");
       g.fillStyle="#7a5f44";g.font="700 14px sans-serif";g.textAlign="center";g.textBaseline="middle";
-      g.fillText(label,x,120);g.textBaseline="alphabetic";}
-    sign(250,"卧 室 ♡");sign(715,"客 厅 ☕");sign(1330,"书 房 ✎");
+      g.fillText(label,x,y+14);g.textBaseline="alphabetic";}
+    sign(240,106,"卧 室 ♡");sign(900,106,"客 厅 ☕");sign(1250,106,"厨 房 ✿");sign(1580,106,"阳 台 ☀");
+    sign(105,605,"浴 室 ✧");sign(1380,605,"书 房 ✎");
     // 地毯（蕾丝花边 + 三层 + 小爱心）
     g.fillStyle="#e493a8";
-    for(let a=0;a<6.283;a+=0.22){g.beginPath();g.arc(RW/2+Math.cos(a)*206,500+Math.sin(a)*88,13,0,7);g.fill();}
-    g.beginPath();g.ellipse(RW/2,500,206,88,0,0,7);g.fill();
-    g.fillStyle="#f2b3c4";g.beginPath();g.ellipse(RW/2,500,164,68,0,0,7);g.fill();
-    g.fillStyle="#fdeef2";g.beginPath();g.ellipse(RW/2,500,96,40,0,0,7);g.fill();
+    for(let a=0;a<6.283;a+=0.22){g.beginPath();g.arc(770+Math.cos(a)*206,560+Math.sin(a)*88,13,0,7);g.fill();}
+    g.beginPath();g.ellipse(770,560,206,88,0,0,7);g.fill();
+    g.fillStyle="#f2b3c4";g.beginPath();g.ellipse(770,560,164,68,0,0,7);g.fill();
+    g.fillStyle="#fdeef2";g.beginPath();g.ellipse(770,560,96,40,0,0,7);g.fill();
     g.fillStyle="#e75a7c";
-    for(let k=0;k<6;k++){const a=k/6*6.283,hx=RW/2+Math.cos(a)*128,hy=500+Math.sin(a)*52;
+    for(let k=0;k<6;k++){const a=k/6*6.283,hx=770+Math.cos(a)*128,hy=560+Math.sin(a)*52;
       g.beginPath();g.arc(hx-3,hy-2,3.2,0,7);g.arc(hx+3,hy-2,3.2,0,7);g.fill();
       g.beginPath();g.moveTo(hx-6,hy-1);g.lineTo(hx,hy+6);g.lineTo(hx+6,hy-1);g.closePath();g.fill();}
     // 窗 + 黄昏景 + 窗帘
@@ -516,7 +582,7 @@
     g.beginPath();g.moveTo(750,124);g.lineTo(755.5,130);g.lineTo(761,124);g.closePath();g.fill();
     g.fillStyle="#6b4a2e";g.fillRect(648,232,64,12);g.fillStyle="#8a5a32";g.fillRect(658,226,44,10);
     // ===== 书柜（精致木柜） =====
-    const BX=1020,BY=72,BW=250,BH=264,pal=["#c0506a","#5a86b8","#5aa06a","#caa14b","#7a5ba0","#cf8a5a","#4f9d92","#d76b8a"];
+    const BX=1080,BY=640,BW=250,BH=264,pal=["#c0506a","#5a86b8","#5aa06a","#caa14b","#7a5ba0","#cf8a5a","#4f9d92","#d76b8a"];
     g.fillStyle="rgba(0,0,0,.12)";g.fillRect(BX+6,BY+BH,BW,8);
     g.fillStyle="#7a5230";g.fillRect(BX-7,BY-13,BW+14,13);
     g.fillStyle="#8a5e38";g.fillRect(BX,BY,BW,BH);
@@ -568,61 +634,58 @@
     g.fillStyle="#caa86a";g.fillRect(364,452,12,26);
     B(348,428,44,26,8,"#ffe9a8");
     // 沙发（圆润扶手 + 靠垫 + 爱心抱枕）— 客厅
-    B(572,494,160,36,14,"#8fb8a5");
-    B(580,500,70,26,10,"#a8cbb8",true);B(656,500,70,26,10,"#a8cbb8",true);
-    B(564,516,175,68,16,"#8fb8a5");
-    B(578,540,72,32,12,"#a8cbb8",true);B(656,540,72,32,12,"#a8cbb8",true);
-    B(554,512,24,74,12,"#7fa898");B(726,512,24,74,12,"#7fa898");
-    g.fillStyle="#6b8f7d";g.fillRect(578,584,10,10);g.fillRect(716,584,10,10);
+    B(672,494,160,36,14,"#8fb8a5");
+    B(680,500,70,26,10,"#a8cbb8",true);B(756,500,70,26,10,"#a8cbb8",true);
+    B(664,516,175,68,16,"#8fb8a5");
+    B(678,540,72,32,12,"#a8cbb8",true);B(756,540,72,32,12,"#a8cbb8",true);
+    B(654,512,24,74,12,"#7fa898");B(826,512,24,74,12,"#7fa898");
+    g.fillStyle="#6b8f7d";g.fillRect(678,584,10,10);g.fillRect(816,584,10,10);
     // 爱心抱枕
-    B(586,522,36,32,10,"#f7c0cf");
-    g.fillStyle="#e75a7c";g.beginPath();g.arc(600,534,4.4,0,7);g.arc(609,534,4.4,0,7);g.fill();
-    g.beginPath();g.moveTo(595,537);g.lineTo(604.5,547);g.lineTo(614,537);g.closePath();g.fill();
+    B(686,522,36,32,10,"#f7c0cf");
+    g.fillStyle="#e75a7c";g.beginPath();g.arc(700,534,4.4,0,7);g.arc(709,534,4.4,0,7);g.fill();
+    g.beginPath();g.moveTo(695,537);g.lineTo(704.5,547);g.lineTo(714,537);g.closePath();g.fill();
     // 圆桌（蕾丝桌垫 + 小蛋糕）— 客厅
-    g.fillStyle="#8a5a32";g.fillRect(844,540,12,52);g.fillStyle="#6e4423";g.beginPath();g.ellipse(850,592,20,6,0,0,7);g.fill();
-    g.fillStyle="#a9794e";g.beginPath();g.ellipse(850,524,62,20,0,0,7);g.fill();
-    g.strokeStyle="rgba(120,85,55,.28)";g.lineWidth=2;g.beginPath();g.ellipse(850,524,62,20,0,0,7);g.stroke();
+    g.fillStyle="#8a5a32";g.fillRect(934,540,12,52);g.fillStyle="#6e4423";g.beginPath();g.ellipse(940,592,20,6,0,0,7);g.fill();
+    g.fillStyle="#a9794e";g.beginPath();g.ellipse(940,524,62,20,0,0,7);g.fill();
+    g.strokeStyle="rgba(120,85,55,.28)";g.lineWidth=2;g.beginPath();g.ellipse(940,524,62,20,0,0,7);g.stroke();
     g.fillStyle="#fffdf9";
-    for(let a=0;a<6.283;a+=0.42){g.beginPath();g.arc(850+Math.cos(a)*40,520+Math.sin(a)*12,4.5,0,7);g.fill();}
-    g.beginPath();g.ellipse(850,520,40,12,0,0,7);g.fill();
+    for(let a=0;a<6.283;a+=0.42){g.beginPath();g.arc(940+Math.cos(a)*40,520+Math.sin(a)*12,4.5,0,7);g.fill();}
+    g.beginPath();g.ellipse(940,520,40,12,0,0,7);g.fill();
     // 小蛋糕
-    g.fillStyle="#fffdf9";g.beginPath();g.ellipse(834,516,15,5,0,0,7);g.fill();
-    B(824,498,20,15,4,"#f7d0a0",true);
-    g.fillStyle="#f7c0cf";g.beginPath();g.moveTo(824,502);
-    for(let k=0;k<=5;k++){g.quadraticCurveTo(824+k*4-2,506,824+k*4,502);}
-    g.lineTo(844,498);g.lineTo(824,498);g.closePath();g.fill();
-    g.fillStyle="#e75a7c";g.beginPath();g.arc(834,495,3,0,7);g.fill();
+    g.fillStyle="#fffdf9";g.beginPath();g.ellipse(924,516,15,5,0,0,7);g.fill();
+    B(914,498,20,15,4,"#f7d0a0",true);
+    g.fillStyle="#f7c0cf";g.beginPath();g.moveTo(914,502);
+    for(let k=0;k<=5;k++){g.quadraticCurveTo(914+k*4-2,506,914+k*4,502);}
+    g.lineTo(934,498);g.lineTo(914,498);g.closePath();g.fill();
+    g.fillStyle="#e75a7c";g.beginPath();g.arc(924,495,3,0,7);g.fill();
     // 书桌 + 电脑（圆角显示器 + 键盘 + 马克杯）— 书房
-    B(1118,564,190,18,8,"#a9794e");
-    g.fillStyle="#8a5a32";g.fillRect(1128,582,12,56);g.fillRect(1286,582,12,56);
-    B(1144,514,78,52,10,"#4a4a54");
-    const scr=g.createLinearGradient(0,518,0,560);scr.addColorStop(0,"#cdedff");scr.addColorStop(1,"#8fd0ff");
-    B(1150,520,66,40,6,scr,true);
-    g.fillStyle="#e75a7c";g.beginPath();g.arc(1178,537,3.6,0,7);g.arc(1186,537,3.6,0,7);g.fill();
-    g.beginPath();g.moveTo(1174,539);g.lineTo(1182,548);g.lineTo(1190,539);g.closePath();g.fill();
-    g.fillStyle="#3a3a44";g.fillRect(1178,566,10,6);
-    B(1152,572,62,8,4,"#e8e0d2",true);
-    B(1228,548,16,18,4,"#f27e9d");
-    g.strokeStyle="#f27e9d";g.lineWidth=3;g.beginPath();g.arc(1248,557,5,-1.4,1.4);g.stroke();
+    B(1118,984,190,18,8,"#a9794e");
+    g.fillStyle="#8a5a32";g.fillRect(1128,1002,12,52);g.fillRect(1286,1002,12,52);
+    B(1144,934,78,52,10,"#4a4a54");
+    const scr=g.createLinearGradient(0,938,0,980);scr.addColorStop(0,"#cdedff");scr.addColorStop(1,"#8fd0ff");
+    B(1150,940,66,40,6,scr,true);
+    g.fillStyle="#e75a7c";g.beginPath();g.arc(1178,957,3.6,0,7);g.arc(1186,957,3.6,0,7);g.fill();
+    g.beginPath();g.moveTo(1174,959);g.lineTo(1182,968);g.lineTo(1190,959);g.closePath();g.fill();
+    g.fillStyle="#3a3a44";g.fillRect(1178,986,10,6);
+    B(1152,992,62,8,4,"#e8e0d2",true);
+    B(1228,968,16,18,4,"#f27e9d");
+    g.strokeStyle="#f27e9d";g.lineWidth=3;g.beginPath();g.arc(1248,977,5,-1.4,1.4);g.stroke();
     // 盆栽 + 角落小树
-    g.font="46px serif";g.textAlign="center";g.textBaseline="alphabetic";g.fillText("🪴",1030,500);g.fillText("🌿",58,474);
-    g.fillStyle="#3f8f5a";g.beginPath();g.moveTo(1350,400);g.lineTo(1320,460);g.lineTo(1380,460);g.closePath();g.fill();
-    g.beginPath();g.moveTo(1350,376);g.lineTo(1326,428);g.lineTo(1374,428);g.closePath();g.fill();
-    g.fillStyle="#7a5230";g.fillRect(1344,460,12,14);g.fillStyle="#ffe27a";g.beginPath();g.arc(1350,370,5,0,7);g.fill();
-    g.fillStyle="#ff6f91";g.beginPath();g.arc(1338,442,3,0,7);g.fill();g.fillStyle="#9ad0ff";g.beginPath();g.arc(1362,416,3,0,7);g.fill();g.fillStyle="#ffd24a";g.beginPath();g.arc(1350,448,3,0,7);g.fill();
-    // 圆镜（墙上）
-    g.fillStyle="#caa86a";g.beginPath();g.arc(444,84,26,0,7);g.fill();g.fillStyle="#dcecf2";g.beginPath();g.arc(444,84,21,0,7);g.fill();
-    g.fillStyle="#eef6fa";g.beginPath();g.arc(438,78,9,0,7);g.fill();
+    g.font="46px serif";g.textAlign="center";g.textBaseline="alphabetic";g.fillText("🪴",1414,706);g.fillText("🌿",58,474);
+    g.fillStyle="#3f8f5a";g.beginPath();g.moveTo(1560,520);g.lineTo(1530,580);g.lineTo(1590,580);g.closePath();g.fill();
+    g.beginPath();g.moveTo(1560,496);g.lineTo(1536,548);g.lineTo(1584,548);g.closePath();g.fill();
+    g.fillStyle="#7a5230";g.fillRect(1554,580,12,14);g.fillStyle="#ffe27a";g.beginPath();g.arc(1560,490,5,0,7);g.fill();
+    g.fillStyle="#ff6f91";g.beginPath();g.arc(1548,562,3,0,7);g.fill();g.fillStyle="#9ad0ff";g.beginPath();g.arc(1572,536,3,0,7);g.fill();g.fillStyle="#ffd24a";g.beginPath();g.arc(1560,568,3,0,7);g.fill();
     // 壁炉绿植花环
     g.strokeStyle="#3f8f5a";g.lineWidth=5;g.beginPath();g.moveTo(592,138);g.quadraticCurveTo(680,158,768,138);g.stroke();
     for(let i=0;i<7;i++){const t=i/6,x=592+t*176,y=138+Math.sin(t*Math.PI)*10;g.fillStyle=["#ff6f91","#ffd24a","#9ad0ff"][i%3];g.beginPath();g.arc(x,y,3,0,7);g.fill();}
     // 桌上茶杯
-    g.fillStyle="#fff";g.fillRect(866,506,18,12);g.fillStyle="#fff";g.beginPath();g.arc(886,512,5,0,7);g.stroke();g.strokeStyle="#caa";g.lineWidth=2;g.beginPath();g.arc(886,512,5,0,7);g.stroke();
-    g.fillStyle="#b07a4a";g.fillRect(868,508,14,5);
+    g.fillStyle="#fff";g.fillRect(956,506,18,12);g.fillStyle="#fff";g.beginPath();g.arc(976,512,5,0,7);g.stroke();g.strokeStyle="#caa";g.lineWidth=2;g.beginPath();g.arc(976,512,5,0,7);g.stroke();
+    g.fillStyle="#b07a4a";g.fillRect(958,508,14,5);
     // 吊灯（吊在桌子上方）
-    g.strokeStyle="#7a655a";g.lineWidth=3;g.beginPath();g.moveTo(850,0);g.lineTo(850,318);g.stroke();
-    g.fillStyle="#caa86a";g.beginPath();g.moveTo(822,348);g.lineTo(878,348);g.lineTo(866,318);g.lineTo(834,318);g.closePath();g.fill();
-    g.fillStyle="#fff3c0";g.beginPath();g.ellipse(850,348,28,7,0,0,7);g.fill();
+    g.strokeStyle="#7a655a";g.lineWidth=3;g.beginPath();g.moveTo(940,0);g.lineTo(940,318);g.stroke();
+    g.fillStyle="#caa86a";g.beginPath();g.moveTo(912,348);g.lineTo(968,348);g.lineTo(956,318);g.lineTo(924,318);g.closePath();g.fill();
+    g.fillStyle="#fff3c0";g.beginPath();g.ellipse(940,348,28,7,0,0,7);g.fill();
     // 阳光斜照（地面光斑）
     g.fillStyle="rgba(255,240,180,.22)";g.beginPath();g.moveTo(110,160);g.lineTo(250,160);g.lineTo(320,300);g.lineTo(180,300);g.closePath();g.fill();
     // 串灯（电线 + 彩灯，发光在 roomStep）
@@ -673,6 +736,8 @@
     // 壁炉火焰
     if(Math.random()<0.7){const fx=680+(Math.random()*60-30);P(fx,238,(Math.random()*0.8-0.4),-1-Math.random()*1.3,28,["rgba(255,170,60,","rgba(255,120,40,","rgba(255,220,120,"][(Math.random()*3)|0],3+Math.random()*2,-0.02);}
     ctx.save();ctx.globalAlpha=.4+.2*Math.sin(tnow/120);ctx.fillStyle="rgba(255,150,60,.5)";ctx.beginPath();ctx.ellipse(680,236,42,16,0,0,7);ctx.fill();ctx.restore();
+    if(Math.random()<0.12)P(1256+Math.random()*8-4,146,(Math.random()*.6-.3),-0.8-Math.random()*.7,34,"rgba(255,255,255,",3,-0.01);
+    if(Math.random()<0.08)P(90+Math.random()*180,744,0,-0.5,40,"rgba(255,255,255,",2.5,-0.005);
     // 暖光（壁炉 + 台灯，lighter 叠加）
     ctx.save();ctx.globalCompositeOperation="lighter";
     const fg=ctx.createRadialGradient(680,210,6,680,210,150);fg.addColorStop(0,"rgba(255,170,80,"+(.32+.08*Math.sin(tnow/130))+")");fg.addColorStop(1,"rgba(255,170,80,0)");ctx.fillStyle=fg;ctx.beginPath();ctx.arc(680,210,150,0,7);ctx.fill();
@@ -695,8 +760,8 @@
     for(let i=0;i<bulbs.length;i++){const b=bulbs[i],a=.4+.5*Math.sin(tnow/400+i*0.9);ctx.globalAlpha=a;ctx.fillStyle=b.c;ctx.beginPath();ctx.arc(b.x,b.y+4,6,0,7);ctx.fill();}
     ctx.restore();ctx.globalAlpha=1;
     // 吊灯暖光
-    {const pg=ctx.createRadialGradient(850,352,6,850,352,120);pg.addColorStop(0,"rgba(255,232,150,.3)");pg.addColorStop(1,"rgba(255,232,150,0)");
-     ctx.save();ctx.globalCompositeOperation="lighter";ctx.fillStyle=pg;ctx.beginPath();ctx.arc(850,352,120,0,7);ctx.fill();ctx.restore();}
+    {const pg=ctx.createRadialGradient(940,352,6,940,352,120);pg.addColorStop(0,"rgba(255,232,150,.3)");pg.addColorStop(1,"rgba(255,232,150,0)");
+     ctx.save();ctx.globalCompositeOperation="lighter";ctx.fillStyle=pg;ctx.beginPath();ctx.arc(940,352,120,0,7);ctx.fill();ctx.restore();}
     // 桌上手机
     {const hi=act&&act.type==="phone";ctx.fillStyle="#2a2a32";rr(phone.x-9,phone.y-18,18,30,4);ctx.fill();
      ctx.fillStyle=Math.sin(tnow/500)>0?"#9ad0ff":"#bfe6ff";rr(phone.x-7,phone.y-16,14,24,2);ctx.fill();
