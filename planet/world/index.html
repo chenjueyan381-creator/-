@@ -269,10 +269,20 @@
   function doJump(){if(scene==="room"&&rest)return;const p=scene==="room"?rp:player;if(p.jz<=0){p.jvz=6.6;marioJump();}}
   let rest=null,restT=0;
   function startRest(m){rest=m;restT=performance.now();rp.vx=rp.vy=0;rp.jz=0;rp.jvz=0;
-    if(m==="sleep"){rp.x=252;rp.y=524;rp.face=1;}else{rp.x=181;rp.y=768;rp.face=1;}}
+    if(m==="sleep"){rp.x=252;rp.y=524;}
+    else if(m==="bath"){rp.x=181;rp.y=768;}
+    else if(m==="sofa"){rp.x=706;rp.y=552;}
+    else if(m==="sun"){rp.x=1560;rp.y=896;}
+    else if(m==="cook"){rp.x=1240;rp.y=252;}
+    else if(m==="pc"){rp.x=1100;rp.y=1016;}
+    rp.face=1;}
   function endRest(){const m=rest;rest=null;
     if(m==="sleep"){rp.x=356;rp.y=566;P(rp.x,rp.y-58,0,-.5,64,"txt:睡饱啦 ☀",0);}
-    else{rp.x=336;rp.y=856;P(rp.x,rp.y-58,0,-.5,64,"txt:香香的 ✨",0);}
+    else if(m==="bath"){rp.x=336;rp.y=856;P(rp.x,rp.y-58,0,-.5,64,"txt:香香的 ✨",0);}
+    else if(m==="sofa"){rp.x=706;rp.y=626;P(rp.x,rp.y-58,0,-.5,64,"txt:休息好啦 🧡",0);}
+    else if(m==="sun"){rp.x=1482;rp.y=952;P(rp.x,rp.y-58,0,-.5,64,"txt:暖洋洋 ☀",0);}
+    else if(m==="cook"){inv["🍰"]=(inv["🍰"]||0)+1;save();P(rp.x,rp.y-58,0,-.5,72,"txt:+🍰 出锅啦！",0);}
+    else if(m==="pc"){P(rp.x,rp.y-58,0,-.5,64,"txt:真好玩 ✨",0);}
     for(let i=0;i<12;i++){const a=Math.random()*6.28,s2=1+Math.random()*2.2;P(rp.x,rp.y-22,Math.cos(a)*s2,Math.sin(a)*s2-1,42,"rgba(255,221,120,",2,.05);}
     chime();}
   function enterRoom(){scene="room";rest=null;rp.x=770;rp.y=RH-90;rp.vx=rp.vy=0;rp.jz=0;gbtn.classList.remove("show");
@@ -288,7 +298,11 @@
     if(act.type==="exit"){leaveRoom();return;}
     if(act.type==="bed"){startRest("sleep");return;}
     if(act.type==="tub"){startRest("bath");return;}
-    if(act.type==="wake"){endRest();return;}
+    if(act.type==="sofa"){startRest("sofa");return;}
+    if(act.type==="sun"){startRest("sun");return;}
+    if(act.type==="cook"){startRest("cook");for(let i=0;i<6;i++)P(1256+Math.random()*10-5,148,(Math.random()-.5),-1-Math.random(),30,"rgba(255,255,255,",3,-0.01);return;}
+    if(act.type==="pc"){startRest("pc");return;}
+    if(act.type==="wake"){if(rest==="cook")return;endRest();return;}
     if(act.type==="phone"){phoneMsg();return;}
     if(act.type==="slot"){openPlace(act.o);return;}
     if(act.type==="item"){const it=act.o;it.got=true;inv[it.name]=(inv[it.name]||0)+1;pick();
@@ -721,7 +735,7 @@
 
   function roomStep(tnow,ix,iy,mag){
     const moving=!rest&&mag>0.06;
-    if(rest){if(mag>0.4)endRest();}
+    if(rest){if(rest==="cook"){if(tnow-restT>1600)endRest();}else if(mag>0.4)endRest();}
     else{
       rp.x+=ix*2.7;rp.y+=iy*2.7;
       if(Math.abs(ix)>0.06)rp.face=ix<0?-1:1;
@@ -738,6 +752,10 @@
       const dR=(x,y,w,h)=>{const cx=Math.max(x,Math.min(rp.x,x+w)),cy=Math.max(y,Math.min(rp.y,y+h));return Math.hypot(rp.x-cx,rp.y-cy);};
       const db=dR(90,438,240,150);if(db<42&&db<bd){bd=db;act={type:"bed"};}
       const dt2=dR(56,690,250,130);if(dt2<42&&dt2<bd){bd=dt2;act={type:"tub"};}
+      const ds2=dR(664,506,175,86);if(ds2<42&&ds2<bd){bd=ds2;act={type:"sofa"};}
+      const dsun=dR(1500,842,120,96);if(dsun<42&&dsun<bd){bd=dsun;act={type:"sun"};}
+      const dck=dR(1196,150,88,84);if(dck<46&&dck<bd){bd=dck;act={type:"cook"};}
+      const dpc=dR(1118,984,190,74);if(dpc<46&&dpc<bd){bd=dpc;act={type:"pc"};}
       const dp=Math.hypot(phone.x-rp.x,phone.y-rp.y);if(dp<58&&dp<bd){bd=dp;act={type:"phone"};}
       const dd=Math.hypot(door.x-rp.x,door.y-rp.y);if(dd<62&&dd<bd){bd=dd;act={type:"exit"};}
     }
@@ -745,7 +763,9 @@
     if(act){ab.classList.remove("dim");
       ab.innerHTML=act.type==="exit"?"🚪<br>出门":act.type==="phone"?"📱<br>看":
         act.type==="bed"?"😴<br>睡觉":act.type==="tub"?"🛁<br>泡澡":
-        act.type==="wake"?(rest==="sleep"?"⏰<br>起床":"🧼<br>洗好啦"):
+        act.type==="sofa"?"🛋<br>坐坐":act.type==="sun"?"🏖<br>晒太阳":
+        act.type==="cook"?"🍳<br>做饭":act.type==="pc"?"💻<br>玩电脑":
+        act.type==="wake"?(rest==="sleep"?"⏰<br>起床":rest==="bath"?"🧼<br>洗好啦":rest==="cook"?"🍳<br>烹饪中…":rest==="pc"?"🧍<br>不玩了":"🧍<br>起来啦"):
         (act.o.item?"🔄<br>换/取":"✋<br>摆放");}
     else{ab.classList.add("dim");ab.innerHTML="✋<br>摆放";}
     document.getElementById("gatebtn").classList.remove("show");
@@ -810,6 +830,32 @@
       ctx.beginPath();ctx.arc(rp.x-30,rp.y-20,7,0,7);ctx.arc(rp.x+28,rp.y-16,6,0,7);ctx.arc(rp.x+12,rp.y-24,5,0,7);ctx.fill();
       if(Math.random()<0.3)P(rp.x+(Math.random()*70-35),rp.y-16,0,-0.4,32,"rgba(255,255,255,",2.5,-0.004);
       if(Math.random()<0.12)P(rp.x+(Math.random()*44-22),rp.y-42,0,-0.6,42,"rgba(255,255,255,",3,-0.01);
+    }else if(rest==="sofa"){
+      const br=1+Math.sin(tnow/650)*0.05;
+      if(claude.complete&&claude.naturalWidth){ctx.imageSmoothingEnabled=false;const w=44,h=w*(claude.naturalHeight/claude.naturalWidth);
+        ctx.save();ctx.translate(rp.x,rp.y);ctx.scale(1,br);ctx.drawImage(claude,-w/2,-h,w,h);ctx.restore();}
+      if(Math.random()<0.02)P(rp.x+26,rp.y-52,0.2,-0.4,60,"txt:♡",0);
+    }else if(rest==="sun"){
+      if(claude.complete&&claude.naturalWidth){ctx.imageSmoothingEnabled=false;const w=44,h=w*(claude.naturalHeight/claude.naturalWidth);
+        ctx.save();ctx.translate(rp.x,rp.y-8);ctx.rotate(-1.1);ctx.drawImage(claude,-w/2,-h,w,h);ctx.restore();}
+      if(Math.random()<0.05)P(rp.x+(Math.random()*80-40),rp.y-56-Math.random()*30,0,-0.3,40,"rgba(255,235,150,",2.5,0);
+      if(Math.random()<0.012)P(rp.x+30,rp.y-70,0.2,-0.4,60,"txt:☀",0);
+      ctx.save();ctx.globalCompositeOperation="lighter";
+      const sg=ctx.createRadialGradient(rp.x,rp.y-20,6,rp.x,rp.y-20,90);sg.addColorStop(0,"rgba(255,220,120,.26)");sg.addColorStop(1,"rgba(255,220,120,0)");
+      ctx.fillStyle=sg;ctx.beginPath();ctx.arc(rp.x,rp.y-20,90,0,7);ctx.fill();ctx.restore();
+    }else if(rest==="cook"){
+      if(Math.random()<0.5)P(1256+Math.random()*10-5,146,(Math.random()*.6-.3),-1-Math.random(),34,"rgba(255,255,255,",3,-0.012);
+      if(Math.random()<0.06)P(1256,130,0,-0.5,40,"txt:🍳",0);
+      if(claude.complete&&claude.naturalWidth){ctx.imageSmoothingEnabled=false;const w=46,h=w*(claude.naturalHeight/claude.naturalWidth);
+        ctx.save();ctx.translate(rp.x,rp.y);ctx.drawImage(claude,-w/2,-h,w,h);ctx.restore();}
+    }else if(rest==="pc"){
+      ctx.fillStyle="#1e2230";ctx.fillRect(1152,942,62,36);
+      const bx=1156+Math.abs(((tnow/5)%88)-44),by2=946+Math.abs(((tnow/7)%48)-24);
+      ctx.fillStyle="#ff6f91";ctx.beginPath();ctx.arc(bx+3,by2+2,3,0,7);ctx.arc(bx+9,by2+2,3,0,7);ctx.fill();
+      ctx.beginPath();ctx.moveTo(bx,by2+3);ctx.lineTo(bx+6,by2+9);ctx.lineTo(bx+12,by2+3);ctx.closePath();ctx.fill();
+      if(Math.random()<0.06)beep(900+Math.random()*500,.04,"square",.012);
+      if(claude.complete&&claude.naturalWidth){ctx.imageSmoothingEnabled=false;const w=46,h=w*(claude.naturalHeight/claude.naturalWidth);
+        ctx.save();ctx.translate(rp.x,rp.y);ctx.drawImage(claude,-w/2,-h,w,h);ctx.restore();}
     }else{
       const bob=(moving&&rp.jz<=0)?Math.abs(Math.sin(tnow/90))*-7:0;
       ctx.fillStyle="rgba(0,0,0,.18)";ctx.beginPath();ctx.ellipse(rp.x,rp.y+2,16*(1-Math.min(.5,rp.jz/40)),5,0,0,7);ctx.fill();
