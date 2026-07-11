@@ -141,6 +141,19 @@
       else if(d.t==="rock"){g.fillStyle="#a3a8af";g.beginPath();g.ellipse(d.x,d.y,7,5,0,0,7);g.fill();g.fillStyle="#c2c7cd";g.beginPath();g.ellipse(d.x-2,d.y-1.5,3,2,0,0,7);g.fill();}
       else{g.fillStyle="#5aa06a";for(let k=0;k<3;k++){const a=k/3*6.283+d.r;g.beginPath();g.ellipse(d.x+Math.cos(a)*4,d.y+Math.sin(a)*4,3,3,0,0,7);g.fill();}}
     }
+    // ===== 小小菜园 =====
+    g.fillStyle="rgba(0,0,0,.05)";g.beginPath();g.ellipse(1388,884,136,92,0,0,7);g.fill();
+    for(const px3 of [1320,1388,1456])for(const py3 of [848,908]){
+      g.fillStyle="#6e4a2c";g.fillRect(px3-30,py3-22,60,44);
+      g.fillStyle="#8a5f3c";g.fillRect(px3-27,py3-19,54,38);
+      g.strokeStyle="rgba(60,40,25,.35)";g.lineWidth=2;
+      for(let r2=0;r2<3;r2++){g.beginPath();g.moveTo(px3-22,py3-10+r2*10);g.lineTo(px3+22,py3-10+r2*10);g.stroke();}}
+    g.fillStyle="#c49a6a";
+    for(let fx2=1276;fx2<=1500;fx2+=28){g.fillRect(fx2,806,7,26);g.fillRect(fx2,940,7,26);}
+    for(let fy2=812;fy2<=940;fy2+=28){g.fillRect(1270,fy2,7,24);g.fillRect(1504,fy2,7,24);}
+    g.fillStyle="#b3854f";g.fillRect(1270,812,241,5);g.fillRect(1270,950,241,5);
+    g.fillStyle="#8a5a32";g.fillRect(1286,766,8,40);g.fillStyle="#caa96a";g.fillRect(1252,748,86,26);
+    g.fillStyle="#5a4632";g.font="700 13px sans-serif";g.textAlign="center";g.fillText("小小菜园",1295,765);
     // 柔和光照：中心提亮 + 边缘压暗
     const lg=g.createRadialGradient(WW*.46,WH*.4,220,WW*.5,WH*.5,Math.max(WW,WH)*.72);
     lg.addColorStop(0,"rgba(255,250,210,.12)");lg.addColorStop(.7,"rgba(255,250,210,0)");lg.addColorStop(1,"rgba(28,55,28,0)");
@@ -207,6 +220,9 @@
   const claudeRoom={x:756,y:548};
   const bulbs=[];for(let i=0;i<16;i++){const t=i/15;bulbs.push({x:40+t*(RW-80),y:16+Math.sin(t*Math.PI)*16,c:["#ff7a7a","#ffd24a","#7fd0ff","#9ae08a","#d9a0ff"][i%5]});}
 
+  // 菜园：6 块地
+  const plots=[[1320,848],[1388,848],[1456,848],[1320,908],[1388,908],[1456,908]].map(([x,y])=>({x,y,crop:null,stage:0}));
+  const CROPS=["🥕","🍅","🥬","🍓","🌽"];
   // 存档
   const SK="world_save_v1";
   let inv={};
@@ -217,9 +233,10 @@
     if(s.quests)for(const n of npcs)if(n.quest&&s.quests[n.id])n.quest.state=s.quests[n.id];
     doneCount=npcs.filter(n=>n.quest&&n.quest.state==="done").length;
     if(s.deco)s.deco.forEach((e,i)=>{if(slots[i])slots[i].item=e;});
+    if(s.plots)s.plots.forEach((sp2,i)=>{if(plots[i]){plots[i].crop=sp2.c||null;plots[i].stage=sp2.s||0;}});
   }catch(e){}}
   function save(){try{const q={};for(const n of npcs)if(n.quest)q[n.id]=n.quest.state;
-    localStorage.setItem(SK,JSON.stringify({inv,gotItems:items.filter(i=>i.got).map(i=>i.id),gotStars:stars.filter(s=>s.got).map(s=>s.id),quests:q,deco:slots.map(s=>s.item)}));}catch(e){}}
+    localStorage.setItem(SK,JSON.stringify({inv,gotItems:items.filter(i=>i.got).map(i=>i.id),gotStars:stars.filter(s=>s.got).map(s=>s.id),quests:q,deco:slots.map(s=>s.item),plots:plots.map(p2=>({c:p2.crop,s:p2.stage}))}));}catch(e){}}
   load();
   const hud=document.getElementById("hud");const updHud=()=>hud.textContent="⭐ "+got+" / "+stars.length;updHud();
 
@@ -335,6 +352,15 @@
     if(act.type==="cook"){startRest("cook");for(let i=0;i<6;i++)P(1256+Math.random()*10-5,148,(Math.random()-.5),-1-Math.random(),30,"rgba(255,255,255,",3,-0.01);return;}
     if(act.type==="pc"){startRest("pc");return;}
     if(act.type==="wake"){if(rest==="cook")return;endRest();return;}
+    if(act.type==="farm"){const pl2=act.o;
+      if(!pl2.crop){pl2.crop=CROPS[(Math.random()*CROPS.length)|0];pl2.stage=0;pick();
+        for(let i=0;i<8;i++)P(pl2.x+(Math.random()*30-15),pl2.y,(Math.random()-.5),-1-Math.random(),26,"rgba(150,110,70,",2.4,.05);
+        P(pl2.x,pl2.y-16,0,-.5,48,"txt:🌱",0);}
+      else if(pl2.stage<2){pl2.stage++;beep(700,.1,"sine",.04);
+        for(let i=0;i<9;i++)P(pl2.x+(Math.random()*26-13),pl2.y-24-Math.random()*8,(Math.random()-.5)*.6,1+Math.random(),22,"rgba(120,180,240,",2.2,.08);
+        if(pl2.stage===2)P(pl2.x,pl2.y-20,0,-.5,60,"txt:成熟啦！",0);else P(pl2.x,pl2.y-16,0,-.5,40,"txt:💧",0);}
+      else{inv[pl2.crop]=(inv[pl2.crop]||0)+1;P(pl2.x,pl2.y-18,0,-.6,52,"txt:+"+pl2.crop,0);chime();pl2.crop=null;pl2.stage=0;}
+      save();return;}
     if(act.type==="phone"){phoneMsg();return;}
     if(act.type==="slot"){openPlace(act.o);return;}
     if(act.type==="item"){const it=act.o;it.got=true;inv[it.name]=(inv[it.name]||0)+1;pick();
@@ -414,15 +440,23 @@
       P(st.x,st.y-10,0,-.6,46,"txt:+⭐",0);
       if(got===stars.length&&!won){won=true;winSfx();fireworks();showBanner("✨ 你集齐了所有星星！<br>这个小世界，因你而闪亮 ✨",5200);}}}
 
+    // 雨天菜苗自己长
+    if(weather==="rain"&&Math.random()<0.006){const gs=plots.filter(p2=>p2.crop&&p2.stage<2);
+      if(gs.length){const p2=gs[(Math.random()*gs.length)|0];p2.stage++;save();
+        for(let i=0;i<8;i++)P(p2.x+(Math.random()*24-12),p2.y-10,(Math.random()-.5),-1-Math.random(),30,"rgba(150,220,150,",2.2,.02);
+        if(p2.stage===2)P(p2.x,p2.y-20,0,-.5,60,"txt:成熟啦！",0);}}
     // 最近可互动：物品优先，其次 NPC/朋友
     act=null;let bd=1e9;
     for(const it of items){if(it.got)continue;const d=Math.hypot(it.x-player.x,it.y-player.y);if(d<56&&d<bd){bd=d;act={type:"item",o:it};}}
     if(!act){let nd=1e9;
+      for(const pl2 of plots){const d=Math.hypot(pl2.x-player.x,pl2.y-player.y);if(d<48&&d<nd){nd=d;act={type:"farm",o:pl2};}}
       const dd=Math.hypot(house.x-player.x,(house.y-12)-player.y);if(dd<82&&dd<nd){nd=dd;act={type:"door"};}
       for(const n of npcs){const d=Math.hypot(n.x-player.x,n.y-player.y);if(d<n.r&&d<nd){nd=d;act={type:"npc",o:n};}}
       for(const f of friends){const d=Math.hypot(f.x-player.x,f.y-player.y);if(d<96&&d<nd){nd=d;act={type:"npc",o:f};}}}
     const ab=document.getElementById("btnAct");
-    if(act){ab.classList.remove("dim");ab.innerHTML=act.type==="item"?(act.o.emo+"<br>拾取"):(act.type==="door"?"🚪<br>进屋":"💬<br>对话");}
+    if(act){ab.classList.remove("dim");ab.innerHTML=act.type==="item"?(act.o.emo+"<br>拾取"):
+      act.type==="door"?"🚪<br>进屋":
+      act.type==="farm"?(!act.o.crop?"🌱<br>播种":act.o.stage<2?"💧<br>浇水":"🧺<br>收获"):"💬<br>对话";}
     else{ab.classList.add("dim");ab.innerHTML="✋<br>拾取";}
 
     nearGate=null;let gd=82;for(const g of gates){const d=Math.hypot(g.x-player.x,g.y-player.y);if(d<gd){gd=d;nearGate=g;}}
@@ -460,6 +494,13 @@
       ctx.fillStyle="rgba(255,255,255,.5)";
       for(const sd of snowDrifts){ctx.beginPath();ctx.ellipse(sd.x,sd.y,sd.rx,sd.ry,0,0,7);ctx.fill();}
       ctx.drawImage(eSprite("⛄",46),pond.x+156,pond.y-96,46,46);}
+    for(const pl2 of plots){if(!pl2.crop)continue;
+      const hb=pl2.stage===2?Math.sin(tnow/300+pl2.x)*2:0;
+      const sz=pl2.stage===0?20:pl2.stage===1?26:30;
+      const spr=pl2.stage===0?eSprite("🌱",20):pl2.stage===1?eSprite("🌿",26):eSprite(pl2.crop,30);
+      if(act&&act.type==="farm"&&act.o===pl2){ctx.strokeStyle="rgba(255,235,150,.9)";ctx.lineWidth=2;ctx.beginPath();ctx.arc(pl2.x,pl2.y-8,21,0,7);ctx.stroke();}
+      ctx.drawImage(spr,pl2.x-sz/2,pl2.y-sz+2+hb,sz,sz);
+      if(pl2.stage===2&&Math.random()<0.02)P(pl2.x+(Math.random()*20-10),pl2.y-24,0,-.4,30,"rgba(255,235,150,",2,0);}
     if(weather==="night"){ctx.save();ctx.globalCompositeOperation="lighter";
       for(const ff of nff){const x=ff.fx+Math.sin(tnow/1500+ff.ph)*46,y=ff.fy+Math.cos(tnow/1900+ff.ph)*30;
         const a=.35+.4*Math.sin(tnow/420+ff.ph);
