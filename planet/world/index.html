@@ -64,6 +64,7 @@
   <a class="back pill" href="../">← 回星球</a>
   <div class="hud pill" id="hud">⭐ 0 / 0</div>
   <button class="bag pill" id="bag">🎒 背包</button>
+  <button class="pill" id="wbtn" style="position:fixed;top:90px;left:14px;z-index:6;border:none;cursor:pointer;font-family:var(--font);padding:7px 13px;font-size:.9rem">☀️ 晴</button>
   <div class="tip" id="tip">左侧任意位置按住走路（手指在哪摇杆就在哪）· ✋拾取/对话 · ⤴跳 · 集齐⭐</div>
   <div class="stick" id="stick"><div class="knob" id="knob"></div></div>
   <div class="pad">
@@ -222,6 +223,12 @@
   const hud=document.getElementById("hud");const updHud=()=>hud.textContent="⭐ "+got+" / "+stars.length;updHud();
 
   const player={x:1100,y:820,vx:0,vy:0,face:1,jz:0,jvz:0};
+  // ===== 天气系统 =====
+  let weather=localStorage.getItem("world_weather")||"sunny";
+  let rainbowT=0,flashT=0;
+  const rainDrops=Array.from({length:130},()=>({px:-1,py:0,sp:.7+Math.random()*.6,len:10+Math.random()*9}));
+  const nstars=Array.from({length:26},()=>({x:Math.random(),y:Math.random()*0.35,ph:Math.random()*6}));
+  const nff=Array.from({length:14},()=>({fx:120+Math.random()*(WW-240),fy:220+Math.random()*(WH-340),ph:Math.random()*6}));
   const cat={x:1060,y:880,vx:0,vy:0,face:1};
   const SPEED=3.1;let camX=player.x-W/2,camY=player.y-H/2;
   const parts=[];function P(x,y,vx,vy,life,col,size,grav){parts.push({x,y,vx,vy,life,max:life,col,size,grav:grav||0});}
@@ -234,6 +241,19 @@
   const pick=()=>{beep(660,.12,"triangle",.05);setTimeout(()=>beep(990,.14,"triangle",.05),60);};
   const hop=()=>beep(520,.12,"sine",.04);
   const winSfx=()=>[523,659,784,1047].forEach((f,i)=>setTimeout(()=>beep(f,.5,"triangle",.05),i*120));
+  let rainSrc=null;
+  function setRain(on){if(!AC)return;
+    if(on&&!rainSrc){const len=AC.sampleRate*2,buf=AC.createBuffer(1,len,AC.sampleRate),d=buf.getChannelData(0);
+      for(let i=0;i<len;i++)d[i]=Math.random()*2-1;
+      rainSrc=AC.createBufferSource();rainSrc.buffer=buf;rainSrc.loop=true;
+      const f=AC.createBiquadFilter();f.type="lowpass";f.frequency.value=850;
+      const v=AC.createGain();v.gain.value=0.016;
+      rainSrc.connect(f);f.connect(v);v.connect(AC.destination);rainSrc.start();}
+    if(!on&&rainSrc){try{rainSrc.stop();}catch(e){}rainSrc=null;}}
+  function thunder(){if(!AC)return;const o=AC.createOscillator(),v=AC.createGain(),n=AC.currentTime;
+    o.type="sawtooth";o.frequency.setValueAtTime(70,n);o.frequency.exponentialRampToValueAtTime(38,n+.6);
+    v.gain.setValueAtTime(.0001,n);v.gain.linearRampToValueAtTime(.05,n+.05);v.gain.exponentialRampToValueAtTime(.0001,n+.75);
+    o.connect(v);v.connect(AC.destination);o.start(n);o.stop(n+.8);}
 
   // 摇杆（多点触控：跳跃时移动不会中断）
   // 浮动摇杆：左侧任意位置按住即出现，跟随手指，松手消失
@@ -243,7 +263,7 @@
     const d=Math.hypot(dx,dy);if(d>JR){dx=dx/d*JR;dy=dy/d*JR;}knob.style.transform="translate("+(dx-27)+"px,"+(dy-27)+"px)";jx=dx/JR;jy=dy/JR;}
   function jEnd(){jId=null;jx=jy=0;knob.style.transform="translate(-50%,-50%)";stick.style.display="none";}
   addEventListener("pointerdown",e=>{if(jId!==null)return;
-    if(e.target.closest&&e.target.closest("#btnJump,#btnAct,#bag,.back,.bagpanel,.gatebtn"))return;
+    if(e.target.closest&&e.target.closest("#btnJump,#btnAct,#bag,#wbtn,.back,.bagpanel,.gatebtn"))return;
     if(e.clientX>innerWidth*0.62)return;
     audio();jId=e.pointerId;stick.style.left=(e.clientX-JSZ/2)+"px";stick.style.top=(e.clientY-JSZ/2)+"px";stick.style.display="block";jUpd(e);},{passive:true});
   addEventListener("pointermove",e=>{if(e.pointerId===jId)jUpd(e);},{passive:true});
@@ -257,6 +277,14 @@
   document.getElementById("btnAct").addEventListener("click",()=>{audio();doAct();});
   const gbtn=document.getElementById("gatebtn");let nearGate=null;
   gbtn.addEventListener("click",()=>{if(nearGate)location.href=nearGate.href;});
+  const wbtn=document.getElementById("wbtn");
+  function wLabel(){wbtn.textContent=weather==="sunny"?"☀️ 晴":weather==="rain"?"🌧 雨":"🌙 夜";}
+  wLabel();
+  wbtn.addEventListener("click",()=>{audio();const prev=weather;
+    weather=weather==="sunny"?"rain":weather==="rain"?"night":"sunny";
+    if(prev==="rain")rainbowT=performance.now()+30000;
+    try{localStorage.setItem("world_weather",weather);}catch(e){}
+    wLabel();});
   const tip=document.getElementById("tip");setTimeout(()=>tip.classList.add("hide"),7500);
   const banner=document.getElementById("banner");
   function showBanner(html,ms){banner.innerHTML=html;banner.classList.add("show");setTimeout(()=>banner.classList.remove("show"),ms||4800);}
@@ -309,6 +337,10 @@
       for(let i=0;i<10;i++){const a=Math.random()*6.28,s=1+Math.random()*2.5;P(it.x,it.y,Math.cos(a)*s,Math.sin(a)*s-1,34,"rgba(255,255,255,",2,.04);}
       P(it.x,it.y-8,0,-.6,42,"txt:+"+it.emo,0);save();return;}
     const o=act.o;
+    if(o.kind==="cat"&&(!o.quest||o.quest.state==="done")&&(inv["🍰"]||0)>0){
+      inv["🍰"]--;save();say(o,"喵！！是蛋糕 😻 谢谢你～");chime();
+      for(let i=0;i<9;i++){const a=Math.random()*6.28,s2=1+Math.random()*2;P(o.x,o.y-18,Math.cos(a)*s2,Math.sin(a)*s2-1,42,"rgba(255,140,170,",2.4,.04);}
+      return;}
     if(o.quest){const q=o.quest;
       if(q.state==="done"){say(o,q.done);}
       else if(q.state==="active"){
@@ -341,6 +373,7 @@
   let stepT=0;
   function step(){
     const tnow=performance.now();
+    setRain(weather==="rain"&&scene==="world");
     let kx=0,ky=0;
     if(keys["arrowleft"]||keys["a"])kx-=1;if(keys["arrowright"]||keys["d"])kx+=1;
     if(keys["arrowup"]||keys["w"])ky-=1;if(keys["arrowdown"]||keys["s"])ky+=1;
@@ -398,6 +431,10 @@
     // 静态地面（预渲染的一张图）
     const sx=Math.max(0,Math.min(camX,WW-1)),sy=Math.max(0,Math.min(camY,WH-1)),sw=Math.min(W,WW-sx),sh=Math.min(H,WH-sy);
     ctx.drawImage(ground,sx,sy,sw,sh,sx,sy,sw,sh);
+    if(weather==="sunny"&&tnow<rainbowT){const RC=["#ff9e9e","#ffd29a","#fff3a0","#b8e6a0","#a0d8f0","#c9b3f0"];
+      ctx.save();ctx.globalAlpha=.45;ctx.lineWidth=9;
+      for(let i=0;i<RC.length;i++){ctx.strokeStyle=RC[i];ctx.beginPath();ctx.arc(1000,900,330-i*9,Math.PI,6.283);ctx.stroke();}
+      ctx.restore();}
     // 池塘涟漪（动态）
     ctx.strokeStyle="rgba(255,255,255,.5)";ctx.lineWidth=2;
     for(let k=0;k<3;k++){const ph=((tnow/1400+k/3)%1);ctx.globalAlpha=(1-ph)*.5;ctx.beginPath();ctx.ellipse(pond.x,pond.y,pond.rx*.3+pond.rx*.6*ph,pond.ry*.3+pond.ry*.6*ph,0,0,7);ctx.stroke();}
@@ -412,6 +449,15 @@
       ctx.strokeStyle=hi?"rgba(255,235,150,.95)":"rgba(255,230,140,.38)";ctx.lineWidth=2;ctx.beginPath();ctx.arc(it.x,it.y-8,(hi?19:14)+Math.sin(tnow/260+it.ph)*1.5,0,7);ctx.stroke();
       ctx.drawImage(eSprite(it.emo,30),it.x-15,it.y-21+fl,30,30);}
     for(const st of stars){if(st.got)continue;const s=30*(1+Math.sin(tnow/300+st.ph)*.12);ctx.drawImage(eSprite("⭐",36),st.x-s/2,st.y-8-s/2,s,s);}
+    if(weather==="rain"){
+      ctx.drawImage(eSprite("🐸",26),pond.x+126,pond.y+50+Math.abs(Math.sin(tnow/280))*-7,26,26);
+      ctx.drawImage(eSprite("🐸",22),pond.x-152,pond.y+72+Math.abs(Math.sin(tnow/320+2))*-6,22,22);}
+    if(weather==="night"){ctx.save();ctx.globalCompositeOperation="lighter";
+      for(const ff of nff){const x=ff.fx+Math.sin(tnow/1500+ff.ph)*46,y=ff.fy+Math.cos(tnow/1900+ff.ph)*30;
+        const a=.35+.4*Math.sin(tnow/420+ff.ph);
+        ctx.fillStyle="rgba(255,240,150,"+Math.max(0,a)+")";ctx.beginPath();ctx.arc(x,y,2.6,0,7);ctx.fill();
+        ctx.fillStyle="rgba(255,240,150,"+Math.max(0,a*.25)+")";ctx.beginPath();ctx.arc(x,y,8,0,7);ctx.fill();}
+      ctx.restore();}
 
     const sp=[];for(const g of gates)sp.push({y:g.y,t:"gate",o:g});for(const t of trees)sp.push({y:t.y,t:"tree",o:t});
     for(const n of npcs)sp.push({y:n.y,t:"npc",o:n});for(const f of friends)sp.push({y:f.y,t:"friend",o:f});
@@ -452,14 +498,16 @@
         else{ctx.drawImage(eSprite(n.emo,40),n.x-20,n.y-34,40,40);}}
       else if(it.t==="friend"){const f=it.o;shadow(f.x,f.y+2,14);
         if(f.img.complete&&f.img.naturalWidth){ctx.imageSmoothingEnabled=false;const w=40,h=w*(f.img.naturalHeight/f.img.naturalWidth);
-          const bob=(Math.hypot(f.vx,f.vy)>.3)?Math.abs(Math.sin(tnow/130+f.ph))*-4:0;ctx.save();ctx.translate(f.x,f.y+bob);ctx.scale(f.face,1);ctx.drawImage(f.img,-w/2,-h,w,h);ctx.restore();}}
+          const bob=(Math.hypot(f.vx,f.vy)>.3)?Math.abs(Math.sin(tnow/130+f.ph))*-4:0;ctx.save();ctx.translate(f.x,f.y+bob);ctx.scale(f.face,1);ctx.drawImage(f.img,-w/2,-h,w,h);ctx.restore();
+          if(weather==="rain")ctx.drawImage(eSprite("☂️",30),f.x-15,f.y-74+bob,30,30);}}
       else if(it.t==="cat"){const bob=Math.hypot(cat.vx,cat.vy)>.6?Math.abs(Math.sin(tnow/100))*-4:0;shadow(cat.x,cat.y+2,12);
         ctx.save();ctx.translate(cat.x,cat.y+bob);ctx.scale(cat.face,1);ctx.drawImage(eSprite("🐈",30),-15,-26,30,30);ctx.restore();}
       else if(it.t==="player"){const bob=(moving&&player.jz<=0)?Math.abs(Math.sin(tnow/90))*-7:0;
         shadow(player.x,player.y+2,16*(1-Math.min(.5,player.jz/40)));
         if(claude.complete&&claude.naturalWidth){ctx.imageSmoothingEnabled=false;const w=46,h=w*(claude.naturalHeight/claude.naturalWidth);
           ctx.save();ctx.translate(player.x,player.y+bob-player.jz);ctx.scale(player.face,1);ctx.drawImage(claude,-w/2,-h,w,h);ctx.restore();}
-        else{ctx.fillStyle="#e8945a";ctx.fillRect(player.x-16,player.y-30-player.jz,32,30);}}
+        else{ctx.fillStyle="#e8945a";ctx.fillRect(player.x-16,player.y-30-player.jz,32,30);}
+        if(weather==="rain")ctx.drawImage(eSprite("☂️",36),player.x-18,player.y-84+bob-player.jz,36,36);}
     }
     for(let i=parts.length-1;i>=0;i--){const p=parts[i];p.x+=p.vx;p.y+=p.vy;p.vy+=p.grav;p.life--;
       if(p.life<=0){parts.splice(i,1);continue;}const al=p.life/p.max;
@@ -473,6 +521,32 @@
       let bx=Math.max(8,Math.min(W-bw-8,sx-bw/2)),by=Math.max(58,sy-bh);
       ctx.fillStyle="rgba(40,30,20,.86)";rr(bx,by,bw,bh,12);ctx.fill();ctx.fillStyle="#fff6e8";ctx.textAlign="left";ctx.textBaseline="middle";ctx.fillText(o._say,bx+pad,by+bh/2);ctx.textBaseline="alphabetic";}}
 
+    if(weather==="rain"){
+      ctx.fillStyle="rgba(70,90,125,.15)";ctx.fillRect(0,0,W,H);
+      ctx.strokeStyle="rgba(195,215,240,.55)";ctx.lineWidth=1.6;ctx.beginPath();
+      for(const d of rainDrops){
+        if(d.px<0){d.px=Math.random()*(W+80);d.py=Math.random()*H;}
+        d.py+=d.sp*16;d.px-=d.sp*4;
+        if(d.py>H){d.py=-20;d.px=Math.random()*(W+80);}
+        ctx.moveTo(d.px,d.py);ctx.lineTo(d.px-d.len*0.35,d.py+d.len);}
+      ctx.stroke();
+      if(Math.random()<0.0028){flashT=tnow+130;thunder();}
+      if(tnow<flashT){ctx.fillStyle="rgba(255,255,255,.22)";ctx.fillRect(0,0,W,H);}
+    }
+    if(weather==="night"){
+      ctx.fillStyle="rgba(18,24,58,.42)";ctx.fillRect(0,0,W,H);
+      for(const st2 of nstars){const a=.25+.6*Math.abs(Math.sin(tnow/700+st2.ph));
+        ctx.fillStyle="rgba(255,255,255,"+a+")";ctx.beginPath();ctx.arc(st2.x*W,st2.y*H,1.6,0,7);ctx.fill();}
+      ctx.font="30px serif";ctx.textAlign="center";ctx.fillText("🌙",W-40,52);
+      ctx.save();ctx.globalCompositeOperation="lighter";
+      const lx=player.x-camX,ly=player.y-camY-20;
+      const lgd=ctx.createRadialGradient(lx,ly,8,lx,ly,115);lgd.addColorStop(0,"rgba(255,214,130,.32)");lgd.addColorStop(1,"rgba(255,214,130,0)");
+      ctx.fillStyle=lgd;ctx.beginPath();ctx.arc(lx,ly,115,0,7);ctx.fill();
+      const hx2=house.x-camX,hy2=house.y-camY-40;
+      const wgd=ctx.createRadialGradient(hx2,hy2,6,hx2,hy2,90);wgd.addColorStop(0,"rgba(255,214,130,.3)");wgd.addColorStop(1,"rgba(255,214,130,0)");
+      ctx.fillStyle=wgd;ctx.beginPath();ctx.arc(hx2,hy2,90,0,7);ctx.fill();
+      ctx.restore();
+    }
     miniMap();requestAnimationFrame(step);
   }
 
