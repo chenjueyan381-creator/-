@@ -49,6 +49,11 @@
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(62px,1fr));gap:10px}
   .cell{background:#fff;border:1px solid #ecdcc2;border-radius:12px;padding:10px 6px;text-align:center;font-size:1.7rem;position:relative}
   .cell b{position:absolute;right:5px;bottom:3px;font-size:.74rem;color:#8a715a;font-weight:700}
+  .cell i{position:absolute;left:5px;bottom:3px;font-size:.62rem;color:#b8926a;font-style:normal}
+  .cell em{display:block;font-size:.56rem;color:#8a715a;font-style:normal;margin-top:2px;line-height:1.2}
+  .cell.lock{opacity:.4;filter:grayscale(.7)}
+  .cell.eq{border-color:#f27e9d;box-shadow:0 0 0 2px rgba(242,126,157,.3)}
+  #shopClose{background:linear-gradient(135deg,#ffe79a,#ffc46b);color:#3a2f1a}
   .empty{color:#b09a7e;text-align:center;font-style:italic;padding:18px 0}
   .quests{margin-top:14px}
   .quests .q{font-size:.92rem;color:#6b5440;padding:9px 4px;border-top:1px dashed #ecd9bf;display:flex;justify-content:space-between;gap:8px}
@@ -66,6 +71,7 @@
   <button class="bag pill" id="bag">🎒 背包</button>
   <button class="pill" id="wbtn" style="position:fixed;top:90px;left:14px;z-index:6;border:none;cursor:pointer;font-family:var(--font);padding:7px 13px;font-size:.9rem">☀️ 晴</button>
   <button class="pill" id="fwbtn" style="position:fixed;top:132px;left:14px;z-index:6;border:none;cursor:pointer;font-family:var(--font);padding:7px 13px;font-size:.9rem">🎆 烟花</button>
+  <div class="pill" id="coinchip" style="position:fixed;top:174px;left:14px;z-index:6;padding:7px 13px;font-size:.9rem;pointer-events:none">🪙 0</div>
   <div class="tip" id="tip">左侧任意位置按住走路（手指在哪摇杆就在哪）· ✋拾取/对话 · ⤴跳 · 集齐⭐</div>
   <div class="stick" id="stick"><div class="knob" id="knob"></div></div>
   <div class="pad">
@@ -74,6 +80,14 @@
   </div>
   <button class="gatebtn" id="gatebtn"></button>
   <div class="banner" id="banner"></div>
+  <div class="bagpanel" id="shoppanel"><div class="bagpanel__in">
+    <h3>🏪 小小商店</h3><div class="sub" id="shopcoins"></div>
+    <div class="q" style="border:none;color:#8a715a">卖出（点一下卖 1 个）</div>
+    <div class="grid" id="sellgrid"></div>
+    <div class="q" style="border:none;color:#8a715a;margin-top:10px">买入 / 穿戴</div>
+    <div class="grid" id="buygrid"></div>
+    <div class="bagpanel__foot"><span></span><button id="shopClose">离开商店</button></div>
+  </div></div>
   <div class="bagpanel" id="placePanel"><div class="bagpanel__in">
     <h3>摆一件到架子上 🏡</h3><div class="sub">点一个物品放上去（点「取下」可清空）</div>
     <div class="grid" id="placeGrid"></div>
@@ -113,7 +127,7 @@
   const trees=[[260,520],[480,860],[300,1180],[820,360],[1000,820],[1320,520],[1620,760],[1880,1080],[1500,1280],[700,1380],[1150,1180],[1950,560],[150,900],[2040,1320]].map(([x,y])=>({x,y,ph:Math.random()*6}));
   const pond={x:640,y:1060,rx:150,ry:96};
   const house={x:1660,y:1040};
-  const solids=trees.map(t=>({x:t.x,y:t.y-6,r:24})).concat([{x:pond.x,y:pond.y,r:118},{x:house.x,y:house.y-6,r:58}]);
+  const solids=trees.map(t=>({x:t.x,y:t.y-6,r:24})).concat([{x:pond.x,y:pond.y,r:118},{x:house.x,y:house.y-6,r:58},{x:1150,y:664,r:52}]);
 
   // 预渲染静态地面（一次性，省去每帧重画草地+几十个emoji）
   const ground=document.createElement("canvas");ground.width=WW;ground.height=WH;
@@ -141,6 +155,14 @@
       else if(d.t==="rock"){g.fillStyle="#a3a8af";g.beginPath();g.ellipse(d.x,d.y,7,5,0,0,7);g.fill();g.fillStyle="#c2c7cd";g.beginPath();g.ellipse(d.x-2,d.y-1.5,3,2,0,0,7);g.fill();}
       else{g.fillStyle="#5aa06a";for(let k=0;k<3;k++){const a=k/3*6.283+d.r;g.beginPath();g.ellipse(d.x+Math.cos(a)*4,d.y+Math.sin(a)*4,3,3,0,0,7);g.fill();}}
     }
+    // ===== 小小商店摊位 =====
+    g.fillStyle="rgba(0,0,0,.06)";g.beginPath();g.ellipse(1150,708,90,20,0,0,7);g.fill();
+    g.fillStyle="#8a5a32";g.fillRect(1096,610,10,96);g.fillRect(1194,610,10,96);
+    g.fillStyle="#a9794e";g.fillRect(1086,676,128,30);g.fillStyle="#8a5e38";g.fillRect(1086,676,128,7);
+    g.fillStyle="#caa14b";g.fillRect(1100,666,16,10);g.fillStyle="#f7c0cf";g.fillRect(1180,664,14,12);
+    for(let i=0;i<6;i++){g.fillStyle=i%2?"#fff":"#f2a0b8";g.fillRect(1078+i*24,594,24,26);}
+    for(let i=0;i<6;i++){g.fillStyle=i%2?"#fff":"#f2a0b8";g.beginPath();g.arc(1090+i*24,620,12,0,Math.PI);g.fill();}
+    g.fillStyle="#5a4632";g.font="700 13px sans-serif";g.textAlign="center";g.fillText("小小商店",1150,588);
     // ===== 小小菜园 =====
     g.fillStyle="rgba(0,0,0,.05)";g.beginPath();g.ellipse(1388,884,136,92,0,0,7);g.fill();
     for(const px3 of [1320,1388,1456])for(const py3 of [848,908]){
@@ -223,6 +245,17 @@
   // 菜园：6 块地
   const plots=[[1320,848],[1388,848],[1456,848],[1320,908],[1388,908],[1456,908]].map(([x,y])=>({x,y,crop:null,stage:0}));
   const CROPS=["🥕","🍅","🥬","🍓","🌽"];
+  // 金币 / 穿戴 / 成就
+  let coins=0,equip=null;
+  const owned=new Set(),unlocked=new Set();
+  const stats={cake:0,feed:0,harvest:0,sleep:0,bath:0,fw:0,pick:0,coinsE:0};
+  const PRICE={"🥕":3,"🍅":3,"🥬":3,"🍓":4,"🌽":3,"🐟":5,"🍰":6,"🍎":2,"🍄":2,"🌰":2,"🐚":2,"🪶":2,"🍯":4,"💎":20,"🌹":2,"🐾":8,"💛":8};
+  const WEAR=[["🎀",15],["🌸",10],["🧢",12],["🎩",20],["👑",50]];
+  const ACH=[["⭐","摘星者",()=>got>=stars.length],["🧡","助人为乐",()=>doneCount>=2],["🍰","小厨神",()=>stats.cake>=5],["😻","猫咪挚友",()=>stats.feed>=5],["🥕","丰收大户",()=>stats.harvest>=10],["😴","爱睡觉",()=>stats.sleep>=3],["🫧","干净宝宝",()=>stats.bath>=3],["🎆","烟花大师",()=>stats.fw>=3],["🪙","小富翁",()=>stats.coinsE>=50],["🎒","收藏家",()=>stats.pick>=15]];
+  function checkAch(){let hit=false;
+    for(const [e,n,f] of ACH){if(!unlocked.has(e)&&f()){unlocked.add(e);hit=true;
+      showBanner("🏆 达成成就！<br>"+e+" "+n,2800);chime();}}
+    save();return hit;}
   // 存档
   const SK="world_save_v1";
   let inv={};
@@ -234,9 +267,12 @@
     doneCount=npcs.filter(n=>n.quest&&n.quest.state==="done").length;
     if(s.deco)s.deco.forEach((e,i)=>{if(slots[i])slots[i].item=e;});
     if(s.plots)s.plots.forEach((sp2,i)=>{if(plots[i]){plots[i].crop=sp2.c||null;plots[i].stage=sp2.s||0;}});
+    coins=s.coins||0;equip=s.equip||null;
+    (s.owned||[]).forEach(o=>owned.add(o));(s.ach||[]).forEach(a=>unlocked.add(a));
+    Object.assign(stats,s.stats||{});
   }catch(e){}}
   function save(){try{const q={};for(const n of npcs)if(n.quest)q[n.id]=n.quest.state;
-    localStorage.setItem(SK,JSON.stringify({inv,gotItems:items.filter(i=>i.got).map(i=>i.id),gotStars:stars.filter(s=>s.got).map(s=>s.id),quests:q,deco:slots.map(s=>s.item),plots:plots.map(p2=>({c:p2.crop,s:p2.stage}))}));}catch(e){}}
+    localStorage.setItem(SK,JSON.stringify({inv,gotItems:items.filter(i=>i.got).map(i=>i.id),gotStars:stars.filter(s=>s.got).map(s=>s.id),quests:q,deco:slots.map(s=>s.item),plots:plots.map(p2=>({c:p2.crop,s:p2.stage})),coins,equip,owned:[...owned],ach:[...unlocked],stats}));}catch(e){}}
   load();
   const hud=document.getElementById("hud");const updHud=()=>hud.textContent="⭐ "+got+" / "+stars.length;updHud();
 
@@ -318,6 +354,7 @@
   function doJump(){if(scene==="room"&&rest)return;const p=scene==="room"?rp:player;if(p.jz<=0){p.jvz=6.6;marioJump();}}
   let rest=null,restT=0;
   function startRest(m){rest=m;restT=performance.now();rp.vx=rp.vy=0;rp.jz=0;rp.jvz=0;
+    if(m==="sleep"){stats.sleep++;checkAch();}else if(m==="bath"){stats.bath++;checkAch();}
     if(m==="sleep"){rp.x=252;rp.y=524;}
     else if(m==="bath"){rp.x=181;rp.y=768;}
     else if(m==="sofa"){rp.x=706;rp.y=552;}
@@ -330,7 +367,7 @@
     else if(m==="bath"){rp.x=336;rp.y=856;P(rp.x,rp.y-58,0,-.5,64,"txt:香香的 ✨",0);}
     else if(m==="sofa"){rp.x=706;rp.y=626;P(rp.x,rp.y-58,0,-.5,64,"txt:休息好啦 🧡",0);}
     else if(m==="sun"){rp.x=1482;rp.y=952;P(rp.x,rp.y-58,0,-.5,64,"txt:暖洋洋 ☀",0);}
-    else if(m==="cook"){inv["🍰"]=(inv["🍰"]||0)+1;save();P(rp.x,rp.y-58,0,-.5,72,"txt:+🍰 出锅啦！",0);}
+    else if(m==="cook"){inv["🍰"]=(inv["🍰"]||0)+1;stats.cake++;checkAch();P(rp.x,rp.y-58,0,-.5,72,"txt:+🍰 出锅啦！",0);}
     else if(m==="pc"){P(rp.x,rp.y-58,0,-.5,64,"txt:真好玩 ✨",0);}
     for(let i=0;i<12;i++){const a=Math.random()*6.28,s2=1+Math.random()*2.2;P(rp.x,rp.y-22,Math.cos(a)*s2,Math.sin(a)*s2-1,42,"rgba(255,221,120,",2,.05);}
     chime();}
@@ -352,6 +389,7 @@
     if(act.type==="cook"){startRest("cook");for(let i=0;i<6;i++)P(1256+Math.random()*10-5,148,(Math.random()-.5),-1-Math.random(),30,"rgba(255,255,255,",3,-0.01);return;}
     if(act.type==="pc"){startRest("pc");return;}
     if(act.type==="wake"){if(rest==="cook")return;endRest();return;}
+    if(act.type==="shop"){openShop();return;}
     if(act.type==="farm"){const pl2=act.o;
       if(!pl2.crop){pl2.crop=CROPS[(Math.random()*CROPS.length)|0];pl2.stage=0;pick();
         for(let i=0;i<8;i++)P(pl2.x+(Math.random()*30-15),pl2.y,(Math.random()-.5),-1-Math.random(),26,"rgba(150,110,70,",2.4,.05);
@@ -359,22 +397,22 @@
       else if(pl2.stage<2){pl2.stage++;beep(700,.1,"sine",.04);
         for(let i=0;i<9;i++)P(pl2.x+(Math.random()*26-13),pl2.y-24-Math.random()*8,(Math.random()-.5)*.6,1+Math.random(),22,"rgba(120,180,240,",2.2,.08);
         if(pl2.stage===2)P(pl2.x,pl2.y-20,0,-.5,60,"txt:成熟啦！",0);else P(pl2.x,pl2.y-16,0,-.5,40,"txt:💧",0);}
-      else{inv[pl2.crop]=(inv[pl2.crop]||0)+1;P(pl2.x,pl2.y-18,0,-.6,52,"txt:+"+pl2.crop,0);chime();pl2.crop=null;pl2.stage=0;}
+      else{inv[pl2.crop]=(inv[pl2.crop]||0)+1;P(pl2.x,pl2.y-18,0,-.6,52,"txt:+"+pl2.crop,0);chime();pl2.crop=null;pl2.stage=0;stats.harvest++;checkAch();}
       save();return;}
     if(act.type==="phone"){phoneMsg();return;}
     if(act.type==="slot"){openPlace(act.o);return;}
     if(act.type==="item"){const it=act.o;it.got=true;inv[it.name]=(inv[it.name]||0)+1;pick();
       for(let i=0;i<10;i++){const a=Math.random()*6.28,s=1+Math.random()*2.5;P(it.x,it.y,Math.cos(a)*s,Math.sin(a)*s-1,34,"rgba(255,255,255,",2,.04);}
-      P(it.x,it.y-8,0,-.6,42,"txt:+"+it.emo,0);save();return;}
+      P(it.x,it.y-8,0,-.6,42,"txt:+"+it.emo,0);stats.pick++;checkAch();return;}
     const o=act.o;
     if(o.kind==="cat"&&(!o.quest||o.quest.state==="done")&&(inv["🍰"]||0)>0){
-      inv["🍰"]--;save();say(o,"喵！！是蛋糕 😻 谢谢你～");chime();
+      inv["🍰"]--;say(o,"喵！！是蛋糕 😻 谢谢你～");chime();stats.feed++;checkAch();
       for(let i=0;i<9;i++){const a=Math.random()*6.28,s2=1+Math.random()*2;P(o.x,o.y-18,Math.cos(a)*s2,Math.sin(a)*s2-1,42,"rgba(255,140,170,",2.4,.04);}
       return;}
     if(o.quest){const q=o.quest;
       if(q.state==="done"){say(o,q.done);}
       else if(q.state==="active"){
-        if((inv[q.name]||0)>=q.count){inv[q.name]-=q.count;q.state="done";reward(q.reward);say(o,q.thanks);chime();doneCount++;save();
+        if((inv[q.name]||0)>=q.count){inv[q.name]-=q.count;q.state="done";reward(q.reward);say(o,q.thanks);chime();doneCount++;checkAch();
           if(doneCount>=npcs.filter(n=>n.quest).length){winSfx();showBanner("你帮助了这里的每一个朋友 🧡<br>谢谢你，温柔的旅行者");}}
         else say(o,q.remind+"（"+(inv[q.name]||0)+"/"+q.count+"）");
       }else{q.state="active";save();say(o,q.ask);}
@@ -390,11 +428,34 @@
     bagquests.innerHTML='<div class="q" style="border:none;color:#8a715a">📜 任务</div>'+npcs.filter(n=>n.quest).map(n=>{
       const q=n.quest,nm=n.id==="prince"?"小王子":"黑猫";
       let st=q.state==="done"?'<span class="ok">已完成 ✓</span>':(q.state==="active"?('进行中 '+(inv[q.name]||0)+'/'+q.count):'未接取');
-      return '<div class="q"><span>'+nm+'：找 '+q.count+'×'+q.name+'</span><span>'+st+'</span></div>';}).join("");}
+      return '<div class="q"><span>'+nm+'：找 '+q.count+'×'+q.name+'</span><span>'+st+'</span></div>';}).join("")
+      +'<div class="q" style="border:none;color:#8a715a;margin-top:6px">🏆 成就（'+unlocked.size+'/'+ACH.length+'）</div>'
+      +'<div class="grid">'+ACH.map(([e,n])=>'<div class="cell '+(unlocked.has(e)?'':'lock')+'"><span>'+e+'</span><em>'+n+'</em></div>').join("")+'</div>';}
   function toggleBag(){if(bagpanel.classList.contains("show"))bagpanel.classList.remove("show");else{buildBag();bagpanel.classList.add("show");}}
   document.getElementById("bag").addEventListener("click",toggleBag);
   document.getElementById("bagClose").addEventListener("click",()=>bagpanel.classList.remove("show"));
   bagpanel.addEventListener("pointerdown",e=>{if(e.target===bagpanel)bagpanel.classList.remove("show");});
+  const shoppanel=document.getElementById("shoppanel"),sellgrid=document.getElementById("sellgrid"),buygrid=document.getElementById("buygrid"),shopcoins=document.getElementById("shopcoins");
+  const coinchip=document.getElementById("coinchip");
+  function updCoins(){coinchip.textContent="🪙 "+coins;}
+  function buildShop(){shopcoins.textContent="我的金币：🪙 "+coins;
+    const ks=Object.keys(inv).filter(k=>inv[k]>0&&PRICE[k]);
+    sellgrid.innerHTML=ks.length?ks.map(k=>'<div class="cell" data-e="'+k+'">'+k+'<i>'+PRICE[k]+'🪙</i><b>x'+inv[k]+'</b></div>').join(""):'<div class="empty">没有能卖的～去种菜捡东西吧</div>';
+    buygrid.innerHTML=WEAR.map(([e,p])=>{const own=owned.has(e),eq=equip===e;
+      return '<div class="cell buy'+(eq?' eq':'')+'" data-e="'+e+'"><span>'+e+'</span><em>'+(eq?"穿戴中":own?"点击穿戴":p+" 🪙")+'</em></div>';}).join("");}
+  function openShop(){buildShop();updCoins();shoppanel.classList.add("show");}
+  sellgrid.addEventListener("click",e=>{const c=e.target.closest(".cell");if(!c||!c.dataset.e)return;
+    const k=c.dataset.e;if((inv[k]||0)<1)return;
+    inv[k]--;coins+=PRICE[k];stats.coinsE+=PRICE[k];pick();updCoins();buildShop();checkAch();});
+  buygrid.addEventListener("click",e=>{const c=e.target.closest(".cell");if(!c||!c.dataset.e)return;
+    const w2=c.dataset.e,pr=(WEAR.find(x=>x[0]===w2)||[0,0])[1];
+    if(equip===w2){equip=null;}
+    else if(owned.has(w2)){equip=w2;chime();}
+    else if(coins>=pr){coins-=pr;owned.add(w2);equip=w2;chime();}
+    else{shopcoins.textContent="金币不够啦…再去卖点东西 🥺（🪙 "+coins+"）";save();return;}
+    save();updCoins();buildShop();});
+  document.getElementById("shopClose").addEventListener("click",()=>shoppanel.classList.remove("show"));
+  shoppanel.addEventListener("pointerdown",e=>{if(e.target===shoppanel)shoppanel.classList.remove("show");});
   document.getElementById("bagReset").addEventListener("click",()=>{if(confirm("清空背包、任务和星星，重新探索？")){localStorage.removeItem(SK);location.reload();}});
 
   function collide(e){for(const s of solids){const dx=e.x-s.x,dy=e.y-s.y,d=Math.hypot(dx,dy),min=s.r+13;
@@ -435,7 +496,7 @@
       if(Math.abs(f.vx)>0.15)f.face=f.vx<0?-1:1;}
 
     // 星星（自动）
-    for(const st of stars){if(!st.got&&player.jz<10&&Math.hypot(st.x-player.x,st.y-player.y)<36){st.got=true;got++;updHud();chime();save();
+    for(const st of stars){if(!st.got&&player.jz<10&&Math.hypot(st.x-player.x,st.y-player.y)<36){st.got=true;got++;updHud();chime();checkAch();
       for(let i=0;i<14;i++){const a=Math.random()*6.28,sp=1+Math.random()*3;P(st.x,st.y,Math.cos(a)*sp,Math.sin(a)*sp-1,40,"rgba(255,221,120,",2,.06);}
       P(st.x,st.y-10,0,-.6,46,"txt:+⭐",0);
       if(got===stars.length&&!won){won=true;winSfx();fireworks();showBanner("✨ 你集齐了所有星星！<br>这个小世界，因你而闪亮 ✨",5200);}}}
@@ -450,13 +511,15 @@
     for(const it of items){if(it.got)continue;const d=Math.hypot(it.x-player.x,it.y-player.y);if(d<56&&d<bd){bd=d;act={type:"item",o:it};}}
     if(!act){let nd=1e9;
       for(const pl2 of plots){const d=Math.hypot(pl2.x-player.x,pl2.y-player.y);if(d<48&&d<nd){nd=d;act={type:"farm",o:pl2};}}
+      const dsh=Math.hypot(1150-player.x,706-player.y);if(dsh<95&&dsh<nd){nd=dsh;act={type:"shop"};}
       const dd=Math.hypot(house.x-player.x,(house.y-12)-player.y);if(dd<82&&dd<nd){nd=dd;act={type:"door"};}
       for(const n of npcs){const d=Math.hypot(n.x-player.x,n.y-player.y);if(d<n.r&&d<nd){nd=d;act={type:"npc",o:n};}}
       for(const f of friends){const d=Math.hypot(f.x-player.x,f.y-player.y);if(d<96&&d<nd){nd=d;act={type:"npc",o:f};}}}
     const ab=document.getElementById("btnAct");
     if(act){ab.classList.remove("dim");ab.innerHTML=act.type==="item"?(act.o.emo+"<br>拾取"):
       act.type==="door"?"🚪<br>进屋":
-      act.type==="farm"?(!act.o.crop?"🌱<br>播种":act.o.stage<2?"💧<br>浇水":"🧺<br>收获"):"💬<br>对话";}
+      act.type==="farm"?(!act.o.crop?"🌱<br>播种":act.o.stage<2?"💧<br>浇水":"🧺<br>收获"):
+      act.type==="shop"?"🏪<br>商店":"💬<br>对话";}
     else{ab.classList.add("dim");ab.innerHTML="✋<br>拾取";}
 
     nearGate=null;let gd=82;for(const g of gates){const d=Math.hypot(g.x-player.x,g.y-player.y);if(d<gd){gd=d;nearGate=g;}}
@@ -494,6 +557,10 @@
       ctx.fillStyle="rgba(255,255,255,.5)";
       for(const sd of snowDrifts){ctx.beginPath();ctx.ellipse(sd.x,sd.y,sd.rx,sd.ry,0,0,7);ctx.fill();}
       ctx.drawImage(eSprite("⛄",46),pond.x+156,pond.y-96,46,46);}
+    {const kb=Math.sin(tnow/500)*2,ki=FR[2];
+     if(ki&&ki.complete&&ki.naturalWidth){ctx.save();ctx.beginPath();ctx.rect(1106,596,88,80);ctx.clip();
+       ctx.imageSmoothingEnabled=false;const kw=38,kh=kw*(ki.naturalHeight/ki.naturalWidth);
+       ctx.drawImage(ki,1150-kw/2,702-kh+kb,kw,kh);ctx.restore();}}
     for(const pl2 of plots){if(!pl2.crop)continue;
       const hb=pl2.stage===2?Math.sin(tnow/300+pl2.x)*2:0;
       const sz=pl2.stage===0?20:pl2.stage===1?26:30;
@@ -561,7 +628,8 @@
           ctx.save();ctx.translate(player.x,player.y+bob-player.jz);ctx.scale(player.face,1);ctx.drawImage(claude,-w/2,-h,w,h);ctx.restore();}
         else{ctx.fillStyle="#e8945a";ctx.fillRect(player.x-16,player.y-30-player.jz,32,30);}
         if(weather==="rain")ctx.drawImage(eSprite("☂️",36),player.x-18,player.y-84+bob-player.jz,36,36);
-        if(weather==="snow"&&Math.random()<0.03)P(player.x+12*player.face,player.y-32,player.face*.4,-.3,26,"rgba(255,255,255,",2.4,-0.006);}
+        if(weather==="snow"&&Math.random()<0.03)P(player.x+12*player.face,player.y-32,player.face*.4,-.3,26,"rgba(255,255,255,",2.4,-0.006);
+        if(equip)ctx.drawImage(eSprite(equip,26),player.x-13+3*player.face,player.y-62+bob-player.jz,26,26);}
     }
     for(let i=parts.length-1;i>=0;i--){const p=parts[i];p.x+=p.vx;p.y+=p.vy;p.vy+=p.grav;p.life--;
       if(p.life<=0){parts.splice(i,1);continue;}const al=p.life/p.max;
@@ -1001,6 +1069,7 @@
       if(claude.complete&&claude.naturalWidth){ctx.imageSmoothingEnabled=false;const w=46,h=w*(claude.naturalHeight/claude.naturalWidth);
         ctx.save();ctx.translate(rp.x,rp.y+bob-rp.jz);ctx.scale(rp.face,1);ctx.drawImage(claude,-w/2,-h,w,h);ctx.restore();}
       else{ctx.fillStyle="#e8945a";ctx.fillRect(rp.x-16,rp.y-30,32,30);}
+      if(equip)ctx.drawImage(eSprite(equip,26),rp.x-13+3*rp.face,rp.y-62+bob-rp.jz,26,26);
     }
     // 粒子
     for(let i=parts.length-1;i>=0;i--){const p=parts[i];p.x+=p.vx;p.y+=p.vy;p.vy+=p.grav;p.life--;
@@ -1023,7 +1092,7 @@
     o.connect(v);v.connect(AC.destination);o.start(n);o.stop(n+.55);
     for(let i=0;i<4;i++)setTimeout(()=>beep(1400+Math.random()*900,.05,"square",.014),120+Math.random()*380);}
   let fwBusy=false;
-  function fwShow(){if(fwBusy||scene!=="world")return;fwBusy=true;audio();
+  function fwShow(){if(fwBusy||scene!=="world")return;fwBusy=true;audio();stats.fw++;checkAch();
     const COLS=["255,120,140","120,200,255","255,221,120","200,140,255","160,240,180","255,170,110"];
     for(let k=0;k<8;k++)setTimeout(()=>{
       const x=player.x+(Math.random()*760-380),y=player.y-170-Math.random()*190;
@@ -1046,6 +1115,7 @@
     ctx.fillStyle="#7a5230";for(const it of items){if(it.got)continue;ctx.beginPath();ctx.arc(mx+it.x*sx,my+it.y*sy,1.4,0,7);ctx.fill();}
     for(const f of friends){ctx.fillStyle="#ff8fb3";ctx.beginPath();ctx.arc(mx+f.x*sx,my+f.y*sy,1.8,0,7);ctx.fill();}
     ctx.fillStyle="#e8602a";ctx.beginPath();ctx.arc(mx+player.x*sx,my+player.y*sy,3.2,0,7);ctx.fill();ctx.restore();}
+  updCoins();
   requestAnimationFrame(step);
   // 测试钩子（不影响游戏）
   window.__w={player,rp,enterRoom,leaveRoom};
