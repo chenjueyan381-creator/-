@@ -127,7 +127,7 @@
   const trees=[[260,520],[480,860],[300,1180],[820,360],[1000,820],[1320,520],[1620,760],[1880,1080],[1500,1280],[700,1380],[1150,1180],[1950,560],[150,900],[2040,1320]].map(([x,y])=>({x,y,ph:Math.random()*6}));
   const pond={x:640,y:1060,rx:150,ry:96};
   const house={x:1660,y:1040};
-  const solids=trees.map(t=>({x:t.x,y:t.y-6,r:24})).concat([{x:pond.x,y:pond.y,r:118},{x:house.x,y:house.y-6,r:58},{x:1150,y:664,r:52}]);
+  const solids=trees.map(t=>({x:t.x,y:t.y-6,r:24})).concat([{x:pond.x,y:pond.y,r:118},{x:house.x,y:house.y-6,r:58},{x:1150,y:664,r:52},{x:250,y:665,r:42}]);
 
   // 预渲染静态地面（一次性，省去每帧重画草地+几十个emoji）
   const ground=document.createElement("canvas");ground.width=WW;ground.height=WH;
@@ -155,6 +155,11 @@
       else if(d.t==="rock"){g.fillStyle="#a3a8af";g.beginPath();g.ellipse(d.x,d.y,7,5,0,0,7);g.fill();g.fillStyle="#c2c7cd";g.beginPath();g.ellipse(d.x-2,d.y-1.5,3,2,0,0,7);g.fill();}
       else{g.fillStyle="#5aa06a";for(let k=0;k<3;k++){const a=k/3*6.283+d.r;g.beginPath();g.ellipse(d.x+Math.cos(a)*4,d.y+Math.sin(a)*4,3,3,0,0,7);g.fill();}}
     }
+    // ===== 热气球起飞点 =====
+    g.fillStyle="rgba(0,0,0,.08)";g.beginPath();g.ellipse(250,700,54,16,0,0,7);g.fill();
+    drawBalloon(g,250,640);
+    g.fillStyle="#8a5a32";g.fillRect(316,650,7,36);g.fillStyle="#caa96a";g.fillRect(288,632,64,24);
+    g.fillStyle="#5a4632";g.font="700 12px sans-serif";g.textAlign="center";g.fillText("星空岛↗",320,648);
     // ===== 小小商店摊位 =====
     g.fillStyle="rgba(0,0,0,.06)";g.beginPath();g.ellipse(1150,708,90,20,0,0,7);g.fill();
     g.fillStyle="#8a5a32";g.fillRect(1096,610,10,96);g.fillRect(1194,610,10,96);
@@ -245,13 +250,30 @@
   // 菜园：6 块地
   const plots=[[1320,848],[1388,848],[1456,848],[1320,908],[1388,908],[1456,908]].map(([x,y])=>({x,y,crop:null,stage:0}));
   const CROPS=["🥕","🍅","🥬","🍓","🌽"];
+  // ===== 星空岛 =====
+  const SKYW=1800,SKYH=1300;
+  const skyGround=document.createElement("canvas");skyGround.width=SKYW;skyGround.height=SKYH;
+  const SKYB={x:200,y:1090},SPRING={x:900,y:760};
+  const SKYTREES=[[420,520],[720,340],[1120,300],[1560,760],[1240,1080],[620,900],[300,760],[1620,340]].map(([x,y])=>({x,y}));
+  const MUSH=[[520,640,"#8fe8ff","143,232,255"],[560,676,"#ff9ee8","255,158,232"],[492,672,"#b79bff","183,155,255"],
+    [1080,860,"#8fe8ff","143,232,255"],[1120,900,"#ffd1a0","255,209,160"],[1044,896,"#ff9ee8","255,158,232"],
+    [740,1120,"#b79bff","183,155,255"],[790,1150,"#8fe8ff","143,232,255"]].map(([x,y,cap,glow])=>({x,y,cap,glow,ph:Math.random()*6}));
+  const skyItems=Array.from({length:8},(_,i)=>({id:"sk"+i,x:200+Math.random()*(SKYW-400),y:240+Math.random()*(SKYH-460),got:false,ph:Math.random()*6}));
+  const skyRabbit={x:1150,y:950,emo:"🐇",kind:"rabbit",li:0,
+    lines:["月亮上可没有这么好玩的地方","星星泉的水,亮晶晶的"],
+    quest:{name:"✨",count:5,state:"new",ask:"能帮我捡 5 颗 ✨ 星尘吗？岛上散落着呢",remind:"还差一些 ✨ 呀",thanks:"谢谢你！送你一枚月亮 🌙",done:"月亮和星星,都在陪着你呀",reward:"🌙"}};
+  const skyOwl={x:620,y:430,emo:"🦉",kind:"owl",li:0,lines:["咕…星星今晚也很亮","水晶的光,是这座岛的心跳","风把云吹成了糖"]};
+  const skyNpcs=[skyRabbit,skyOwl];
+  const skyFriend={x:900,y:600,vx:0,vy:0,tx:900,ty:600,face:1,nt:0};
+  const skySolids=SKYTREES.map(t=>({x:t.x,y:t.y-6,r:22})).concat([{x:SPRING.x,y:SPRING.y,r:118},{x:1400,y:455,r:70},{x:SKYB.x,y:SKYB.y,r:40}]);
+  const skyMet=[];
   // 金币 / 穿戴 / 成就
   let coins=0,equip=null;
   const owned=new Set(),unlocked=new Set();
   const stats={cake:0,feed:0,harvest:0,sleep:0,bath:0,fw:0,pick:0,coinsE:0};
-  const PRICE={"🥕":3,"🍅":3,"🥬":3,"🍓":4,"🌽":3,"🐟":5,"🍰":6,"🍎":2,"🍄":2,"🌰":2,"🐚":2,"🪶":2,"🍯":4,"💎":20,"🌹":2,"🐾":8,"💛":8};
+  const PRICE={"🥕":3,"🍅":3,"🥬":3,"🍓":4,"🌽":3,"🐟":5,"🍰":6,"🍎":2,"🍄":2,"🌰":2,"🐚":2,"🪶":2,"🍯":4,"💎":20,"🌹":2,"🐾":8,"💛":8,"✨":6,"🌙":30};
   const WEAR=[["🎀",15],["🌸",10],["🧢",12],["🎩",20],["👑",50]];
-  const ACH=[["⭐","摘星者",()=>got>=stars.length],["🧡","助人为乐",()=>doneCount>=2],["🍰","小厨神",()=>stats.cake>=5],["😻","猫咪挚友",()=>stats.feed>=5],["🥕","丰收大户",()=>stats.harvest>=10],["😴","爱睡觉",()=>stats.sleep>=3],["🫧","干净宝宝",()=>stats.bath>=3],["🎆","烟花大师",()=>stats.fw>=3],["🪙","小富翁",()=>stats.coinsE>=50],["🎒","收藏家",()=>stats.pick>=15]];
+  const ACH=[["⭐","摘星者",()=>got>=stars.length],["🧡","助人为乐",()=>doneCount>=2],["🍰","小厨神",()=>stats.cake>=5],["😻","猫咪挚友",()=>stats.feed>=5],["🥕","丰收大户",()=>stats.harvest>=10],["😴","爱睡觉",()=>stats.sleep>=3],["🫧","干净宝宝",()=>stats.bath>=3],["🎆","烟花大师",()=>stats.fw>=3],["🪙","小富翁",()=>stats.coinsE>=50],["🎒","收藏家",()=>stats.pick>=15],["✨","星尘旅人",()=>skyItems.every(i2=>i2.got)],["🌙","月亮的朋友",()=>skyRabbit.quest.state==="done"]];
   function checkAch(){let hit=false;
     for(const [e,n,f] of ACH){if(!unlocked.has(e)&&f()){unlocked.add(e);hit=true;
       showBanner("🏆 达成成就！<br>"+e+" "+n,2800);chime();}}
@@ -270,9 +292,11 @@
     coins=s.coins||0;equip=s.equip||null;
     (s.owned||[]).forEach(o=>owned.add(o));(s.ach||[]).forEach(a=>unlocked.add(a));
     Object.assign(stats,s.stats||{});
+    if(s.sky){(s.sky.g||[]).forEach(id=>{const it=skyItems.find(x=>x.id===id);if(it)it.got=true;});
+      if(s.sky.rq)skyRabbit.quest.state=s.sky.rq;}
   }catch(e){}}
   function save(){try{const q={};for(const n of npcs)if(n.quest)q[n.id]=n.quest.state;
-    localStorage.setItem(SK,JSON.stringify({inv,gotItems:items.filter(i=>i.got).map(i=>i.id),gotStars:stars.filter(s=>s.got).map(s=>s.id),quests:q,deco:slots.map(s=>s.item),plots:plots.map(p2=>({c:p2.crop,s:p2.stage})),coins,equip,owned:[...owned],ach:[...unlocked],stats}));}catch(e){}}
+    localStorage.setItem(SK,JSON.stringify({inv,gotItems:items.filter(i=>i.got).map(i=>i.id),gotStars:stars.filter(s=>s.got).map(s=>s.id),quests:q,deco:slots.map(s=>s.item),plots:plots.map(p2=>({c:p2.crop,s:p2.stage})),coins,equip,owned:[...owned],ach:[...unlocked],stats,sky:{g:skyItems.filter(i=>i.got).map(i=>i.id),rq:skyRabbit.quest.state}}));}catch(e){}}
   load();
   const hud=document.getElementById("hud");const updHud=()=>hud.textContent="⭐ "+got+" / "+stars.length;updHud();
 
@@ -390,6 +414,8 @@
     if(act.type==="pc"){startRest("pc");return;}
     if(act.type==="wake"){if(rest==="cook")return;endRest();return;}
     if(act.type==="shop"){openShop();return;}
+    if(act.type==="balloon"){goSky();return;}
+    if(act.type==="balloon2"){goHome();return;}
     if(act.type==="farm"){const pl2=act.o;
       if(!pl2.crop){pl2.crop=CROPS[(Math.random()*CROPS.length)|0];pl2.stage=0;pick();
         for(let i=0;i<8;i++)P(pl2.x+(Math.random()*30-15),pl2.y,(Math.random()-.5),-1-Math.random(),26,"rgba(150,110,70,",2.4,.05);
@@ -472,6 +498,7 @@
     let mag=Math.hypot(ix,iy);if(mag>1){ix/=mag;iy/=mag;mag=1;}
     player.vx=ix*SPEED;player.vy=iy*SPEED;const moving=mag>0.06;
     if(scene==="room"){roomStep(tnow,ix,iy,mag);requestAnimationFrame(step);return;}
+    if(scene==="sky"){skyStep(tnow,ix,iy,mag);requestAnimationFrame(step);return;}
     player.x+=player.vx;player.y+=player.vy;
     if(Math.abs(player.vx)>0.2)player.face=player.vx<0?-1:1;
     player.x=Math.max(34,Math.min(WW-34,player.x));player.y=Math.max(70,Math.min(WH-24,player.y));
@@ -512,6 +539,7 @@
     if(!act){let nd=1e9;
       for(const pl2 of plots){const d=Math.hypot(pl2.x-player.x,pl2.y-player.y);if(d<48&&d<nd){nd=d;act={type:"farm",o:pl2};}}
       const dsh=Math.hypot(1150-player.x,706-player.y);if(dsh<95&&dsh<nd){nd=dsh;act={type:"shop"};}
+      const dbl=Math.hypot(250-player.x,690-player.y);if(dbl<95&&dbl<nd){nd=dbl;act={type:"balloon"};}
       const dd=Math.hypot(house.x-player.x,(house.y-12)-player.y);if(dd<82&&dd<nd){nd=dd;act={type:"door"};}
       for(const n of npcs){const d=Math.hypot(n.x-player.x,n.y-player.y);if(d<n.r&&d<nd){nd=d;act={type:"npc",o:n};}}
       for(const f of friends){const d=Math.hypot(f.x-player.x,f.y-player.y);if(d<96&&d<nd){nd=d;act={type:"npc",o:f};}}}
@@ -519,7 +547,7 @@
     if(act){ab.classList.remove("dim");ab.innerHTML=act.type==="item"?(act.o.emo+"<br>拾取"):
       act.type==="door"?"🚪<br>进屋":
       act.type==="farm"?(!act.o.crop?"🌱<br>播种":act.o.stage<2?"💧<br>浇水":"🧺<br>收获"):
-      act.type==="shop"?"🏪<br>商店":"💬<br>对话";}
+      act.type==="shop"?"🏪<br>商店":act.type==="balloon"?"🎈<br>星空岛":"💬<br>对话";}
     else{ab.classList.add("dim");ab.innerHTML="✋<br>拾取";}
 
     nearGate=null;let gd=82;for(const g of gates){const d=Math.hypot(g.x-player.x,g.y-player.y);if(d<gd){gd=d;nearGate=g;}}
@@ -940,6 +968,142 @@
   document.getElementById("placeClose").addEventListener("click",()=>placePanel.classList.remove("show"));
   placePanel.addEventListener("pointerdown",e=>{if(e.target===placePanel)placePanel.classList.remove("show");});
 
+  function drawBalloon(g,x,y){
+    g.strokeStyle="#8a5a32";g.lineWidth=2;
+    g.beginPath();g.moveTo(x-16,y+4);g.lineTo(x-10,y+34);g.moveTo(x+16,y+4);g.lineTo(x+10,y+34);g.stroke();
+    g.fillStyle="#f2a0b8";g.beginPath();g.arc(x,y-30,40,0,7);g.fill();
+    g.fillStyle="#fff6f0";for(const ddx of [-20,0,20]){g.beginPath();g.ellipse(x+ddx,y-30,9,38,0,0,7);g.fill();}
+    g.strokeStyle="rgba(0,0,0,.08)";g.lineWidth=2;g.beginPath();g.arc(x,y-30,40,0,7);g.stroke();
+    g.fillStyle="#a9794e";g.fillRect(x-14,y+30,28,22);g.fillStyle="#8a5e38";g.fillRect(x-14,y+30,28,6);}
+
+  let skyBuilt=false,homeX=0,homeY=0;
+  function buildSky(){const g=skyGround.getContext("2d");
+    const bg=g.createLinearGradient(0,0,0,SKYH);bg.addColorStop(0,"#2a2450");bg.addColorStop(.55,"#3a3162");bg.addColorStop(1,"#463a70");
+    g.fillStyle=bg;g.fillRect(0,0,SKYW,SKYH);
+    for(let i=0;i<430;i++){g.fillStyle="rgba(255,255,255,"+(0.08+Math.random()*0.25)+")";
+      g.beginPath();g.arc(Math.random()*SKYW,Math.random()*SKYH,Math.random()*1.6+.4,0,7);g.fill();}
+    for(const [nx,ny,nr,nc] of [[400,300,260,"255,150,220"],[1300,900,320,"140,180,255"],[900,200,220,"190,150,255"],[500,1050,240,"120,220,255"]]){
+      const ng=g.createRadialGradient(nx,ny,20,nx,ny,nr);ng.addColorStop(0,"rgba("+nc+",.12)");ng.addColorStop(1,"rgba("+nc+",0)");
+      g.fillStyle=ng;g.beginPath();g.arc(nx,ny,nr,0,7);g.fill();}
+    g.strokeStyle="rgba(140,220,255,.16)";g.lineWidth=44;g.lineCap="round";
+    g.beginPath();g.moveTo(200,1100);g.quadraticCurveTo(560,900,900,780);g.quadraticCurveTo(1200,650,1400,470);g.stroke();
+    g.strokeStyle="rgba(140,220,255,.32)";g.lineWidth=9;g.setLineDash([2,26]);
+    g.beginPath();g.moveTo(200,1100);g.quadraticCurveTo(560,900,900,780);g.quadraticCurveTo(1200,650,1400,470);g.stroke();g.setLineDash([]);
+    const pg2=g.createRadialGradient(900,740,10,900,760,150);pg2.addColorStop(0,"#bff0ff");pg2.addColorStop(.6,"#6fbfe8");pg2.addColorStop(1,"#3c6ea8");
+    g.fillStyle=pg2;g.beginPath();g.ellipse(900,760,150,88,0,0,7);g.fill();
+    g.strokeStyle="rgba(190,240,255,.7)";g.lineWidth=3;g.beginPath();g.ellipse(900,760,146,84,0,0,7);g.stroke();
+    for(const t of SKYTREES){
+      g.fillStyle="#241f42";g.fillRect(t.x-7,t.y-30,14,32);
+      g.fillStyle="#2f4b62";g.beginPath();g.arc(t.x,t.y-52,34,0,7);g.arc(t.x-24,t.y-36,24,0,7);g.arc(t.x+24,t.y-36,24,0,7);g.fill();
+      g.fillStyle="#3c6178";g.beginPath();g.arc(t.x-10,t.y-58,17,0,7);g.fill();
+      for(let k=0;k<4;k++){const a=k*1.7+t.x;g.fillStyle=["#9fe8ff","#ffd1f0","#fff3a0","#c9b3ff"][k%4];
+        g.beginPath();g.arc(t.x+Math.cos(a)*22,t.y-44+Math.sin(a)*16,3,0,7);g.fill();}}
+    for(const m of MUSH){
+      g.fillStyle="#d8d8f2";g.fillRect(m.x-3,m.y-12,6,14);
+      g.fillStyle=m.cap;g.beginPath();g.ellipse(m.x,m.y-13,12,8,0,Math.PI,0);g.fill();
+      g.fillStyle="rgba(255,255,255,.8)";g.beginPath();g.arc(m.x-4,m.y-16,1.6,0,7);g.arc(m.x+4,m.y-15,1.3,0,7);g.fill();}
+    g.fillStyle="#3a3462";g.beginPath();g.ellipse(1400,470,84,26,0,0,7);g.fill();
+    for(const [cx2,h2,w2,cc] of [[1370,120,34,"#b79bff"],[1408,160,42,"#9fd0ff"],[1444,100,30,"#e2b8ff"]]){
+      g.fillStyle=cc;g.beginPath();g.moveTo(cx2,470);g.lineTo(cx2-w2/2,470-h2*0.35);g.lineTo(cx2,470-h2);g.lineTo(cx2+w2/2,470-h2*0.35);g.closePath();g.fill();
+      g.fillStyle="rgba(255,255,255,.35)";g.beginPath();g.moveTo(cx2,470-h2);g.lineTo(cx2-w2/2,470-h2*0.35);g.lineTo(cx2-w2/6,470-h2*0.3);g.closePath();g.fill();}
+    g.fillStyle="rgba(255,255,255,.1)";g.beginPath();g.ellipse(200,1128,70,24,0,0,7);g.fill();
+    drawBalloon(g,200,1078);
+    g.fillStyle="#4a3f72";g.fillRect(300,1022,8,42);g.fillStyle="#6c5da0";g.fillRect(264,1000,80,26);
+    g.fillStyle="#e8e2ff";g.font="700 13px sans-serif";g.textAlign="center";g.fillText("✦ 星空岛",304,1017);}
+
+  function goSky(){if(!skyBuilt){buildSky();skyBuilt=true;}
+    homeX=player.x;homeY=player.y;scene="sky";parts.length=0;
+    player.x=300;player.y=1090;player.vx=player.vy=0;cat.x=260;cat.y=1140;
+    wbtn.style.display="none";document.getElementById("fwbtn").style.display="none";
+    camX=Math.max(0,Math.min(SKYW-W,player.x-W/2));camY=Math.max(0,Math.min(SKYH-H,player.y-H/2));
+    showBanner("🎈 呼—— 抵达星空岛 ✦",2200);}
+  function goHome(){scene="world";parts.length=0;
+    player.x=homeX||250;player.y=(homeY||690)+80;player.vx=player.vy=0;cat.x=player.x+50;cat.y=player.y+30;
+    wbtn.style.display="";document.getElementById("fwbtn").style.display="";
+    camX=Math.max(0,Math.min(WW-W,player.x-W/2));camY=Math.max(0,Math.min(WH-H,player.y-H/2));
+    showBanner("🏡 回到小世界啦",1800);}
+
+  function skyStep(tnow,ix,iy,mag){
+    const moving=mag>0.06;
+    player.x+=ix*3.1;player.y+=iy*3.1;
+    if(Math.abs(ix)>0.06)player.face=ix<0?-1:1;
+    player.x=Math.max(34,Math.min(SKYW-34,player.x));player.y=Math.max(70,Math.min(SKYH-24,player.y));
+    for(const s of skySolids){const dx=player.x-s.x,dy=player.y-s.y,d=Math.hypot(dx,dy),min=s.r+13;
+      if(d<min&&d>0.001){player.x+=dx/d*(min-d);player.y+=dy/d*(min-d);}}
+    player.jz+=player.jvz;player.jvz-=0.5;if(player.jz<=0){player.jz=0;player.jvz=0;}
+    {const ox=player.x-26*player.face,oy=player.y+6,dx=ox-cat.x,dy=oy-cat.y,d=Math.hypot(dx,dy);
+     const ms=d>140?4.2:(d>40?2.4:0);if(d>2){cat.vx+=((dx/d)*ms-cat.vx)*.15;cat.vy+=((dy/d)*ms-cat.vy)*.15;}else{cat.vx*=.8;cat.vy*=.8;}
+     cat.x+=cat.vx;cat.y+=cat.vy;if(Math.abs(cat.vx)>.2)cat.face=cat.vx<0?-1:1;}
+    {const f=skyFriend;if(tnow>f.nt){f.nt=tnow+2500+Math.random()*3000;f.tx=150+Math.random()*(SKYW-300);f.ty=220+Math.random()*(SKYH-340);}
+     const dx=f.tx-f.x,dy=f.ty-f.y,d=Math.hypot(dx,dy);let sx2=0,sy2=0;if(d>4){sx2=dx/d*1.3;sy2=dy/d*1.3;}
+     f.vx+=(sx2-f.vx)*.08;f.vy+=(sy2-f.vy)*.08;f.x+=f.vx;f.y+=f.vy;if(Math.abs(f.vx)>.15)f.face=f.vx<0?-1:1;}
+    for(const it of skyItems){if(!it.got&&Math.hypot(it.x-player.x,it.y-player.y)<38){it.got=true;inv["✨"]=(inv["✨"]||0)+1;pick();stats.pick++;
+      for(let i=0;i<10;i++){const a=Math.random()*6.28,sp=1+Math.random()*2.5;P(it.x,it.y,Math.cos(a)*sp,Math.sin(a)*sp-1,40,"rgba(190,230,255,",2,.04);}
+      P(it.x,it.y-10,0,-.6,46,"txt:+✨",0);checkAch();}}
+    act=null;let bd=1e9;
+    const dbl2=Math.hypot(SKYB.x-player.x,(SKYB.y+30)-player.y);if(dbl2<95){bd=dbl2;act={type:"balloon2"};}
+    for(const n of skyNpcs){const d=Math.hypot(n.x-player.x,n.y-player.y);if(d<92&&d<bd){bd=d;act={type:"npc",o:n};}}
+    const ab=document.getElementById("btnAct");
+    if(act){ab.classList.remove("dim");ab.innerHTML=act.type==="balloon2"?"🎈<br>回家":"💬<br>对话";}
+    else{ab.classList.add("dim");ab.innerHTML="✋<br>拾取";}
+    gbtn.classList.remove("show");
+    let tcx=Math.max(0,Math.min(SKYW-W,player.x-W/2)),tcy=Math.max(0,Math.min(SKYH-H,player.y-H/2));
+    if(SKYW<W)tcx=(SKYW-W)/2;if(SKYH<H)tcy=(SKYH-H)/2;camX+=(tcx-camX)*.12;camY+=(tcy-camY)*.12;
+    ctx.clearRect(0,0,W,H);ctx.fillStyle="#232043";ctx.fillRect(0,0,W,H);
+    ctx.save();ctx.translate(-camX,-camY);
+    const sx=Math.max(0,Math.min(camX,SKYW-1)),sy=Math.max(0,Math.min(camY,SKYH-1)),sw=Math.min(W,SKYW-sx),sh=Math.min(H,SKYH-sy);
+    ctx.drawImage(skyGround,sx,sy,sw,sh,sx,sy,sw,sh);
+    if(Math.random()<0.3)P(SPRING.x+(Math.random()*160-80),SPRING.y+(Math.random()*60-30),0,-0.7-Math.random()*.6,60,"rgba(160,230,255,",2.2,0);
+    ctx.save();ctx.globalCompositeOperation="lighter";
+    for(const m of MUSH){const a=Math.max(0,.15+.1*Math.sin(tnow/600+m.ph));
+      const gd2=ctx.createRadialGradient(m.x,m.y-14,4,m.x,m.y-14,44);gd2.addColorStop(0,"rgba("+m.glow+","+a+")");gd2.addColorStop(1,"rgba("+m.glow+",0)");
+      ctx.fillStyle=gd2;ctx.beginPath();ctx.arc(m.x,m.y-14,44,0,7);ctx.fill();}
+    {const a=.18+.1*Math.sin(tnow/800);const gd3=ctx.createRadialGradient(1400,430,20,1400,430,170);gd3.addColorStop(0,"rgba(190,160,255,"+a+")");gd3.addColorStop(1,"rgba(190,160,255,0)");
+     ctx.fillStyle=gd3;ctx.beginPath();ctx.arc(1400,430,170,0,7);ctx.fill();}
+    ctx.restore();
+    for(const it of skyItems){if(it.got)continue;const fl=Math.sin(tnow/300+it.ph)*3;
+      ctx.drawImage(eSprite("✨",26),it.x-13,it.y-16+fl,26,26);}
+    const sp3=[];
+    for(const n of skyNpcs)sp3.push({y:n.y,t:"n",o:n});
+    sp3.push({y:skyFriend.y,t:"f"});sp3.push({y:cat.y,t:"c"});sp3.push({y:player.y,t:"p"});
+    sp3.sort((a,b)=>a.y-b.y);
+    const sh2=(x,y,r)=>{ctx.fillStyle="rgba(10,10,30,.35)";ctx.beginPath();ctx.ellipse(x,y,r,r*.34,0,0,7);ctx.fill();};
+    for(const it2 of sp3){
+      if(it2.t==="n"){const n=it2.o;sh2(n.x,n.y+2,16);
+        if(n.quest&&n.quest.state!=="done"){ctx.fillStyle="#ffe08a";ctx.font="20px serif";ctx.textAlign="center";ctx.fillText(n.quest.state==="active"?"…":"！",n.x,n.y-52+Math.sin(tnow/300)*2);}
+        ctx.drawImage(eSprite(n.emo,40),n.x-20,n.y-36,40,40);}
+      else if(it2.t==="f"){const f=skyFriend;sh2(f.x,f.y+2,14);
+        const img=FR[1];if(img.complete&&img.naturalWidth){ctx.imageSmoothingEnabled=false;const w2=40,h2=w2*(img.naturalHeight/img.naturalWidth);
+          const bob=(Math.hypot(f.vx,f.vy)>.3)?Math.abs(Math.sin(tnow/130))*-4:0;
+          ctx.save();ctx.translate(f.x,f.y+bob);ctx.scale(f.face,1);ctx.drawImage(img,-w2/2,-h2,w2,h2);ctx.restore();}}
+      else if(it2.t==="c"){const bob=Math.hypot(cat.vx,cat.vy)>.6?Math.abs(Math.sin(tnow/100))*-4:0;sh2(cat.x,cat.y+2,12);
+        ctx.save();ctx.translate(cat.x,cat.y+bob);ctx.scale(cat.face,1);ctx.drawImage(eSprite("🐈",30),-15,-26,30,30);ctx.restore();}
+      else{const bob=(moving&&player.jz<=0)?Math.abs(Math.sin(tnow/90))*-7:0;
+        sh2(player.x,player.y+2,16*(1-Math.min(.5,player.jz/40)));
+        if(claude.complete&&claude.naturalWidth){ctx.imageSmoothingEnabled=false;const w2=46,h2=w2*(claude.naturalHeight/claude.naturalWidth);
+          ctx.save();ctx.translate(player.x,player.y+bob-player.jz);ctx.scale(player.face,1);ctx.drawImage(claude,-w2/2,-h2,w2,h2);ctx.restore();}
+        if(equip)ctx.drawImage(eSprite(equip,26),player.x-13+3*player.face,player.y-62+bob-player.jz,26,26);
+        ctx.save();ctx.globalCompositeOperation="lighter";
+        const lg2=ctx.createRadialGradient(player.x,player.y-20,8,player.x,player.y-20,120);lg2.addColorStop(0,"rgba(255,220,140,.24)");lg2.addColorStop(1,"rgba(255,220,140,0)");
+        ctx.fillStyle=lg2;ctx.beginPath();ctx.arc(player.x,player.y-20,120,0,7);ctx.fill();ctx.restore();}
+    }
+    for(let i=parts.length-1;i>=0;i--){const p2=parts[i];p2.x+=p2.vx;p2.y+=p2.vy;p2.vy+=p2.grav;p2.life--;
+      if(p2.life<=0){parts.splice(i,1);continue;}const al=p2.life/p2.max;ctx.globalAlpha=al;
+      if(typeof p2.col==="string"&&p2.col.indexOf("txt:")===0){ctx.fillStyle="#cfe6ff";ctx.font="700 20px sans-serif";ctx.textAlign="center";ctx.fillText(p2.col.slice(4),p2.x,p2.y);}
+      else{ctx.fillStyle=p2.col+al+")";ctx.beginPath();ctx.arc(p2.x,p2.y,p2.size,0,7);ctx.fill();}}
+    ctx.globalAlpha=1;ctx.restore();
+    for(const o of skyNpcs){if(o._sayT&&o._sayT>tnow){const sx2=o.x-camX,sy2=o.y-camY-48;
+      ctx.font="600 15px 'Noto Serif SC',serif";const tw=ctx.measureText(o._say).width,pad=12,bw=tw+pad*2,bh=30;
+      let bx=Math.max(8,Math.min(W-bw-8,sx2-bw/2)),by=Math.max(58,sy2-bh);
+      ctx.fillStyle="rgba(30,26,60,.9)";rr(bx,by,bw,bh,12);ctx.fill();ctx.fillStyle="#eaf2ff";ctx.textAlign="left";ctx.textBaseline="middle";ctx.fillText(o._say,bx+pad,by+bh/2);ctx.textBaseline="alphabetic";}}
+    if(Math.random()<0.012)skyMet.push({x:Math.random()*W*0.8+W*0.1,y:Math.random()*H*0.3,t:tnow});
+    for(let i=skyMet.length-1;i>=0;i--){const m=skyMet[i],dt=tnow-m.t;if(dt>900){skyMet.splice(i,1);continue;}
+      const pr2=dt/900;ctx.globalAlpha=(1-pr2)*.9;ctx.strokeStyle="#fff";ctx.lineWidth=2;
+      ctx.beginPath();ctx.moveTo(m.x-pr2*180,m.y+pr2*90);ctx.lineTo(m.x-pr2*180-26,m.y+pr2*90+13);ctx.stroke();}
+    ctx.globalAlpha=1;
+    ctx.fillStyle="rgba(230,238,255,.95)";ctx.font="700 17px 'Noto Serif SC',serif";ctx.textAlign="center";ctx.fillText("✦ 星空岛 ✦",W/2,32);
+  }
+
   function roomStep(tnow,ix,iy,mag){
     const moving=!rest&&mag>0.06;
     if(rest){if(rest==="cook"){if(tnow-restT>1600)endRest();}else if(mag>0.4)endRest();}
@@ -1118,7 +1282,7 @@
   updCoins();
   requestAnimationFrame(step);
   // 测试钩子（不影响游戏）
-  window.__w={player,rp,enterRoom,leaveRoom};
+  window.__w={player,rp,enterRoom,leaveRoom,goSky,goHome};
 })();
 </script>
 </body>
