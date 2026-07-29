@@ -666,11 +666,33 @@
         if(weather==="snow"&&Math.random()<0.03)P(player.x+12*player.face,player.y-32,player.face*.4,-.3,26,"rgba(255,255,255,",2.4,-0.006);
         if(equip)ctx.drawImage(eSprite(equip,26),player.x-13+3*player.face,player.y-62+bob-player.jz,26,26);}
     }
+    // 星空岛入口指引：气球上方的悬浮标牌
+    {const bxc=250,byb=556+Math.sin(tnow/500)*6;
+     ctx.save();ctx.globalCompositeOperation="lighter";
+     const gbg=ctx.createRadialGradient(bxc,606,6,bxc,606,74);gbg.addColorStop(0,"rgba(255,180,210,.3)");gbg.addColorStop(1,"rgba(255,180,210,0)");
+     ctx.fillStyle=gbg;ctx.beginPath();ctx.arc(bxc,606,74,0,7);ctx.fill();ctx.restore();
+     ctx.font="700 15px 'Noto Serif SC',serif";const bt="🎈 星空岛 · 上来玩",btw=ctx.measureText(bt).width,bpad=11,bbw=btw+bpad*2,bbh=30;
+     ctx.fillStyle="rgba(255,255,255,.95)";rr(bxc-bbw/2,byb-bbh,bbw,bbh,14);ctx.fill();
+     ctx.strokeStyle="#f2a0b8";ctx.lineWidth=2;rr(bxc-bbw/2,byb-bbh,bbw,bbh,14);ctx.stroke();
+     ctx.fillStyle="#c74b74";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(bt,bxc,byb-bbh/2);ctx.textBaseline="alphabetic";
+     ctx.fillStyle="rgba(255,255,255,.95)";ctx.beginPath();ctx.moveTo(bxc-7,byb-1);ctx.lineTo(bxc+7,byb-1);ctx.lineTo(bxc,byb+9);ctx.closePath();ctx.fill();}
     for(let i=parts.length-1;i>=0;i--){const p=parts[i];p.x+=p.vx;p.y+=p.vy;p.vy+=p.grav;p.life--;
       if(p.life<=0){parts.splice(i,1);continue;}const al=p.life/p.max;
       if(typeof p.col==="string"&&p.col.indexOf("txt:")===0){ctx.globalAlpha=al;ctx.font="700 20px sans-serif";ctx.textAlign="center";ctx.fillText(p.col.slice(4),p.x,p.y);}
       else{ctx.globalAlpha=al;ctx.fillStyle=p.col+al+")";ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,7);ctx.fill();}}
     ctx.globalAlpha=1;ctx.restore();
+
+    // 屏幕边缘箭头：气球在屏幕外时，指引前往星空岛
+    {const gx=250,gy=650,onScreen=gx>camX+40&&gx<camX+W-40&&gy>camY+40&&gy<camY+H-40;
+     if(!onScreen){const cxs=W/2,cys=H/2,ang=Math.atan2(gy-(camY+cys),gx-(camX+cxs)),nx=Math.cos(ang),ny=Math.sin(ang),mrg=58;
+       const tx=nx>0?(W-mrg-cxs)/nx:nx<0?(mrg-cxs)/nx:1e9,ty=ny>0?(H-mrg-cys)/ny:ny<0?(mrg-cys)/ny:1e9,tt=Math.min(tx,ty);
+       const ax=cxs+nx*tt,ay=cys+ny*tt,pulse=1+.08*Math.sin(tnow/280);
+       ctx.save();ctx.translate(ax,ay);ctx.scale(pulse,pulse);
+       ctx.fillStyle="rgba(255,255,255,.95)";ctx.beginPath();ctx.arc(0,0,19,0,7);ctx.fill();
+       ctx.strokeStyle="#f2a0b8";ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(0,0,19,0,7);ctx.stroke();
+       ctx.save();ctx.rotate(ang);ctx.fillStyle="#f2a0b8";ctx.beginPath();ctx.moveTo(19,-7);ctx.lineTo(31,0);ctx.lineTo(19,7);ctx.closePath();ctx.fill();ctx.restore();
+       ctx.font="17px serif";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("🎈",0,1);ctx.textBaseline="alphabetic";
+       ctx.restore();}}
 
     // 对话气泡（互动后短暂显示）
     for(const o of npcs.concat(friends)){if(o._sayT&&o._sayT>tnow){const sx=o.x-camX,sy=o.y-camY-(o.kind==="prince"?64:46);
@@ -1319,6 +1341,8 @@
     ctx.fillStyle="#ffcf5a";for(const st of stars){if(st.got)continue;ctx.beginPath();ctx.arc(mx+st.x*sx,my+st.y*sy,1.8,0,7);ctx.fill();}
     ctx.fillStyle="#7a5230";for(const it of items){if(it.got)continue;ctx.beginPath();ctx.arc(mx+it.x*sx,my+it.y*sy,1.4,0,7);ctx.fill();}
     for(const f of friends){ctx.fillStyle="#ff8fb3";ctx.beginPath();ctx.arc(mx+f.x*sx,my+f.y*sy,1.8,0,7);ctx.fill();}
+    ctx.fillStyle="#f2a0b8";ctx.beginPath();ctx.arc(mx+250*sx,my+650*sy,3,0,7);ctx.fill();
+    ctx.strokeStyle="#fff";ctx.lineWidth=1;ctx.stroke();
     ctx.fillStyle="#e8602a";ctx.beginPath();ctx.arc(mx+player.x*sx,my+player.y*sy,3.2,0,7);ctx.fill();ctx.restore();}
   updCoins();
   requestAnimationFrame(step);
