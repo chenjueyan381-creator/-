@@ -751,9 +751,15 @@
     g.strokeStyle="rgba(180,140,100,.16)";g.lineWidth=2;for(let x=20;x<RW;x+=40){g.beginPath();g.moveTo(x,0);g.lineTo(x,150);g.stroke();}
     g.fillStyle="#caa274";g.fillRect(0,150,RW,10);
     // 地板：木纹渐变
-    const fg=g.createLinearGradient(0,160,0,RH);fg.addColorStop(0,"#c89b6a");fg.addColorStop(1,"#b3853f");g.fillStyle=fg;g.fillRect(0,160,RW,RH-160);
-    g.strokeStyle="rgba(110,75,40,.16)";g.lineWidth=2;for(let y=204;y<RH;y+=44){g.beginPath();g.moveTo(0,y);g.lineTo(RW,y);g.stroke();}
-    g.strokeStyle="rgba(110,75,40,.09)";for(let x=0;x<RW;x+=120){g.beginPath();g.moveTo(x,160);g.lineTo(x,RH);g.stroke();}
+    // 温润蜜色木地板：错缝木板 + 板缝高光，比原来的暗棕更柔和
+    const fg=g.createLinearGradient(0,160,0,RH);fg.addColorStop(0,"#f0d2a6");fg.addColorStop(1,"#e3ba82");g.fillStyle=fg;g.fillRect(0,160,RW,RH-160);
+    for(let y=160,row=0;y<RH;y+=52,row++){
+      g.fillStyle=row%2?"rgba(255,242,208,.16)":"rgba(150,105,55,.045)";g.fillRect(0,y,RW,52);
+      g.strokeStyle="rgba(150,105,55,.22)";g.lineWidth=2;g.beginPath();g.moveTo(0,y);g.lineTo(RW,y);g.stroke();
+      g.strokeStyle="rgba(255,248,225,.4)";g.lineWidth=1;g.beginPath();g.moveTo(0,y+1.5);g.lineTo(RW,y+1.5);g.stroke();
+      const off=(row%2)*130;g.strokeStyle="rgba(150,105,55,.15)";g.lineWidth=1.5;
+      for(let x=off;x<RW;x+=260){g.beginPath();g.moveTo(x,y);g.lineTo(x,y+52);g.stroke();}
+    }
     // ===== 六区地面 =====
     g.fillStyle="#f9e3ea";g.fillRect(0,160,470,450);
     g.fillStyle="rgba(231,90,124,.08)";for(let dy=178;dy<600;dy+=34)for(let dx=((dy/34|0)%2?17:0);dx<470;dx+=34){g.beginPath();g.arc(dx,dy,2.5,0,7);g.fill();}
@@ -980,6 +986,32 @@
     // 串灯（电线 + 彩灯，发光在 roomStep）
     g.strokeStyle="rgba(90,70,50,.6)";g.lineWidth=2;g.beginPath();g.moveTo(bulbs[0].x,bulbs[0].y);for(const b of bulbs)g.lineTo(b.x,b.y);g.stroke();
     for(const b of bulbs){g.fillStyle=b.c;g.beginPath();g.arc(b.x,b.y+4,3.4,0,7);g.fill();}
+    // ===== 客厅添温馨点缀 =====
+    // 小圆地毯助手
+    function rug(cx,cy,rx,ry,c1,c2){g.fillStyle=c1;g.beginPath();g.ellipse(cx,cy,rx,ry,0,0,7);g.fill();
+      g.fillStyle=c2;g.beginPath();g.ellipse(cx,cy,rx*.66,ry*.66,0,0,7);g.fill();
+      g.strokeStyle="rgba(255,255,255,.5)";g.lineWidth=2;g.beginPath();g.ellipse(cx,cy,rx*.83,ry*.83,0,0,7);g.stroke();}
+    rug(1258,402,88,52,"#f0c38a","#f7dab0");           // 厨房小地毯
+    rug(548,506,74,44,"#c9b18a","#e0cba6");            // 客厅角落黄麻地毯
+    // 角落大绿植（陶盆 + 一丛叶子）
+    (function(){const px=548,py=502;
+      g.beginPath();g.ellipse(px,py+34,40,12,0,0,7);g.fillStyle="rgba(0,0,0,.06)";g.fill();
+      const leaf=(ang,len,col)=>{g.save();g.translate(px,py+2);g.rotate(ang);g.fillStyle=col;
+        g.beginPath();g.ellipse(0,-len,15,len,0,0,7);g.fill();
+        g.strokeStyle="rgba(30,90,50,.4)";g.lineWidth=2;g.beginPath();g.moveTo(0,-4);g.lineTo(0,-len*1.7);g.stroke();g.restore();};
+      leaf(-0.72,42,"#5aa96e");leaf(-0.34,56,"#4a9d63");leaf(0,64,"#57ad6d");leaf(0.34,54,"#4a9d63");leaf(0.72,40,"#5aa96e");
+      B(px-32,py-2,64,42,13,"#e0a27a");g.fillStyle="#cf8a5a";g.fillRect(px-32,py-2,64,9);
+      g.fillStyle="rgba(255,255,255,.18)";g.fillRect(px-26,py+5,8,30);
+      g.fillStyle="#f2b3c4";g.beginPath();g.arc(px+14,py-38,3,0,7);g.fill();g.fillStyle="#f7d774";g.beginPath();g.arc(px-12,py-30,2.6,0,7);g.fill();})();
+    // 客厅地上小坐垫
+    B(636,436,54,34,14,"#f7c9a8");g.fillStyle="#eaa982";g.fillRect(636,460,54,10);
+    g.strokeStyle="rgba(255,255,255,.4)";g.lineWidth=2;g.beginPath();g.moveTo(663,436);g.lineTo(663,470);g.stroke();
+    // 客厅照片墙（壁炉右侧）
+    (function(){for(const [fx,fy,fw,fh,pc] of [[840,60,50,42,"#bfe0c8"],[908,74,44,54,"#f7d0d8"],[968,58,46,42,"#cfe0f2"]]){
+      B(fx,fy,fw,fh,4,"#8a5a32");g.fillStyle=pc;g.fillRect(fx+5,fy+5,fw-10,fh-10);
+      g.fillStyle="rgba(255,255,255,.55)";g.beginPath();g.arc(fx+fw-14,fy+15,5,0,7);g.fill();
+      g.fillStyle="rgba(90,140,100,.5)";g.beginPath();g.moveTo(fx+5,fy+fh-5);g.lineTo(fx+fw*.42,fy+fh*.5);g.lineTo(fx+fw*.62,fy+fh*.62);g.lineTo(fx+fw-5,fy+fh-5);g.closePath();g.fill();}
+      g.fillStyle="#e75a7c";const hx=1004,hy=104;g.beginPath();g.arc(hx-3,hy,3,0,7);g.arc(hx+3,hy,3,0,7);g.moveTo(hx-6,hy+1);g.lineTo(hx,hy+7);g.lineTo(hx+6,hy+1);g.fill();})();
     // 门垫
     g.fillStyle="#caa96a";g.beginPath();g.ellipse(door.x,door.y,64,18,0,0,7);g.fill();
     g.fillStyle="#6b5440";g.font="700 13px sans-serif";g.textAlign="center";g.fillText("欢迎回家 ♡",door.x,door.y+5);}
