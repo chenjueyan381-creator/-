@@ -82,6 +82,9 @@
   <button class="pill" id="wbtn" style="position:fixed;top:90px;left:14px;z-index:6;border:none;cursor:pointer;font-family:var(--font);padding:7px 13px;font-size:.9rem">☀️ 晴</button>
   <button class="pill" id="fwbtn" style="position:fixed;top:132px;left:14px;z-index:6;border:none;cursor:pointer;font-family:var(--font);padding:7px 13px;font-size:.9rem">🎆 烟花</button>
   <div class="pill" id="coinchip" style="position:fixed;top:174px;left:14px;z-index:6;padding:7px 13px;font-size:.9rem;pointer-events:none">🪙 0</div>
+  <button class="pill" id="decobtn" style="position:fixed;top:214px;left:14px;z-index:6;border:none;cursor:pointer;font-family:var(--font);padding:7px 13px;font-size:.9rem">🎨 装修</button>
+  <div id="placehint" style="display:none;position:fixed;left:50%;top:70px;transform:translateX(-50%);z-index:8;background:rgba(40,30,20,.86);color:#fff6e8;padding:8px 14px;border-radius:999px;font-size:.85rem;font-family:var(--font);white-space:nowrap;pointer-events:none">点房间空白处摆放</div>
+  <button id="placedone" style="display:none;position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:8;border:none;cursor:pointer;font-family:var(--font);font-weight:700;background:linear-gradient(135deg,#ffe79a,#ffc46b);color:#5a4632;padding:11px 24px;border-radius:999px;font-size:1rem;box-shadow:0 6px 16px rgba(120,90,40,.35)">✅ 完成摆放</button>
   <div class="tip" id="tip">左侧任意位置按住走路（手指在哪摇杆就在哪）· ✋拾取/对话 · ⤴跳 · 集齐⭐</div>
   <div class="stick" id="stick"><div class="knob" id="knob"></div></div>
   <div class="pad">
@@ -102,6 +105,14 @@
     <h3>摆一件到架子上 🏡</h3><div class="sub">点一个物品放上去（点「取下」可清空）</div>
     <div class="grid" id="placeGrid"></div>
     <div class="bagpanel__foot"><button id="placeClear">取下</button><button id="placeClose">取消</button></div>
+  </div></div>
+  <div class="bagpanel" id="decopanel"><div class="bagpanel__in">
+    <h3>🎨 装修小屋</h3><div class="sub" id="decosub">选一个主题，或挑摆件自由摆放～</div>
+    <div class="q" style="border:none;color:#8a715a;margin-bottom:6px">房间主题</div>
+    <div class="grid" id="themegrid"></div>
+    <div class="q" style="border:none;color:#8a715a;margin:12px 0 6px">摆件（点一个 → 再点房间里空白处摆放）</div>
+    <div class="grid" id="decogrid"></div>
+    <div class="bagpanel__foot"><button id="decoErase">🧽 擦除</button><button id="decoClear">清空摆件</button><button id="decoClose">关上</button></div>
   </div></div>
   <div class="bagpanel" id="petpanel"><div class="bagpanel__in">
     <h3>🐾 我的小动物</h3><div class="sub" id="petsub"></div>
@@ -293,6 +304,15 @@
   const skyPulses=[0,30,60];
   // 金币 / 穿戴 / 成就
   let coins=0,equip=null;
+  let pets=[],activePet=-1,roomTheme=0,roomDeco=[];
+  const THEMES=[
+    {name:"🍦奶油",wall1:"#efd9bd",wall2:"#e2c69d",wains:"#caa274",floor1:"#f0d2a6",floor2:"#e3ba82"},
+    {name:"🌿森系",wall1:"#dfe9d6",wall2:"#c9dcb4",wains:"#a7bd8a",floor1:"#e7d3ac",floor2:"#d3b482"},
+    {name:"🌸樱花",wall1:"#f8e6ea",wall2:"#f0ccd6",wains:"#e2a6b6",floor1:"#f2d9c0",floor2:"#e6bea0"},
+    {name:"🫐海盐",wall1:"#dfeaf2",wall2:"#c6dcea",wains:"#9fbdd0",floor1:"#ecdcbb",floor2:"#dabf92"}
+  ];
+  const DECOSET=["🪴","🌵","🎈","🧸","🖼️","🕯️","🎀","🌷","🍄","⭐","🎐","🪞","📚","🧺","🐚","🍥","🫖","🪆","🎏","💐"];
+  let placeMode=null;
   const owned=new Set(),unlocked=new Set();
   const stats={cake:0,feed:0,harvest:0,sleep:0,bath:0,fw:0,pick:0,coinsE:0};
   const PRICE={"🥕":3,"🍅":3,"🥬":3,"🍓":4,"🌽":3,"🐟":5,"🍰":6,"🍎":2,"🍄":2,"🌰":2,"🐚":2,"🪶":2,"🍯":4,"💎":20,"🌹":2,"🐾":8,"💛":8,"✨":6,"🌙":30};
@@ -321,9 +341,11 @@
     if(Array.isArray(s.pets))pets=s.pets.map(p=>({sp:p.sp,name:p.name||"宝宝",aff:p.aff||1}));
     if(typeof s.activePet==="number")activePet=s.activePet;
     if(activePet>=pets.length)activePet=pets.length?0:-1;
+    if(typeof s.roomTheme==="number")roomTheme=s.roomTheme;
+    if(Array.isArray(s.roomDeco))roomDeco=s.roomDeco.filter(d=>d&&d.e).map(d=>({e:d.e,x:+d.x||0,y:+d.y||0}));
   }catch(e){}}
   function save(){try{const q={};for(const n of npcs)if(n.quest)q[n.id]=n.quest.state;
-    localStorage.setItem(SK,JSON.stringify({inv,gotItems:items.filter(i=>i.got).map(i=>i.id),gotStars:stars.filter(s=>s.got).map(s=>s.id),quests:q,deco:slots.map(s=>s.item),plots:plots.map(p2=>({c:p2.crop,s:p2.stage})),coins,equip,owned:[...owned],ach:[...unlocked],stats,sky:{g:skyItems.filter(i=>i.got).map(i=>i.id),rq:skyRabbit.quest.state},pets,activePet}));}catch(e){}}
+    localStorage.setItem(SK,JSON.stringify({inv,gotItems:items.filter(i=>i.got).map(i=>i.id),gotStars:stars.filter(s=>s.got).map(s=>s.id),quests:q,deco:slots.map(s=>s.item),plots:plots.map(p2=>({c:p2.crop,s:p2.stage})),coins,equip,owned:[...owned],ach:[...unlocked],stats,sky:{g:skyItems.filter(i=>i.got).map(i=>i.id),rq:skyRabbit.quest.state},pets,activePet,roomTheme,roomDeco}));}catch(e){}}
   load();
   const hud=document.getElementById("hud");const updHud=()=>hud.textContent="⭐ "+got+" / "+stars.length;updHud();
 
@@ -340,7 +362,6 @@
   // ===== 小动物系统 =====
   const PETSPECIES=[["🐈","小猫"],["🐕","小狗"],["🐰","小兔"],["🐤","小鸡"],["🦊","小狐狸"],["🐹","仓鼠"],["🐢","小龟"],["🐧","企鹅"]];
   const FOODSET=["🥕","🍅","🥬","🍓","🌽","🍰","🍞","🐟","🥜","🍪"];
-  let pets=[],activePet=-1;
   const apet={x:player.x,y:player.y,vx:0,vy:0,face:1};
   function snapPet(x,y){apet.x=x;apet.y=y;apet.vx=apet.vy=0;}
   function updDrawPet(tx,ty,tnow){
@@ -387,7 +408,8 @@
     const d=Math.hypot(dx,dy);if(d>JR){dx=dx/d*JR;dy=dy/d*JR;}knob.style.transform="translate("+(dx-27)+"px,"+(dy-27)+"px)";jx=dx/JR;jy=dy/JR;}
   function jEnd(){jId=null;jx=jy=0;knob.style.transform="translate(-50%,-50%)";stick.style.display="none";}
   addEventListener("pointerdown",e=>{if(jId!==null)return;
-    if(e.target.closest&&e.target.closest("#btnJump,#btnAct,#bag,#petbtn,#wbtn,#fwbtn,.back,.bagpanel,.gatebtn"))return;
+    if(e.target.closest&&e.target.closest("#btnJump,#btnAct,#bag,#petbtn,#decobtn,#placedone,#wbtn,#fwbtn,.back,.bagpanel,.gatebtn"))return;
+    if(placeMode&&scene==="room"){handlePlace(e.clientX+camX,e.clientY+camY);return;}
     if(e.clientX>innerWidth*0.62)return;
     audio();jId=e.pointerId;stick.style.left=(e.clientX-JSZ/2)+"px";stick.style.top=(e.clientY-JSZ/2)+"px";stick.style.display="block";jUpd(e);},{passive:true});
   addEventListener("pointermove",e=>{if(e.pointerId===jId)jUpd(e);},{passive:true});
@@ -544,6 +566,36 @@
     coins-=20;updCoins();pets.push({sp,name:(nm&&nm.trim()?nm.trim().slice(0,8):petName(sp)),aff:1});
     if(activePet<0){activePet=pets.length-1;snapPet(petAnchorX(),petAnchorY());}
     chime();checkAch();save();buildPet();});
+  // ===== 装修（主题换肤 + 自由摆件） =====
+  const decopanel=document.getElementById("decopanel"),themegrid=document.getElementById("themegrid"),
+        decogrid=document.getElementById("decogrid"),decosub=document.getElementById("decosub"),
+        placehint=document.getElementById("placehint"),placedone=document.getElementById("placedone");
+  function handlePlace(wx,wy){
+    wx=Math.max(20,Math.min(RW-20,wx));wy=Math.max(168,Math.min(RH-16,wy));
+    if(placeMode==="erase"){let bi=-1,bd=46*46;for(let i=0;i<roomDeco.length;i++){const dx=roomDeco[i].x-wx,dy=(roomDeco[i].y-13)-wy,d=dx*dx+dy*dy;if(d<bd){bd=d;bi=i;}}
+      if(bi>=0){roomDeco.splice(bi,1);pick();save();}return;}
+    if(roomDeco.length>=60){showBanner("摆件太多啦，先擦掉几个再摆吧～",1900);return;}
+    roomDeco.push({e:placeMode,x:wx,y:wy});pick();save();
+  }
+  function endPlace(){placeMode=null;placehint.style.display="none";placedone.style.display="none";}
+  function startPlace(m,txt){if(scene!=="room"){decosub.textContent="要先进小屋才能摆放哦～（回世界找🏡进门）";return;}
+    placeMode=m;decopanel.classList.remove("show");placehint.textContent=txt;placehint.style.display="block";placedone.style.display="block";}
+  function buildDeco(){
+    themegrid.innerHTML=THEMES.map((t,i)=>'<div class="cell" data-theme="'+i+'" style="cursor:pointer;font-size:.86rem;color:#5a4632;background:linear-gradient(135deg,'+t.wall2+' 45%,'+t.floor2+')">'+t.name+(i===roomTheme?' ✓':'')+'</div>').join("");
+    decogrid.innerHTML=DECOSET.map(e=>'<div class="cell" data-deco="'+e+'" style="cursor:pointer">'+e+'</div>').join("");
+    decosub.textContent=scene==="room"?"选一个主题，或挑摆件自由摆放～":"主题可随时换；想摆摆件请先进小屋哦";
+  }
+  document.getElementById("decobtn").addEventListener("click",()=>{audio();endPlace();buildDeco();decopanel.classList.add("show");});
+  document.getElementById("decoClose").addEventListener("click",()=>decopanel.classList.remove("show"));
+  decopanel.addEventListener("pointerdown",e=>{if(e.target===decopanel)decopanel.classList.remove("show");});
+  themegrid.addEventListener("click",e=>{const c=e.target.closest("[data-theme]");if(!c)return;
+    roomTheme=+c.dataset.theme;buildRoom();save();buildDeco();});
+  decogrid.addEventListener("click",e=>{const c=e.target.closest("[data-deco]");if(!c)return;
+    startPlace(c.dataset.deco,"点房间空白处摆放「"+c.dataset.deco+"」· 点✅完成");});
+  document.getElementById("decoErase").addEventListener("click",()=>startPlace("erase","点想擦掉的摆件 · 点✅完成"));
+  document.getElementById("decoClear").addEventListener("click",()=>{if(!roomDeco.length){decosub.textContent="还没有摆件呢～";return;}
+    if(confirm("清空所有自己摆的摆件吗？")){roomDeco.length=0;save();decosub.textContent="已清空，重新布置吧～";}});
+  placedone.addEventListener("click",endPlace);
   function buildShop(){shopcoins.textContent="我的金币：🪙 "+coins;
     const ks=Object.keys(inv).filter(k=>inv[k]>0&&PRICE[k]);
     sellgrid.innerHTML=ks.length?ks.map(k=>'<div class="cell" data-e="'+k+'">'+k+'<i>'+PRICE[k]+'🪙</i><b>x'+inv[k]+'</b></div>').join(""):'<div class="empty">没有能卖的～去种菜捡东西吧</div>';
@@ -820,13 +872,14 @@
     // 圆角矩形助手（fill + 柔和描边，让家具有插画质感）
     function B(x,y,w,h,r,fill,noStroke){g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();
       g.fillStyle=fill;g.fill();if(!noStroke){g.strokeStyle="rgba(120,85,55,.28)";g.lineWidth=2;g.stroke();}}
-    // 墙：壁纸渐变 + 竖纹 + 护墙板
-    const wg=g.createLinearGradient(0,0,0,170);wg.addColorStop(0,"#efd9bd");wg.addColorStop(1,"#e2c69d");g.fillStyle=wg;g.fillRect(0,0,RW,170);
+    // 墙：壁纸渐变 + 竖纹 + 护墙板（随装修主题变色）
+    const th=THEMES[roomTheme]||THEMES[0];
+    const wg=g.createLinearGradient(0,0,0,170);wg.addColorStop(0,th.wall1);wg.addColorStop(1,th.wall2);g.fillStyle=wg;g.fillRect(0,0,RW,170);
     g.strokeStyle="rgba(180,140,100,.16)";g.lineWidth=2;for(let x=20;x<RW;x+=40){g.beginPath();g.moveTo(x,0);g.lineTo(x,150);g.stroke();}
-    g.fillStyle="#caa274";g.fillRect(0,150,RW,10);
+    g.fillStyle=th.wains;g.fillRect(0,150,RW,10);
     // 地板：木纹渐变
     // 温润蜜色木地板：错缝木板 + 板缝高光，比原来的暗棕更柔和
-    const fg=g.createLinearGradient(0,160,0,RH);fg.addColorStop(0,"#f0d2a6");fg.addColorStop(1,"#e3ba82");g.fillStyle=fg;g.fillRect(0,160,RW,RH-160);
+    const fg=g.createLinearGradient(0,160,0,RH);fg.addColorStop(0,th.floor1);fg.addColorStop(1,th.floor2);g.fillStyle=fg;g.fillRect(0,160,RW,RH-160);
     for(let y=160,row=0;y<RH;y+=52,row++){
       g.fillStyle=row%2?"rgba(255,242,208,.16)":"rgba(150,105,55,.045)";g.fillRect(0,y,RW,52);
       g.strokeStyle="rgba(150,105,55,.22)";g.lineWidth=2;g.beginPath();g.moveTo(0,y);g.lineTo(RW,y);g.stroke();
@@ -1318,6 +1371,10 @@
     ctx.save();ctx.translate(-camX,-camY);
     const sx=Math.max(0,Math.min(camX,RW-1)),sy=Math.max(0,Math.min(camY,RH-1)),sw=Math.min(W,RW-sx),sh=Math.min(H,RH-sy);
     ctx.drawImage(roomBg,sx,sy,sw,sh,sx,sy,sw,sh);
+    // 自己摆放的摆件
+    for(const d of roomDeco){ctx.fillStyle="rgba(0,0,0,.10)";ctx.beginPath();ctx.ellipse(d.x,d.y,12,4,0,0,7);ctx.fill();
+      ctx.drawImage(eSprite(d.e,34),d.x-17,d.y-30,34,34);
+      if(placeMode==="erase"){ctx.strokeStyle="rgba(255,120,120,.85)";ctx.lineWidth=2;ctx.beginPath();ctx.arc(d.x,d.y-13,20,0,7);ctx.stroke();}}
     // 壁炉火焰
     if(Math.random()<0.7){const fx=680+(Math.random()*60-30);P(fx,238,(Math.random()*0.8-0.4),-1-Math.random()*1.3,28,["rgba(255,170,60,","rgba(255,120,40,","rgba(255,220,120,"][(Math.random()*3)|0],3+Math.random()*2,-0.02);}
     ctx.save();ctx.globalAlpha=.4+.2*Math.sin(tnow/120);ctx.fillStyle="rgba(255,150,60,.5)";ctx.beginPath();ctx.ellipse(680,236,42,16,0,0,7);ctx.fill();ctx.restore();
